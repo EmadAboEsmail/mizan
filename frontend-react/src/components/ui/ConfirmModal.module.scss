@@ -1,0 +1,79 @@
+@use '../../styles/variables' as *;
+
+.message {
+  text-align: center;
+  color: $text-display-light;
+  font-size: 1rem;
+  line-height: 1.6;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.cancel,
+.confirm {
+  flex: 1;
+  padding: 10px;
+  font-size: 1rem;
+  font-family: $font-main;
+  border-radius: $border-radius;
+  cursor: pointer;
+  transition: transform $transition, opacity $transition;
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.cancel {
+  background-color: transparent;
+  border: 1px solid $border-light;
+  color: $text-display-light;
+
+  :global(body.dark) & {
+    border-color: $border-dark;
+    color: $text-display-dark;
+  }
+
+  &:hover {
+    background-color: $bg-btn-hover-light;
+
+    :global(body.dark) & {
+      background-color: $bg-btn-hover-dark;
+    }
+  }
+}
+
+.confirm {
+  background-color: $text-light;
+  border: 1px solid $text-light;
+  color: white;
+
+  :global(body.dark) & {
+    background-color: $text-dark;
+    border-color: $text-dark;
+    color: #111;
+  }
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.danger {
+  background-color: #d32f2f;
+  border-color: #d32f2f;
+
+  :global(body.dark) & {
+    background-color: #d32f2f;
+    border-color: #d32f2f;
+    color: white;
+  }
+}

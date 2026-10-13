@@ -1,0 +1,8 @@
+@use '../../styles/variables' as *;
+
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: $gap;
+  padding: $padding 0;
+}

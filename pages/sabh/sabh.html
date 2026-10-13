@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ذِكر - سبحة</title>
+    <link rel="stylesheet" href="./sabh.css" />
+  </head>
+  <body>
+    <header>
+      <button class="theme-toggle"></button>
+    </header>
+
+    <div class="container">
+
+      <!-- التابات -->
+      <div class="tabs">
+        <button class="tab active" data-tab="sabh">سبحة</button>
+        <button class="tab" data-tab="stats">إحصائيات</button>
+        <button class="tab" data-tab="settings">إعدادات</button>
+      </div>
+
+      <!-- تاب السبحة -->
+      <div class="tab-content active" data-content="sabh">
+        <div class="display">
+          <div class="zekr-text"></div>
+          <div class="zekr-count">0</div>
+        </div>
+        <select class="adhkar-select"></select>
+        <div class="buttons">
+          <button id="button-reset">مسح</button>
+          <button id="button-click" type="button">سبح</button>
+        </div>
+      </div>
+
+      <!-- تاب الإحصائيات -->
+      <div class="tab-content" data-content="stats">
+        <p>قريبًا...</p>
+      </div>
+
+      <!-- تاب الإعدادات -->
+      <div class="tab-content" data-content="settings">
+        <p>قريبًا...</p>
+      </div>
+
+    </div>
+
+    <script type="module" src="./sabh.js"></script>
+  </body>
+</html>

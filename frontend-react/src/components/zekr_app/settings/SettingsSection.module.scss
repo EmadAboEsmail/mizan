@@ -1,0 +1,32 @@
+@use '../../styles/variables' as *;
+
+.section {
+  padding: 16px;
+  background-color: $bg-display-light;
+  border: 1px solid $border-light;
+  border-radius: $border-radius;
+
+  :global(body.dark) & {
+    background-color: $bg-display-dark;
+    border-color: $border-dark;
+  }
+}
+
+.title {
+  font-size: 1rem;
+  margin-bottom: 12px;
+  color: $text-light;
+  border-bottom: 1px solid $border-light;
+  padding-bottom: 8px;
+
+  :global(body.dark) & {
+    color: $text-dark;
+    border-color: $border-dark;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

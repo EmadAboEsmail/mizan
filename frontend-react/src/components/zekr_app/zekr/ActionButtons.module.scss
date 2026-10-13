@@ -1,0 +1,115 @@
+@use '../../styles/variables' as *;
+
+.buttons {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: $gap;
+}
+
+.reset {
+  width: min(20vw, 60px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background-color: $bg-btn-light;
+  color: $text-light;
+  border: 1px solid $border-light;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform $transition, background-color $transition;
+
+  :global(body.dark) & {
+    background-color: $bg-btn-dark;
+    border-color: $border-dark;
+    color: $text-dark;
+  }
+
+  &:hover {
+    background-color: $bg-btn-hover-light;
+
+    :global(body.dark) & {
+      background-color: $bg-btn-hover-dark;
+    }
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
+.click {
+  /* المتغيرات */
+  --ring-color: #{$text-light};
+  --ring-bg: #ddd;
+
+  width: min(60vw, 220px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $text-light;
+  font-size: 1.5rem;
+  cursor: pointer;
+
+  background: conic-gradient(
+    var(--ring-color) var(--progress),
+    var(--ring-bg) var(--progress)
+  );
+
+  :global(body.dark) & {
+    --ring-color: #{$text-dark};
+    --ring-bg: #444;
+    color: $text-dark;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 9px;
+    background: $bg-btn-light;
+    border-radius: 50%;
+    z-index: 0;
+    transition: background-color $transition;
+
+    :global(body.dark) & {
+      background: $bg-btn-dark;
+    }
+  }
+
+  &:hover::before {
+    background: $bg-btn-hover-light;
+
+    :global(body.dark) & {
+      background: $bg-btn-hover-dark;
+    }
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* ✅ بدل ما نغيّر الـ background، نغيّر المتغيرات بس */
+.complete {
+  --ring-color: #4caf50;
+  --ring-bg: #4caf50;
+
+  :global(body.dark) & {
+    --ring-color: #66bb6a;
+    --ring-bg: #66bb6a;
+  }
+}
+
+.clicked {
+  animation: pulse 0.15s ease;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}

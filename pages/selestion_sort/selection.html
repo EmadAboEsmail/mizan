@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>محاكاة مرئية لـ Selection Sort</title>
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle at 50% 0%, #1e293b, #0b1220 70%);
+    font-family: "Segoe UI", Tahoma, system-ui, sans-serif;
+    color: #e2e8f0;
+    padding: 20px;
+  }
+
+  .app { width: min(900px, 100%); }
+
+  h1 {
+    text-align: center;
+    font-size: 1.6rem;
+    margin: 0 0 6px;
+    background: linear-gradient(90deg, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .sub {
+    text-align: center;
+    margin: 0 0 22px;
+    color: #94a3b8;
+    font-size: .9rem;
+  }
+
+  /* ===== مسرح العرض ===== */
+  .stage {
+    position: relative;
+    height: 320px;
+    border-radius: 16px;
+    background:
+      linear-gradient(#0f172a, #0f172a) padding-box,
+      linear-gradient(135deg, #334155, #1e293b) border-box;
+    border: 1px solid transparent;
+    box-shadow: inset 0 0 60px rgba(0,0,0,.5);
+    overflow: hidden;
+  }
+
+  .stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(148,163,184,.07) 1px, transparent 1px);
+    background-size: 100% 25%;
+  }
+
+  .bars { position: absolute; inset: 0; }
+
+  /* فاصل الجزء المرتب عن غير المرتب */
+  .divider {
+    position: absolute;
+    top: 8px; bottom: 0;
+    width: 2px;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(110,231,183,.7) 0 6px,
+      transparent 6px 12px
+    );
+    transition: left .3s ease;
+    pointer-events: none;
+  }
+
+  /* ===== العمود ===== */
+  .bar {
+    position: absolute;
+    bottom: 0;
+    border-radius: 8px 8px 0 0;
+    background: linear-gradient(180deg, #a78bfa, #7c3aed);
+    box-shadow: 0 -2px 12px rgba(124,58,237,.4);
+    transition: left .25s cubic-bezier(.4,0,.2,1),
+                background .2s ease,
+                box-shadow .2s ease,
+                transform .2s ease;
+  }
+
+  .bar .value {
+    position: absolute;
+    bottom: 7px;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,.6);
+  }
+
+  /* الحالات اللونية */
+  .bar.current {
+    background: linear-gradient(180deg, #fcd34d, #f59e0b);
+    box-shadow: 0 -2px 18px rgba(245,158,11,.6);
+  }
+  .bar.scan {
+    background: linear-gradient(180deg, #93c5fd, #3b82f6);
+    box-shadow: 0 -2px 12px rgba(59,130,246,.45);
+  }
+  .bar.min {
+    background: linear-gradient(180deg, #f472b6, #db2777);
+    box-shadow: 0 -2px 22px rgba(219,39,119,.8);
+    transform: scaleY(1.03);
+    transform-origin: bottom;
+  }
+  .bar.swap {
+    background: linear-gradient(180deg, #fb7185, #e11d48);
+    box-shadow: 0 -2px 22px rgba(225,29,72,.75);
+  }
+  .bar.sorted {
+    background: linear-gradient(180deg, #6ee7b7, #059669);
+    box-shadow: 0 -2px 16px rgba(5,150,105,.5);
+  }
+
+  /* ===== شريط الحالة ===== */
+  .status {
+    margin: 14px 0;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    text-align: center;
+    font-size: .95rem;
+    font-weight: 600;
+    color: #cbd5e1;
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color .2s, color .2s;
+  }
+  .status.current { border-color: #f59e0b; color: #fcd34d; }
+  .status.scan    { border-color: #3b82f6; color: #93c5fd; }
+  .status.min     { border-color: #db2777; color: #f9a8d4; }
+  .status.swap    { border-color: #e11d48; color: #fda4af; }
+  .status.pass    { border-color: #059669; color: #6ee7b7; }
+  .status.done    { border-color: #059669; color: #6ee7b7; background: #052e21; }
+
+  /* ===== الأزرار ===== */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  button {
+    font-family: inherit;
+    font-size: .9rem;
+    font-weight: 700;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1px solid #334155;
+    background: #1e293b;
+    color: #e2e8f0;
+    cursor: pointer;
+    transition: .15s;
+  }
+  button:hover:not(:disabled) {
+    background: #334155;
+    transform: translateY(-1px);
+  }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+
+  #playBtn {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    border-color: #8b5cf6;
+  }
+  #playBtn:hover:not(:disabled) { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+
+  .speed {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .85rem;
+    color: #94a3b8;
+    padding: 0 8px;
+  }
+  input[type=range] { accent-color: #8b5cf6; width: 110px; }
+
+  /* ===== دليل الألوان ===== */
+  .legend {
+    margin-top: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    font-size: .8rem;
+    color: #94a3b8;
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .dot {
+    width: 12px; height: 12px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+  .dot.default { background: linear-gradient(180deg,#a78bfa,#7c3aed); }
+  .dot.current { background: linear-gradient(180deg,#fcd34d,#f59e0b); }
+  .dot.scan    { background: linear-gradient(180deg,#93c5fd,#3b82f6); }
+  .dot.min     { background: linear-gradient(180deg,#f472b6,#db2777); }
+  .dot.swap    { background: linear-gradient(180deg,#fb7185,#e11d48); }
+  .dot.sorted  { background: linear-gradient(180deg,#6ee7b7,#059669); }
+
+  @media (max-width: 560px) {
+    .stage { height: 240px; }
+    .bar .value { font-size: 11px; bottom: 4px; }
+    button { padding: 8px 12px; font-size: .8rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <h1>محاكاة Selection Sort</h1>
+  <p class="sub">ابحث عن الأصغر في الجزء غير المرتب، ثم ضعه في مكانه الصحيح</p>
+
+  <div class="stage">
+    <div class="bars" id="bars"></div>
+    <div class="divider" id="divider" style="left: 0"></div>
+  </div>
+
+  <div class="status" id="status">اضغط «تشغيل» أو «خطوة» للبدء</div>
+
+  <div class="controls">
+    <button id="playBtn">▶ تشغيل</button>
+    <button id="stepBtn">خطوة ▸</button>
+    <button id="resetBtn">↺ إعادة</button>
+    <button id="newBtn">🎲 مصفوفة جديدة</button>
+    <label class="speed">السرعة
+      <input type="range" id="speed" min="1" max="10" value="5">
+    </label>
+  </div>
+
+  <div class="legend">
+    <span><i class="dot current"></i> الموضع الحالي</span>
+    <span><i class="dot scan"></i> نمسح بحثًا عن الأصغر</span>
+    <span><i class="dot min"></i> أصغر عنصر حتى الآن</span>
+    <span><i class="dot swap"></i> تبديل</span>
+    <span><i class="dot sorted"></i> مرتب</span>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   1) مُولِّد الخطوات لـ Selection Sort
+   ============================================================ */
+function* selectionSortSteps(arr) {
+  const a = [...arr];
+  const n = a.length;
+
+  for (let i = 0; i < n - 1; i++) {
+    // بداية دورة جديدة: الموضع i هو أصغر عنصر مؤقتًا
+    let minIdx = i;
+
+    yield {
+      type: 'current',
+      indices: [i],
+      minIdx,
+      sortedCount: i,
+      msg: `الدورة ${i + 1}: ابدأ من الموضع ${i}، أصغر عنصر مؤقتًا = ${a[i]}`
+    };
+
+    // ابحث عن الأصغر في الجزء غير المرتب
+    for (let j = i + 1; j < n; j++) {
+      yield {
+        type: 'scan',
+        indices: [j],
+        minIdx,
+        sortedCount: i,
+        msg: `قارن ${a[j]} مع الأصغر الحالي ${a[minIdx]}`
+      };
+
+      if (a[j] < a[minIdx]) {
+        minIdx = j;
+        yield {
+          type: 'min',
+          indices: [j],
+          minIdx,
+          sortedCount: i,
+          msg: `🎯 وجدنا أصغر جديد: ${a[j]} في الموضع ${j}`
+        };
+      }
+    }
+
+    // بدّل فقط إذا كان الأصغر ليس في مكانه بالفعل
+    if (minIdx !== i) {
+      const x = a[i], y = a[minIdx];
+      a[i] = y; a[minIdx] = x;
+
+      yield {
+        type: 'swap',
+        indices: [i, minIdx],
+        minIdx: -1,
+        sortedCount: i,
+        msg: `تبديل ${x} ↔ ${y} → ${y} استقر في الموضع ${i}`
+      };
+    } else {
+      yield {
+        type: 'pass',
+        indices: [i],
+        minIdx: -1,
+        sortedCount: i + 1,
+        msg: `✔ ${a[i]} في مكانه الصحيح بالفعل`
+      };
+    }
+  }
+
+  // انتهاء: العنصر الأخير مرتب ضمنًا
+  yield {
+    type: 'done',
+    indices: null,
+    sortedCount: n,
+    msg: '🎉 اكتمل الترتيب!'
+  };
+}
+
+/* ============================================================
+   2) حالة التطبيق
+   ============================================================ */
+const barsEl   = document.getElementById('bars');
+const divider  = document.getElementById('divider');
+const statusEl = document.getElementById('status');
+const playBtn  = document.getElementById('playBtn');
+const stepBtn  = document.getElementById('stepBtn');
+const resetBtn = document.getElementById('resetBtn');
+const newBtn   = document.getElementById('newBtn');
+const speedEl  = document.getElementById('speed');
+
+let els = [];
+let iterator = null;
+let playing = false;
+let timerId = null;
+let baseArray = [];
+
+/* ============================================================
+   3) بناء الأعمدة
+   ============================================================ */
+function buildBars(arr) {
+  barsEl.innerHTML = '';
+  els = [];
+
+  const n = arr.length;
+  const maxV = Math.max(...arr);
+  const stepPct = 100 / n;
+
+  arr.forEach((v, i) => {
+    const el = document.createElement('div');
+    el.className = 'bar';
+    el.style.width  = `calc(${stepPct}% - 8px)`;
+    el.style.left   = `calc(${i * stepPct}% + 4px)`;
+    el.style.height = (v / maxV * 100) + '%';
+    el.innerHTML = `<span class="value">${v}</span>`;
+    barsEl.appendChild(el);
+    els.push(el);
+  });
+
+  updateDivider(0);
+}
+
+function updateLeft(i) {
+  const stepPct = 100 / els.length;
+  els[i].style.left = `calc(${i * stepPct}% + 4px)`;
+}
+
+function updateDivider(sortedCount) {
+  const stepPct = 100 / els.length;
+  divider.style.left = `calc(${sortedCount * stepPct}% - 1px)`;
+}
+
+/* ============================================================
+   4) تطبيق خطوة على الشاشة
+   ============================================================ */
+function applyStep(s) {
+  // (أ) التبديل في الـ DOM
+  if (s.type === 'swap') {
+    const [a, b] = s.indices;
+    [els[a], els[b]] = [els[b], els[a]];
+    updateLeft(a);
+    updateLeft(b);
+  }
+
+  // (ب) إعادة التلوين
+  const n = els.length;
+  const sortedCount = s.type === 'done' ? n : (s.sortedCount || 0);
+  const sortedFrom = n - sortedCount; // لا نستخدمها هنا لأن المرتب في البداية
+
+  els.forEach(el => el.classList.remove('current', 'scan', 'min', 'swap'));
+
+  // الجزء المرتب في البداية أخضر
+  els.forEach((el, i) => {
+    el.classList.toggle('sorted', i < sortedCount);
+  });
+
+  // الموضع الحالي (i) أصفر
+  if (s.type === 'current' && s.indices) {
+    els[s.indices[0]].classList.add('current');
+  }
+
+  // العنصر الذي نمسحه الآن أزرق
+  if (s.type === 'scan' && s.indices) {
+    els[s.indices[0]].classList.add('scan');
+  }
+
+  // أصغر عنصر حتى الآن وردي (يُلوَّن فوق الأزرق إذا لزم)
+  if (s.minIdx !== undefined && s.minIdx >= 0) {
+    els[s.minIdx].classList.remove('scan');
+    els[s.minIdx].classList.add('min');
+  }
+
+  // التبديل أحمر
+  if (s.type === 'swap' && s.indices) {
+    els[s.indices[0]].classList.add('swap');
+    els[s.indices[1]].classList.add('swap');
+  }
+
+  // الفاصل يتحرك مع الجزء المرتب
+  updateDivider(sortedCount);
+
+  // نص الحالة
+  statusEl.textContent = s.msg || '';
+  statusEl.className = 'status ' + s.type;
+}
+
+/* ============================================================
+   5) التحكم
+   ============================================================ */
+function delay() {
+  return 1400 - Number(speedEl.value) * 120;
+}
+
+function stepOnce() {
+  if (!iterator) return true;
+
+  const { value, done } = iterator.next();
+
+  if (done) {
+    els.forEach(el => {
+      el.classList.remove('current', 'scan', 'min', 'swap');
+      el.classList.add('sorted');
+    });
+    updateDivider(els.length);
+    statusEl.textContent = '🎉 اكتمل الترتيب!';
+    statusEl.className = 'status done';
+    iterator = null;
+    return true;
+  }
+
+  applyStep(value);
+
+  if (value.type === 'done') {
+    iterator = null;
+    return true;
+  }
+  return false;
+}
+
+function tick() {
+  if (!playing) return;
+  const finished = stepOnce();
+  if (finished) { stop(); return; }
+  timerId = setTimeout(tick, delay());
+}
+
+function play() {
+  if (playing) return;
+  if (!iterator) reset();
+  playing = true;
+  playBtn.textContent = '⏸ إيقاف';
+  tick();
+}
+
+function stop() {
+  playing = false;
+  clearTimeout(timerId);
+  playBtn.textContent = '▶ تشغيل';
+}
+
+/* ============================================================
+   6) الإعداد وإعادة الضبط
+   ============================================================ */
+function randomArray(n = 8) {
+  return Array.from({ length: n }, () => Math.floor(Math.random() * 53) + 8);
+}
+
+function reset(newArray = false) {
+  stop();
+  if (newArray || baseArray.length === 0) baseArray = randomArray();
+
+  buildBars(baseArray);
+  iterator = selectionSortSteps(baseArray);
+
+  statusEl.textContent = 'اضغط «تشغيل» أو «خطوة» للبدء';
+  statusEl.className = 'status';
+}
+
+/* ============================================================
+   7) الأحداث
+   ============================================================ */
+playBtn.addEventListener('click', () => playing ? stop() : play());
+stepBtn.addEventListener('click', () => { stop(); stepOnce(); });
+resetBtn.addEventListener('click', () => reset(false));
+newBtn.addEventListener('click',   () => reset(true));
+
+speedEl.addEventListener('input', () => {
+  if (playing) { clearTimeout(timerId); timerId = setTimeout(tick, delay()); }
+});
+
+reset(true);
+</script>
+</body>
+</html>

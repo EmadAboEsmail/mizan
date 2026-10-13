@@ -1,0 +1,98 @@
+@use '../../styles/variables' as *;
+
+.list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: $bg-btn-light;
+  border-radius: calc(#{$border-radius} - 2px);
+  gap: 8px;
+
+  :global(body.dark) & {
+    background-color: $bg-btn-dark;
+  }
+}
+
+.text {
+  flex: 1;
+  font-size: 0.95rem;
+  color: $text-display-light;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 4px;
+}
+
+.action {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color $transition;
+
+  &:hover {
+    background-color: $bg-btn-hover-light;
+
+    :global(body.dark) & {
+      background-color: $bg-btn-hover-dark;
+    }
+  }
+}
+
+.danger:hover {
+  background-color: #ffcdd2;
+
+  :global(body.dark) & {
+    background-color: #5a2424;
+  }
+}
+
+.addBtn {
+  width: 100%;
+  padding: 10px;
+  font-size: 0.95rem;
+  font-family: $font-main;
+  background-color: $text-light;
+  color: white;
+  border: none;
+  border-radius: $border-radius;
+  cursor: pointer;
+  transition: opacity $transition, transform $transition;
+
+  :global(body.dark) & {
+    background-color: $text-dark;
+    color: #111;
+  }
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}

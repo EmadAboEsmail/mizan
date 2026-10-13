@@ -1,0 +1,129 @@
+@use '../../styles/variables' as *;
+
+.wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.trigger {
+  width: 100%;
+  padding: 12px $padding;
+  font-size: 1rem;
+  font-family: $font-main;
+  background-color: $bg-btn-light;
+  border: 1px solid $border-light;
+  border-radius: $border-radius;
+  color: $text-display-light;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  transition: background-color $transition, border-color $transition;
+
+  :global(body.dark) & {
+    background-color: $bg-btn-dark;
+    border-color: $border-dark;
+    color: $text-display-dark;
+  }
+
+  &:hover {
+    background-color: $bg-btn-hover-light;
+
+    :global(body.dark) & {
+      background-color: $bg-btn-hover-dark;
+    }
+  }
+}
+
+.open {
+  border-color: $text-light;
+
+  :global(body.dark) & {
+    border-color: $text-dark;
+  }
+}
+
+.label {
+  flex: 1;
+  text-align: right;
+}
+
+.arrow {
+  transition: transform $transition;
+  font-size: 0.8rem;
+}
+
+.open .arrow {
+  transform: rotate(180deg);
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  background-color: $bg-display-light;
+  border: 1px solid $border-light;
+  border-radius: $border-radius;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  list-style: none;
+  padding: 4px;
+  animation: slideDown 0.15s ease;
+
+  :global(body.dark) & {
+    background-color: $bg-display-dark;
+    border-color: $border-dark;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.item {
+  padding: 10px $padding;
+  cursor: pointer;
+  border-radius: calc(#{$border-radius} - 4px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color $transition;
+  color: $text-display-light;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+
+  &:hover {
+    background-color: $bg-btn-hover-light;
+
+    :global(body.dark) & {
+      background-color: $bg-btn-hover-dark;
+    }
+  }
+}
+
+.selected {
+  color: $text-light;
+  font-weight: bold;
+
+  :global(body.dark) & {
+    color: $text-dark;
+  }
+}
+
+.check {
+  font-size: 0.9rem;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

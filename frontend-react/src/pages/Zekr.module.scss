@@ -1,0 +1,85 @@
+@use '../styles/variables' as *;
+
+.zekr {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: $padding;
+  padding-top: 80px;   // مساحة لزر الرجوع
+  position: relative;
+}
+.container {
+  width: 100%;
+  max-width: 650px;
+  min-height: 60vh;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;   // ← مهم!
+  gap: $gap;
+  background-color: $bg-container-light;
+  border: 1px solid $border-light;
+  border-radius: $border-radius;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: $padding;
+
+  :global(body.dark) & {
+    background-color: $bg-container-dark;
+    border-color: $border-dark;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+}
+.back {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 8px 16px;
+  background-color: $bg-btn-light;
+  color: $text-light;
+  border: 1px solid $border-light;
+  border-radius: $border-radius;
+  font-size: 0.9rem;
+  transition: background-color $transition;
+
+  :global(body.dark) & {
+    background-color: $bg-btn-dark;
+    color: $text-dark;
+    border-color: $border-dark;
+  }
+
+  &:hover {
+    background-color: $bg-btn-hover-light;
+
+    :global(body.dark) & {
+      background-color: $bg-btn-hover-dark;
+    }
+  }
+}
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: $gap;
+}
+.message {
+  text-align: center;
+  font-size: 1.2rem;
+  color: $text-display-light;
+  padding: 40px;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+.placeholder {
+  text-align: center;
+  color: $text-display-light;
+  opacity: 0.7;
+  padding: 40px;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}

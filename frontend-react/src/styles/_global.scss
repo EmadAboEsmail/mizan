@@ -1,0 +1,35 @@
+@use 'variables' as *;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html,
+body,
+#root {
+  direction: rtl;
+  text-align: right;min-height: 100vh;
+  padding-right: 5px;
+}
+
+body {
+  font-family: $font-main;
+  background-color: $bg-page-light;
+  color: $text-display-light;
+  transition: background-color $transition, color $transition;
+}
+
+body.dark {
+  background-color: $bg-page-dark;
+  color: $text-display-dark;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+}

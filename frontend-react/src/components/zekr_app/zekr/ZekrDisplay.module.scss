@@ -1,0 +1,63 @@
+@use '../../styles/variables' as *;
+
+.display {
+  min-height: 70px;
+  background-color: $bg-display-light;
+  border: 1px solid $border-light;
+  border-radius: $border-radius;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $padding;
+  gap: 4px;
+
+  :global(body.dark) & {
+    background-color: $bg-display-dark;
+    border-color: $border-dark;
+  }
+}
+
+.text {
+  font-size: 1rem;
+  color: $text-display-light;
+  opacity: 0.7;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+.count {
+  font-size: clamp(2rem, 8vw, 3rem);
+  color: $text-display-light;
+  cursor: pointer;
+  user-select: none;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+
+  &:hover {
+    color: $text-light;
+
+    :global(body.dark) & {
+      color: $text-dark;
+    }
+  }
+}
+.complete {
+  color: #4caf50 !important;
+
+  :global(body.dark) & {
+    color: #66bb6a !important;
+  }
+
+  &:hover {
+    color: #388e3c !important;
+
+    :global(body.dark) & {
+      color: #81c784 !important;
+    }
+  }
+}

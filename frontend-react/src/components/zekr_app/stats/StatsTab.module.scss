@@ -1,0 +1,115 @@
+@use '../../styles/variables' as *;
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: $gap;
+  padding: $padding 0;
+}
+
+.message {
+  text-align: center;
+  padding: 40px;
+  color: $text-display-light;
+  opacity: 0.7;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+.total {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 8px;
+  padding: 12px;
+  background-color: $bg-display-light;
+  border: 1px solid $border-light;
+  border-radius: $border-radius;
+
+  :global(body.dark) & {
+    background-color: $bg-display-dark;
+    border-color: $border-dark;
+  }
+}
+
+.totalLabel {
+  font-size: 0.95rem;
+  color: $text-display-light;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+.totalValue {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: $text-light;
+
+  :global(body.dark) & {
+    color: $text-dark;
+  }
+}
+.breakdown {
+  margin-top: 8px;
+  padding: 12px;
+  background-color: $bg-display-light;
+  border: 1px solid $border-light;
+  border-radius: $border-radius;
+
+  :global(body.dark) & {
+    background-color: $bg-display-dark;
+    border-color: $border-dark;
+  }
+}
+
+.breakdownTitle {
+  font-size: 1rem;
+  margin-bottom: 12px;
+  text-align: center;
+  color: $text-light;
+
+  :global(body.dark) & {
+    color: $text-dark;
+  }
+}
+
+.breakdownList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.breakdownItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: $bg-btn-light;
+  border-radius: calc(#{$border-radius} - 2px);
+  font-size: 0.95rem;
+
+  :global(body.dark) & {
+    background-color: $bg-btn-dark;
+  }
+}
+
+.breakdownText {
+  color: $text-display-light;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+.breakdownCount {
+  font-weight: bold;
+  color: $text-light;
+
+  :global(body.dark) & {
+    color: $text-dark;
+  }
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "id": "subhan_allah",
+    "text": "سبحان الله",
+    "target": 33
+  },
+  {
+    "id": "alhamdulillah",
+    "text": "الحمد لله",
+    "target": 33
+  },
+  {
+    "id": "allahu_akbar",
+    "text": "الله أكبر",
+    "target": 33
+  },
+  {
+    "id": "la_ilaha_illa_allah",
+    "text": "لا إله إلا الله",
+    "target": 100
+  },
+  {
+    "id": "astaghfirullah",
+    "text": "أستغفر الله",
+    "target": 100
+  },
+  {
+    "id": "subhan_allah_wa_bihamdih",
+    "text": "سبحان الله وبحمده",
+    "target": 100
+  },
+  {
+    "id": "la_hawla_wala_quwwata",
+    "text": "لا حول ولا قوة إلا بالله",
+    "target": 100
+  }
+]

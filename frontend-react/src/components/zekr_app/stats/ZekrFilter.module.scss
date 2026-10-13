@@ -1,0 +1,45 @@
+@use '../../styles/variables' as *;
+
+.filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.item {
+  padding: 6px 12px;
+  background-color: $bg-btn-light;
+  border: 1px solid $border-light;
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: $font-main;
+  font-size: 0.85rem;
+  color: $text-display-light;
+  transition: background-color $transition, color $transition;
+
+  :global(body.dark) & {
+    background-color: $bg-btn-dark;
+    border-color: $border-dark;
+    color: $text-display-dark;
+  }
+
+  &:hover:not(.active) {
+    background-color: $bg-btn-hover-light;
+
+    :global(body.dark) & {
+      background-color: $bg-btn-hover-dark;
+    }
+  }
+}
+
+.active {
+  background-color: $text-light;
+  color: white;
+  border-color: $text-light;
+
+  :global(body.dark) & {
+    background-color: $text-dark;
+    color: #111;
+    border-color: $text-dark;
+  }
+}

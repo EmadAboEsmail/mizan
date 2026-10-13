@@ -1,0 +1,268 @@
+/* ===========================
+   1. Reset
+   =========================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+
+/* ===========================
+   2. Theme Variables
+   =========================== */
+:root {
+  /* الألوان */
+  --bg-page: #eaeaea;
+  --bg-container: palegoldenrod;
+  --bg-display: papayawhip;
+  --bg-btn: oldlace;
+  --bg-btn-hover: #f5e6c8;
+
+  /* النصوص */
+  --text-color: darkcyan;
+  --text-color-display: #333;
+
+  /* الحدود */
+  --border-color: #333;
+  --border-radius: 10px;
+
+  /* المسافات */
+  --gap: 10px;
+  --padding: 15px;
+
+  /* الظلال */
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  /* الخطوط */
+  --font-main: system-ui, sans-serif;
+  --font-display: clamp(2rem, 8vw, 3rem);
+  --font-btn: clamp(1.5rem, 5vw, 2rem);
+
+  /* الحركة */
+  --transition: 0.2s ease;
+
+  /* شريط التقدم */
+  --progress-color: darkcyan;
+  --ring-bg: #ddd;
+  --progress: 0%;
+}
+
+body.dark {
+  --bg-page: #1a1a1a;
+  --bg-container: #2a2a2a;
+  --bg-display: #111;
+  --bg-btn: #333;
+  --bg-btn-hover: #444;
+
+  --text-color: #4dd0e1;
+  --text-color-display: #eee;
+
+  --border-color: #555;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+
+  --progress-color: #4dd0e1;
+  --ring-bg: #444;
+}
+
+
+/* ===========================
+   3. Base
+   =========================== */
+body {
+  background-color: var(--bg-page);
+  font-family: var(--font-main);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: var(--padding);
+  transition: background-color var(--transition);
+}
+
+
+/* ===========================
+   4. Layout
+   =========================== */
+.container {
+  width: 100%;
+  max-width: 650px;
+  min-height: 60vh;
+  max-height: 90vh;
+  background-color: var(--bg-container);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  padding: var(--padding);
+  gap: var(--gap);
+  transition: background-color var(--transition);
+}
+
+
+/* ===========================
+   5. Components
+   =========================== */
+
+/* شاشة العرض */
+.display {
+  min-height: 70px;
+  background-color: var(--bg-display);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: var(--font-display);
+  color: var(--text-color-display);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-right: var(--padding);
+  transition: all var(--transition);
+}
+
+/* صف الأزرار */
+.buttons {
+  display: flex;
+  justify-content: space-around;
+  gap: var(--gap);
+}
+
+/* الأزرار العامة */
+button {
+  background-color: var(--bg-btn);
+  color: var(--text-color);
+  font-size: var(--font-btn);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: transform var(--transition), background-color var(--transition);
+}
+
+button:hover {
+  background-color: var(--bg-btn-hover);
+  transform: scale(0.95);
+}
+
+button:active {
+  transform: scale(0.9);
+}
+
+/* زر "سبح" + شريط التقدم الدائري */
+#button-click {
+  width: min(60vw, 220px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: none;
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  font-size: var(--font-btn);
+  background: conic-gradient(
+    var(--progress-color) var(--progress),
+    var(--ring-bg) var(--progress)
+  );
+}
+
+#button-click::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  background: var(--bg-btn);
+  border-radius: 50%;
+  z-index: 0;
+  transition: background-color var(--transition);
+}
+
+#button-click:hover::before {
+  background: var(--bg-btn-hover);
+}
+
+/* تأثير النبضة عند الضغط */
+@keyframes pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+#button-click.clicked {
+  animation: pulse 0.15s ease;
+}
+
+/* زر "مسح" */
+#button-reset {
+  width: min(20vw, 60px);
+  height: min(20vh,60px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+
+/* زر تبديل الثيم */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  padding: 10px 15px;
+  font-size: 20px;
+  flex: none;
+}
+/* ===========================
+   Tabs
+   =========================== */
+.tabs {
+  display: flex;
+  gap: 4px;
+  background-color: var(--bg-display);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 4px;
+}
+
+.tab {
+  flex: 1;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  border-radius: calc(var(--border-radius) - 2px);
+  cursor: pointer;
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+  color: var(--text-color-display);
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.tab.active {
+  background-color: var(--bg-btn);
+  color: var(--text-color);
+}
+
+.tab:hover:not(.active) {
+  background-color: var(--bg-btn-hover);
+}
+
+.tab-content {
+  display: none;
+  flex-direction: column;
+  gap: var(--gap);
+  flex: 1;
+}
+
+.tab-content.active {
+  display: flex;
+}
+
+/* ===========================
+   6. Responsive
+   =========================== */
+@media (max-width: 400px) {
+  :root {
+    --padding: 10px;
+    --gap: 8px;
+  }
+}

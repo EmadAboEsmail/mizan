@@ -1,0 +1,69 @@
+@use '../styles/variables' as *;
+
+.home {
+  min-height: 100vh;
+  padding: 80px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.header {
+  text-align: center;
+  animation: fadeIn 0.5s ease;
+}
+
+.title {
+  font-size: clamp(2rem, 6vw, 3.2rem);
+  margin-bottom: 10px;
+  color: $text-light;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+
+  :global(body.dark) & {
+    color: $text-dark;
+  }
+}
+
+.subtitle {
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  color: $text-display-light;
+  opacity: 0.65;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  flex: 1;
+}
+
+.footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: $text-display-light;
+  opacity: 0.5;
+  padding-top: 20px;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

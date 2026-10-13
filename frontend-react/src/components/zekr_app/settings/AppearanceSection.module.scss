@@ -1,0 +1,53 @@
+@use '../../styles/variables' as *;
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 0.95rem;
+}
+
+.label {
+  color: $text-display-light;
+  opacity: 0.7;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+.value {
+  color: $text-display-light;
+  font-weight: bold;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+.toggleBtn {
+  margin-top: 8px;
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  font-family: $font-main;
+  background-color: $text-light;
+  color: white;
+  border: none;
+  border-radius: $border-radius;
+  cursor: pointer;
+  transition: opacity $transition, transform $transition;
+
+  :global(body.dark) & {
+    background-color: $text-dark;
+    color: #111;
+  }
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}

@@ -1,0 +1,116 @@
+@use '../styles/variables' as *;
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 20px;
+  border-radius: $border-radius;
+  background-color: $bg-container-light;
+  border: 1px solid $border-light;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform $transition, box-shadow $transition,
+    border-color $transition;
+  animation: cardIn 0.4s ease backwards;
+  overflow: hidden;
+
+  :global(body.dark) & {
+    background-color: $bg-container-dark;
+    border-color: $border-dark;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+    border-color: $text-light;
+
+    :global(body.dark) & {
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+      border-color: $text-dark;
+    }
+
+    .icon {
+      transform: scale(1.15) rotate(-6deg);
+    }
+  }
+}
+
+.disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+
+  &:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border-color: $border-light;
+
+    :global(body.dark) & {
+      border-color: $border-dark;
+    }
+
+    .icon {
+      transform: none;
+    }
+  }
+}
+
+.icon {
+  font-size: 3.5rem;
+  margin-bottom: 16px;
+  transition: transform 0.3s ease;
+  display: block;
+  line-height: 1;
+}
+
+.name {
+  font-size: 1.4rem;
+  margin-bottom: 8px;
+  color: $text-light;
+  font-weight: 700;
+
+  :global(body.dark) & {
+    color: $text-dark;
+  }
+}
+
+.desc {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: $text-display-light;
+  opacity: 0.75;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+.badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 3px 10px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  background-color: $text-light;
+  color: white;
+  border-radius: 20px;
+
+  :global(body.dark) & {
+    background-color: $text-dark;
+    color: #111;
+  }
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
