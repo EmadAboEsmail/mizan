@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import Modal from '../ui/Modal.jsx'
+import Modal from '@/components/ui/Modal.jsx'
 import styles from './AdhkarFormModal.module.scss'
 
 function AdhkarFormModal({ isOpen, onClose, onConfirm, initial = null }) {

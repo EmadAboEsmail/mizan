@@ -1,32 +1,32 @@
-import AppCard from '../components/AppCard.jsx'
-import styles from './Home.module.scss'
+import AppCard from "@/components/AppCard.jsx";
+import styles from "./Home.module.scss";
 
 const APPS = [
   {
-    id: 'zekr',
-    name: 'ذِكر',
-    description: 'سبحة إلكترونية بأذكار متنوعة وإحصائيات',
-    path: '/zekr',
-    icon: '📿',
+    id: "zekr",
+    name: "ذِكر",
+    description: "سبحة إلكترونية بأذكار متنوعة وإحصائيات",
+    path: "/zekr",
+    icon: "📿",
     available: true,
   },
   {
-    id: 'bubble-sort',
-    name: 'ترتيب الفقاعات',
-    description: 'تصور بصري لخوارزمية Bubble Sort',
-    path: '/bubble-sort',
-    icon: '🔢',
+    id: "bubble-sort",
+    name: "ترتيب الفقاعات",
+    description: "تصور بصري لخوارزمية Bubble Sort",
+    path: "/bubble-sort",
+    icon: "🔢",
     available: false,
   },
   {
-    id: 'selection-sort',
-    name: 'ترتيب الاختيار',
-    description: 'تصور بصري لخوارزمية Selection Sort',
-    path: '/selection-sort',
-    icon: '📊',
+    id: "selection-sort",
+    name: "ترتيب الاختيار",
+    description: "تصور بصري لخوارزمية Selection Sort",
+    path: "/selection-sort",
+    icon: "📊",
     available: false,
   },
-]
+];
 
 function Home() {
   return (
@@ -46,7 +46,7 @@ function Home() {
         <span>صُنع بـ 💛</span>
       </footer>
     </div>
-  )
+  );
 }
 
-export default Home
+export default Home;

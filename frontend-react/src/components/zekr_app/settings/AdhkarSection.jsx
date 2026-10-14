@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import SettingsSection from './SettingsSection.jsx'
 import AdhkarFormModal from './AdhkarFormModal.jsx'
-import ConfirmModal from '../ui/ConfirmModal.jsx'
+import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import styles from './AdhkarSection.module.scss'
 
 function AdhkarSection({

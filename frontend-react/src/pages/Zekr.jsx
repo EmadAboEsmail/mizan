@@ -13,16 +13,16 @@ import {
   createAdhkar,
   updateAdhkar,
   deleteAdhkar
-} from '../api/client.js'
-import Tabs from '../components/zekr/Tabs.jsx'
-import ZekrDisplay from '../components/zekr/ZekrDisplay.jsx'
-import AdhkarSelect from '../components/zekr/AdhkarSelect.jsx'
-import ActionButtons from '../components/zekr/ActionButtons.jsx'
-import PromptModal from '../components/ui/PromptModal.jsx'
+} from '@/api/client.js'
+import Tabs from '@/components/zekr_app/zekr/Tabs.jsx'
+import ZekrDisplay from '@/components/zekr_app/zekr/ZekrDisplay.jsx'
+import AdhkarSelect from '@/components/zekr_app/zekr/AdhkarSelect.jsx'
+import ActionButtons from '@/components/zekr_app/zekr/ActionButtons.jsx'
+import PromptModal from '@/components/ui/PromptModal.jsx'
 import styles from './Zekr.module.scss'
-import ConfirmModal from '../components/ui/ConfirmModal.jsx'
-import StatsTab from '../components/stats/StatsTab.jsx'
-import SettingsTab from '../components/settings/SettingsTab.jsx'
+import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
+import StatsTab from '@/components/zekr_app/stats/StatsTab.jsx'
+import SettingsTab from '@/components/zekr_app/settings/SettingsTab.jsx'
 const TABS = [
   { id: 'sabh', label: 'سبحة' },
   { id: 'stats', label: 'إحصائيات' },
@@ -200,7 +200,7 @@ function Zekr() {
   // حالات التحميل والخطأ
   // ===========================
   if (loading) {
-    return <div className={styles.message}>جاري التحميل...</div>
+    return <div className={styles.message}>جاري التحميل..</div>
   }
 
   if (error) {

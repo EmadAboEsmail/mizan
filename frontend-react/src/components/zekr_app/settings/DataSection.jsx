@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import SettingsSection from './SettingsSection.jsx'
-import ConfirmModal from '../ui/ConfirmModal.jsx'
+import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import styles from './DataSection.module.scss'
 
 function DataSection({ onDeleteCounts, onDeleteTargets, onDeleteClicks, onDeleteAll }) {

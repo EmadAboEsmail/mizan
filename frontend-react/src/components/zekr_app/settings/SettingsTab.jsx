@@ -1,4 +1,3 @@
-import SettingsSection from './SettingsSection.jsx'
 import AboutSection from './AboutSection.jsx'
 import AppearanceSection from './AppearanceSection.jsx'
 import DataSection from './DataSection.jsx'

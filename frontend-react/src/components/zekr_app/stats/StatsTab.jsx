@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getStats } from '../../api/client.js'
+import { getStats } from '@/api/client.js'
 import PeriodTabs from './PeriodTabs.jsx'
 import BarChart from './BarChart.jsx'
 import ZekrFilter from './ZekrFilter.jsx'
