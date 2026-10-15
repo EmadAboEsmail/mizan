@@ -6,10 +6,13 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from database import Base, engine
 import models
-from models import Adhkar, Click, Target, Count
+from models import Adhkar, Click, Count, Target, Group, GroupItem
 from schemas import (
     AdhkarResponse, ClickRequest, ClickResponse,
-    TargetRequest, OkResponse,AdhkarCreate
+    TargetRequest, OkResponse,
+    GroupCreate, GroupUpdate,
+    GroupItemCreate, GroupItemUpdate,
+    GroupItemResponse, GroupResponse,AdhkarCreate
 )
 from dependencies import get_db
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,7 +31,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 Base.metadata.create_all(bind=engine)
-
 
 @app.get("/")
 def read_root():
@@ -323,3 +325,197 @@ def delete_adhkar(zekr_id: str, db: Session = Depends(get_db)):
     db.delete(zekr)
     db.commit()
     return {"ok": True}
+
+
+# ===========================
+# المجموعات
+# ===========================
+
+def build_group_response(group: Group, db: Session) -> dict:
+    """يبني الرد الكامل للمجموعة"""
+    items = (
+        db.query(GroupItem)
+        .filter(GroupItem.group_id == group.id)
+        .order_by(GroupItem.position)
+        .all()
+    )
+
+    items_response = []
+    for item in items:
+        zekr = db.get(Adhkar, item.zekr_id)
+        items_response.append({
+            "id": item.id,
+            "zekr_id": item.zekr_id,
+            "text": zekr.text if zekr else item.zekr_id,
+            "position": item.position,
+            "target": item.target,
+            "default_target": zekr.default_target if zekr else None,
+        })
+
+    return {
+        "id": group.id,
+        "name": group.name,
+        "description": group.description,
+        "created_at": group.created_at,
+        "items": items_response,
+    }
+
+
+@app.get("/api/groups", response_model=list[GroupResponse])
+def get_groups(db: Session = Depends(get_db)):
+    groups = db.query(Group).order_by(Group.created_at.desc()).all()
+    return [build_group_response(g, db) for g in groups]
+@app.get("/api/groups/{group_id}", response_model=GroupResponse)
+def get_group(group_id: str, db: Session = Depends(get_db)):
+    group = db.get(Group, group_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="المجموعة غير موجودة")
+    return build_group_response(group, db)
+
+
+@app.post("/api/groups", response_model=GroupResponse)
+def create_group(data: GroupCreate, db: Session = Depends(get_db)):
+    name = data.name.strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="اسم المجموعة مطلوب")
+
+    group = Group(
+        id=f"grp_{uuid.uuid4().hex[:12]}",
+        name=name,
+        description=data.description,
+        created_at=int(__import__("time").time() * 1000),
+    )
+    db.add(group)
+    db.commit()
+    db.refresh(group)
+    return build_group_response(group, db)
+
+
+@app.put("/api/groups/{group_id}", response_model=GroupResponse)
+def update_group(
+    group_id: str,
+    data: GroupUpdate,
+    db: Session = Depends(get_db),
+):
+    group = db.get(Group, group_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="المجموعة غير موجودة")
+
+    if data.name is not None:
+        name = data.name.strip()
+        if not name:
+            raise HTTPException(status_code=400, detail="الاسم لا يمكن أن يكون فارغًا")
+        group.name = name
+
+    if data.description is not None:
+        group.description = data.description
+
+    db.commit()
+    db.refresh(group)
+    return build_group_response(group, db)
+
+
+@app.delete("/api/groups/{group_id}")
+def delete_group(group_id: str, db: Session = Depends(get_db)):
+    group = db.get(Group, group_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="المجموعة غير موجودة")
+
+    # حذف الأذكار المرتبطة
+    db.query(GroupItem).filter(GroupItem.group_id == group_id).delete()
+    db.delete(group)
+    db.commit()
+    return {"ok": True}
+
+
+# ===========================
+# أذكار المجموعة
+# ===========================
+
+@app.post("/api/groups/{group_id}/items", response_model=GroupResponse)
+def add_group_item(
+    group_id: str,
+    data: GroupItemCreate,
+    db: Session = Depends(get_db),
+):
+    group = db.get(Group, group_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="المجموعة غير موجودة")
+
+    zekr = db.get(Adhkar, data.zekr_id)
+    if not zekr:
+        raise HTTPException(status_code=404, detail="الذكر غير موجود")
+
+    # آخر position
+    last = (
+        db.query(GroupItem)
+        .filter(GroupItem.group_id == group_id)
+        .order_by(GroupItem.position.desc())
+        .first()
+    )
+    next_pos = (last.position + 1) if last else 1
+
+    item = GroupItem(
+        group_id=group_id,
+        zekr_id=data.zekr_id,
+        position=next_pos,
+        target=data.target,
+    )
+    db.add(item)
+    db.commit()
+    return build_group_response(group, db)
+
+
+@app.put("/api/groups/{group_id}/items/{item_id}", response_model=GroupResponse)
+def update_group_item(
+    group_id: str,
+    item_id: int,
+    data: GroupItemUpdate,
+    db: Session = Depends(get_db),
+):
+    group = db.get(Group, group_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="المجموعة غير موجودة")
+
+    item = db.get(GroupItem, item_id)
+    if not item or item.group_id != group_id:
+        raise HTTPException(status_code=404, detail="الذكر غير موجود في المجموعة")
+
+    if data.target is not None:
+        item.target = data.target
+
+    if data.position is not None:
+        item.position = data.position
+
+    db.commit()
+    return build_group_response(group, db)
+
+
+@app.delete("/api/groups/{group_id}/items/{item_id}", response_model=GroupResponse)
+def delete_group_item(
+    group_id: str,
+    item_id: int,
+    db: Session = Depends(get_db),
+):
+    group = db.get(Group, group_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="المجموعة غير موجودة")
+
+    item = db.get(GroupItem, item_id)
+    if not item or item.group_id != group_id:
+        raise HTTPException(status_code=404, detail="الذكر غير موجود في المجموعة")
+
+    db.delete(item)
+
+    # إعادة ترقيم الباقي
+    remaining = (
+        db.query(GroupItem)
+        .filter(GroupItem.group_id == group_id)
+        .order_by(GroupItem.position)
+        .all()
+    )
+    for i, it in enumerate(remaining, start=1):
+        it.position = i
+
+    db.commit()
+    return build_group_response(group, db)

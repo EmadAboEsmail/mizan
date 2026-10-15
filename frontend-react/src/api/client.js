@@ -81,3 +81,51 @@ export function updateAdhkar(id, text, default_target = null) {
 export function deleteAdhkar(id) {
   return apiRequest(`/api/adhkar/${id}`, { method: 'DELETE' })
 }
+// ===========================
+// Groups
+// ===========================
+export function getGroups() {
+  return apiRequest('/api/groups')
+}
+
+export function getGroup(id) {
+  return apiRequest(`/api/groups/${id}`)
+}
+
+export function createGroup(name, description = null) {
+  return apiRequest('/api/groups', {
+    method: 'POST',
+    body: JSON.stringify({ name, description }),
+  })
+}
+
+export function updateGroup(id, name, description = null) {
+  return apiRequest(`/api/groups/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ name, description }),
+  })
+}
+
+export function deleteGroup(id) {
+  return apiRequest(`/api/groups/${id}`, { method: 'DELETE' })
+}
+
+export function addGroupItem(groupId, zekr_id, target = null) {
+  return apiRequest(`/api/groups/${groupId}/items`, {
+    method: 'POST',
+    body: JSON.stringify({ zekr_id, target }),
+  })
+}
+
+export function updateGroupItem(groupId, itemId, updates) {
+  return apiRequest(`/api/groups/${groupId}/items/${itemId}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates),
+  })
+}
+
+export function deleteGroupItem(groupId, itemId) {
+  return apiRequest(`/api/groups/${groupId}/items/${itemId}`, {
+    method: 'DELETE',
+  })
+}

@@ -1,0 +1,105 @@
+@use '@/styles/variables' as *;
+
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: $gap;
+  flex: 1;
+  justify-content: center;
+}
+
+.empty {
+  text-align: center;
+  padding: 20px;
+  font-size: 0.9rem;
+  color: $text-display-light;
+  opacity: 0.6;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+.progress {
+  text-align: center;
+  font-size: 0.85rem;
+  color: $text-display-light;
+  opacity: 0.7;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+/* شاشة الانتقال */
+.transition,
+.complete {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+.transitionIcon,
+.completeIcon {
+  font-size: 4rem;
+  line-height: 1;
+  animation: pulse 0.6s ease;
+}
+
+.transitionIcon {
+  color: #4caf50;
+}
+
+.transitionTitle,
+.completeTitle {
+  font-size: 1.5rem;
+  color: $text-light;
+
+  :global(body.dark) & {
+    color: $text-dark;
+  }
+}
+
+.transitionText,
+.completeText {
+  font-size: 1rem;
+  color: $text-display-light;
+  opacity: 0.7;
+  text-align: center;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+.completeHint {
+  font-size: 0.8rem;
+  color: $text-display-light;
+  opacity: 0.5;
+  margin-top: 8px;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}

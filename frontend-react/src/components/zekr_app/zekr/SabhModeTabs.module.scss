@@ -1,0 +1,52 @@
+@use '@/styles/variables' as *;
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  background-color: $bg-display-light;
+  border: 1px solid $border-light;
+  border-radius: $border-radius;
+  padding: 3px;
+  align-self: center;
+  width: fit-content;
+
+  :global(body.dark) & {
+    background-color: $bg-display-dark;
+    border-color: $border-dark;
+  }
+}
+
+.tab {
+  padding: 6px 16px;
+  background: none;
+  border: none;
+  border-radius: calc(#{$border-radius} - 2px);
+  cursor: pointer;
+  font-family: $font-main;
+  font-size: 0.85rem;
+  color: $text-display-light;
+  transition: background-color $transition, color $transition;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+
+  &:hover:not(.active) {
+    background-color: $bg-btn-hover-light;
+
+    :global(body.dark) & {
+      background-color: $bg-btn-hover-dark;
+    }
+  }
+}
+
+.active {
+  background-color: $bg-btn-light;
+  color: $text-light;
+  font-weight: bold;
+
+  :global(body.dark) & {
+    background-color: $bg-btn-dark;
+    color: $text-dark;
+  }
+}

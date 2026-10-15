@@ -1,0 +1,104 @@
+@use '@/styles/variables' as *;
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: $text-display-light;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 1rem;
+  font-family: $font-main;
+  background-color: $bg-display-light;
+  border: 1px solid $border-light;
+  border-radius: $border-radius;
+  color: $text-display-light;
+  outline: none;
+  transition: border-color $transition;
+  resize: vertical;
+
+  :global(body.dark) & {
+    background-color: $bg-display-dark;
+    border-color: $border-dark;
+    color: $text-display-dark;
+  }
+
+  &:focus {
+    border-color: $text-light;
+
+    :global(body.dark) & {
+      border-color: $text-dark;
+    }
+  }
+}
+
+.error {
+  font-size: 0.9rem;
+  color: #d32f2f;
+  text-align: center;
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.cancel,
+.confirm {
+  flex: 1;
+  padding: 10px;
+  font-size: 1rem;
+  font-family: $font-main;
+  border-radius: $border-radius;
+  cursor: pointer;
+  transition: transform $transition, opacity $transition;
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.cancel {
+  background-color: transparent;
+  border: 1px solid $border-light;
+  color: $text-display-light;
+
+  :global(body.dark) & {
+    border-color: $border-dark;
+    color: $text-display-dark;
+  }
+
+  &:hover {
+    background-color: $bg-btn-hover-light;
+
+    :global(body.dark) & {
+      background-color: $bg-btn-hover-dark;
+    }
+  }
+}
+
+.confirm {
+  background-color: $text-light;
+  border: 1px solid $text-light;
+  color: white;
+
+  :global(body.dark) & {
+    background-color: $text-dark;
+    border-color: $text-dark;
+    color: #111;
+  }
+
+  &:hover {
+    opacity: 0.9;
+  }
+}

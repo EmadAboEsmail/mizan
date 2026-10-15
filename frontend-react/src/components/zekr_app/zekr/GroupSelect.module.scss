@@ -1,0 +1,32 @@
+@use '@/styles/variables' as *;
+
+.select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  font-family: $font-main;
+  background-color: $bg-btn-light;
+  border: 1px solid $border-light;
+  border-radius: $border-radius;
+  color: $text-display-light;
+  cursor: pointer;
+  text-align: right;
+
+  :global(body.dark) & {
+    background-color: $bg-btn-dark;
+    border-color: $border-dark;
+    color: $text-display-dark;
+  }
+}
+
+.empty {
+  text-align: center;
+  padding: 12px;
+  font-size: 0.9rem;
+  color: $text-display-light;
+  opacity: 0.6;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}

@@ -30,3 +30,45 @@ class AdhkarCreate(BaseModel):
     text: str
     default_target: int | None = None
 
+
+class GroupItemCreate(BaseModel):
+    zekr_id: str
+    target: int | None = None
+
+
+class GroupItemUpdate(BaseModel):
+    target: int | None = None
+    position: int | None = None
+
+
+class GroupCreate(BaseModel):
+    name: str
+    description: str | None = None
+
+
+class GroupUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+
+
+class GroupItemResponse(BaseModel):
+    id: int
+    zekr_id: str
+    text: str          # ← نرجّع النص كذلك
+    position: int
+    target: int | None = None
+    default_target: int | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class GroupResponse(BaseModel):
+    id: str
+    name: str
+    description: str | None = None
+    created_at: int
+    items: list[GroupItemResponse] = []
+
+    class Config:
+        from_attributes = True

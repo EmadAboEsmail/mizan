@@ -1,0 +1,304 @@
+@use '@/styles/variables' as *;
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.description {
+  font-size: 0.9rem;
+  color: $text-display-light;
+  opacity: 0.8;
+  text-align: center;
+  padding: 8px;
+  background-color: $bg-display-light;
+  border-radius: $border-radius;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+    background-color: $bg-display-dark;
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionTitle {
+  font-size: 0.95rem;
+  color: $text-light;
+  font-weight: bold;
+
+  :global(body.dark) & {
+    color: $text-dark;
+  }
+}
+
+.empty {
+  text-align: center;
+  padding: 16px;
+  font-size: 0.9rem;
+  color: $text-display-light;
+  opacity: 0.6;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+.itemsList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background-color: $bg-display-light;
+  border: 1px solid $border-light;
+  border-radius: $border-radius;
+
+  :global(body.dark) & {
+    background-color: $bg-display-dark;
+    border-color: $border-dark;
+  }
+}
+
+.itemPosition {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: $text-light;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+  flex-shrink: 0;
+
+  :global(body.dark) & {
+    background-color: $text-dark;
+    color: #111;
+  }
+}
+
+.itemInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.itemText {
+  font-size: 0.95rem;
+  color: $text-display-light;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+}
+
+/* الهدف كزر */
+.targetDisplay {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.8rem;
+  color: $text-display-light;
+  opacity: 0.6;
+  cursor: pointer;
+  text-align: right;
+  align-self: flex-start;
+  transition: opacity $transition;
+
+  :global(body.dark) & {
+    color: $text-display-dark;
+  }
+
+  &:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+}
+
+/* تعديل الهدف */
+.targetEdit {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.targetInput {
+  width: 70px;
+  padding: 4px 6px;
+  font-size: 0.85rem;
+  font-family: $font-main;
+  background-color: $bg-btn-light;
+  border: 1px solid $border-light;
+  border-radius: 4px;
+  color: $text-display-light;
+  outline: none;
+  text-align: center;
+
+  :global(body.dark) & {
+    background-color: $bg-btn-dark;
+    border-color: $border-dark;
+    color: $text-display-dark;
+  }
+
+  &:focus {
+    border-color: $text-light;
+
+    :global(body.dark) & {
+      border-color: $text-dark;
+    }
+  }
+}
+
+.saveBtn,
+.cancelBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color $transition;
+
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
+.saveBtn {
+  background-color: #4caf50;
+  color: white;
+
+  &:hover {
+    background-color: #43a047;
+  }
+}
+
+.cancelBtn {
+  background-color: #ddd;
+  color: #555;
+
+  :global(body.dark) & {
+    background-color: #444;
+    color: #ccc;
+  }
+
+  &:hover {
+    background-color: #ccc;
+
+    :global(body.dark) & {
+      background-color: #555;
+    }
+  }
+}
+
+/* أزرار الإجراءات (↑ ↓ ✕) */
+.itemActions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.moveBtn,
+.deleteBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: transparent;
+  border: 1px solid $border-light;
+  color: $text-display-light;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color $transition, border-color $transition;
+
+  :global(body.dark) & {
+    border-color: $border-dark;
+    color: $text-display-dark;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.9);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.moveBtn:hover:not(:disabled) {
+  background-color: $bg-btn-hover-light;
+  border-color: $text-light;
+
+  :global(body.dark) & {
+    background-color: $bg-btn-hover-dark;
+    border-color: $text-dark;
+  }
+}
+
+.deleteBtn:hover {
+  background-color: #ffcdd2;
+  border-color: #d32f2f;
+  color: #d32f2f;
+
+  :global(body.dark) & {
+    background-color: #5a2424;
+    border-color: #d32f2f;
+    color: #ff8a80;
+  }
+}
+
+/* زر الإضافة (+) */
+.addBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: $text-light;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: opacity $transition, transform $transition;
+
+  :global(body.dark) & {
+    background-color: $text-dark;
+    color: #111;
+  }
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
+}
