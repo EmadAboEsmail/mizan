@@ -1,5 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
-import ThemeToggle from './components/ThemeToggle.jsx'
+import ThemeToggle from '@/components/ui/ThemeToggle.jsx'
 import Home from './pages/Home.jsx'
 import Zekr from './pages/Zekr.jsx'
 

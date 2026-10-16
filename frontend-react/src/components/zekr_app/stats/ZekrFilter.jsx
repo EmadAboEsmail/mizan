@@ -1,24 +1,26 @@
 import styles from './ZekrFilter.module.scss'
 
-function ZekrFilter({ adhkar, value, onChange }) {
+function ZekrFilter({ adhkar = [], value, onChange }) {
   return (
-    <div className={styles.filter}>
-      <button
-        className={`${styles.item} ${value === null ? styles.active : ''}`}
-        onClick={() => onChange(null)}
-      >
-        الكل
-      </button>
-
-      {adhkar.map((z) => (
+    <div className={styles.filterContainer}>
+      <div className={styles.scrollArea}>
         <button
-          key={z.id}
-          className={`${styles.item} ${value === z.id ? styles.active : ''}`}
-          onClick={() => onChange(z.id)}
+          className={`${styles.chip} ${value === null ? styles.active : ''}`}
+          onClick={() => onChange(null)}
         >
-          {z.text}
+          الكل
         </button>
-      ))}
+
+        {adhkar.map((z) => (
+          <button
+            key={z.id}
+            className={`${styles.chip} ${value === z.id ? styles.active : ''}`}
+            onClick={() => onChange(z.id)}
+          >
+            {z.text}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

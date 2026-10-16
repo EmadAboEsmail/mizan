@@ -1,50 +1,52 @@
 @use '@/styles/variables' as *;
 
-.tabs {
+.tabsWrapper {
   display: flex;
-  gap: 4px;
-  background-color: $bg-display-light;
-  border: 1px solid $border-light;
-  border-radius: $border-radius;
+  background: rgba(0, 0, 0, 0.05);
   padding: 4px;
+  border-radius: 14px;
+  gap: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
 
   :global(body.dark) & {
-    background-color: $bg-display-dark;
-    border-color: $border-dark;
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
   }
 }
 
 .tab {
   flex: 1;
-  padding: 6px 8px;
-  background: none;
+  padding: 0.6rem 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   border: none;
-  border-radius: calc(#{$border-radius} - 2px);
+  background: transparent;
+  color: #64748b;
+  border-radius: 10px;
   cursor: pointer;
-  font-family: $font-main;
-  font-size: 0.85rem;
-  color: $text-display-light;
-  transition: background-color $transition, color $transition;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  touch-action: manipulation;
 
   :global(body.dark) & {
-    color: $text-display-dark;
+    color: #94a3b8;
   }
 
-  &:hover:not(.active) {
-    background-color: $bg-btn-hover-light;
-
+  &:hover {
+    color: #0f172a;
     :global(body.dark) & {
-      background-color: $bg-btn-hover-dark;
+      color: #fff;
     }
   }
-}
 
-.active {
-  background-color: $bg-btn-light;
-  color: $text-light;
+  &.active {
+    background: #fff;
+    color: #059669; // أخضر زمردي مريح
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
 
-  :global(body.dark) & {
-    background-color: $bg-btn-dark;
-    color: $text-dark;
+    :global(body.dark) & {
+      background: #1e293b;
+      color: #34d399;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+    }
   }
 }

@@ -1,50 +1,96 @@
 @use '@/styles/variables' as *;
 
-.tabs {
+.tabsWrapper {
+  width: 100%;
+  max-width: 100%; // يمنع تجاوز عرض الحاوية الأب نهائياً
+  box-sizing: border-box; // يضمن أن الحواف والبادينج داخل العرض
+  margin: 0 auto 1.5rem;
   display: flex;
-  gap: 4px;
-  background-color: $bg-display-light;
-  border: 1px solid $border-light;
-  border-radius: $border-radius;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.03);
   padding: 4px;
+  border-radius: 14px;
+  gap: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
 
   :global(body.dark) & {
-    background-color: $bg-display-dark;
-    border-color: $border-dark;
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.06);
   }
 }
 
 .tab {
-  flex: 1;
-  padding: 8px 12px;
-  background: none;
+  position: relative;
+  flex: 1 1 0; // توزيع متساوٍ تماماً للأزرار
+  min-width: 0; // سطر سحري: يمنع تمدد الزر ودفع الحاوية للخارج عند ضيق الشاشة
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 700;
   border: none;
-  border-radius: calc(#{$border-radius} - 2px);
+  background: transparent;
+  color: #64748b;
+  border-radius: 10px;
   cursor: pointer;
-  font-family: $font-main;
-  font-size: 0.95rem;
-  color: $text-display-light;
-  transition: background-color $transition, color $transition;
+  box-sizing: border-box;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 
   :global(body.dark) & {
-    color: $text-display-dark;
+    color: #94a3b8;
   }
 
   &:hover:not(.active) {
-    background-color: $bg-btn-hover-light;
+    color: #1e293b;
+    :global(body.dark) & {
+      color: #f8fafc;
+    }
+  }
+
+  // التبويب المختار
+  &.active {
+    background: #ffffff;
+    color: #059669;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 
     :global(body.dark) & {
-      background-color: $bg-btn-hover-dark;
+      background: #1e293b;
+      color: #34d399;
+      box-shadow: 0 3px 14px rgba(0, 0, 0, 0.35);
     }
+  }
+
+  &:active {
+    transform: scale(0.97);
   }
 }
 
-.active {
-  background-color: $bg-btn-light;
-  color: $text-light;
+.icon {
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; // يمنع النص من كسر الحاوية لو الشاشة ضيقة جداً
+}
+
+.activeIndicator {
+  position: absolute;
+  bottom: 3px;
+  width: 12px;
+  height: 2.5px;
+  border-radius: 2px;
+  background: #059669;
 
   :global(body.dark) & {
-    background-color: $bg-btn-dark;
-    color: $text-dark;
+    background: #34d399;
   }
 }

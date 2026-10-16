@@ -1,105 +1,316 @@
 @use '@/styles/variables' as *;
 
 .view {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: $gap;
-  flex: 1;
-  justify-content: center;
-}
-
-.empty {
-  text-align: center;
-  padding: 20px;
-  font-size: 0.9rem;
-  color: $text-display-light;
-  opacity: 0.6;
-
-  :global(body.dark) & {
-    color: $text-display-dark;
-  }
-}
-
-.progress {
-  text-align: center;
-  font-size: 0.85rem;
-  color: $text-display-light;
-  opacity: 0.7;
-
-  :global(body.dark) & {
-    color: $text-display-dark;
-  }
-}
-
-/* شاشة الانتقال */
-.transition,
-.complete {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 40px 20px;
+  gap: 1.25rem;
   animation: fadeIn 0.3s ease;
 }
 
-.transitionIcon,
-.completeIcon {
-  font-size: 4rem;
-  line-height: 1;
-  animation: pulse 0.6s ease;
+.selectWrapper {
+  width: 100%;
 }
 
-.transitionIcon {
-  color: #4caf50;
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
 }
 
-.transitionTitle,
-.completeTitle {
-  font-size: 1.5rem;
-  color: $text-light;
+// شريط التقدم المجزأ (Story Bar)
+.storyProgress {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.25rem 0.1rem;
+}
+
+.progressBar {
+  flex: 1;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   :global(body.dark) & {
-    color: $text-dark;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  &.barCompleted {
+    background: #059669;
+    :global(body.dark) & { background: #34d399; }
+  }
+
+  &.barActive {
+    background: #059669;
+    box-shadow: 0 0 8px rgba(5, 150, 105, 0.5);
+    :global(body.dark) & {
+      background: #34d399;
+      box-shadow: 0 0 8px rgba(52, 211, 153, 0.6);
+    }
   }
 }
 
-.transitionText,
-.completeText {
-  font-size: 1rem;
-  color: $text-display-light;
-  opacity: 0.7;
-  text-align: center;
+// شريط التنقل اليدوي
+.navBar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stepIndicator {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #64748b;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
 
   :global(body.dark) & {
-    color: $text-display-dark;
+    background: rgba(255, 255, 255, 0.04);
+    color: #94a3b8;
   }
 }
 
-.completeHint {
+.navBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   font-size: 0.8rem;
-  color: $text-display-light;
-  opacity: 0.5;
-  margin-top: 8px;
+  font-weight: 700;
+  color: #475569;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0.3rem 0.65rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  touch-action: manipulation;
 
   :global(body.dark) & {
-    color: $text-display-dark;
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #cbd5e1;
+  }
+
+  &:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.04);
+    color: #059669;
+    border-color: rgba(5, 150, 105, 0.3);
+
+    :global(body.dark) & {
+      background: rgba(255, 255, 255, 0.06);
+      color: #34d399;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
+// تنبيه الذكر المفتوح
+.openTargetAlert {
+  font-size: 0.8rem;
+  color: #059669;
+  background: rgba(5, 150, 105, 0.08);
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 90%;
+
+  :global(body.dark) & {
+    background: rgba(52, 211, 153, 0.1);
+    color: #34d399;
   }
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+// ===================================
+// شاشة الانتقال للذكر التالي
+// ===================================
+.transitionCard {
+  width: 100%;
+  padding: 2.5rem 1.5rem;
+  background: rgba(5, 150, 105, 0.04);
+  border: 1.5px dashed rgba(5, 150, 105, 0.3);
+  border-radius: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  animation: scalePop 0.25s ease-out;
+
+  :global(body.dark) & {
+    background: rgba(52, 211, 153, 0.04);
+    border-color: rgba(52, 211, 153, 0.25);
+  }
+}
+
+.doneIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #059669;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.3);
+
+  :global(body.dark) & {
+    background: #34d399;
+    color: #0f172a;
+  }
+}
+
+.transitionTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  :global(body.dark) & { color: #f8fafc; }
+}
+
+.nextPreview {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #64748b;
+  line-height: 1.5;
+
+  strong {
+    color: #059669;
+    :global(body.dark) & { color: #34d399; }
+  }
+}
+
+.skipPrompt {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+
+// ===================================
+// شاشة اكتمال المجموعة
+// ===================================
+.completeCard {
+  width: 100%;
+  padding: 3rem 1.5rem;
+  background: rgba(5, 150, 105, 0.06);
+  border: 2px solid #059669;
+  border-radius: 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  box-shadow: 0 8px 30px rgba(5, 150, 105, 0.15);
+  animation: scalePop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+  :global(body.dark) & {
+    background: rgba(52, 211, 153, 0.06);
+    border-color: #34d399;
+  }
+}
+
+.celebrateIcon {
+  font-size: 3rem;
+  animation: bounce 1s infinite alternate;
+}
+
+.completeTitle {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #059669;
+  :global(body.dark) & { color: #34d399; }
+}
+
+.groupName {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #64748b;
+  :global(body.dark) & { color: #94a3b8; }
+}
+
+.restartBtn {
+  margin-top: 0.75rem;
+  padding: 0.65rem 1.5rem;
+  background: #059669;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);
+
+  &:hover {
+    background: #047857;
+    transform: translateY(-2px);
+  }
+}
+
+// الحالات الفارغة
+.emptyView,
+.emptyGroupCard {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  border-radius: 18px;
+  border: 1px dashed rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.015);
+
+  :global(body.dark) & {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .emptyIcon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+    color: #1e293b;
+    :global(body.dark) & { color: #f1f5f9; }
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #64748b;
+    :global(body.dark) & { color: #94a3b8; }
+  }
+
+  span {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin-top: 0.25rem;
+    display: block;
+  }
+}
+
+@keyframes scalePop {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-8px); }
 }

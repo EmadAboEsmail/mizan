@@ -16,6 +16,8 @@
   border: 1px solid $border-light;
   font-size: 1rem;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: transform $transition, background-color $transition;
 
   :global(body.dark) & {
@@ -53,6 +55,8 @@
   color: $text-light;
   font-size: 1.5rem;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 
   background: conic-gradient(
     var(--ring-color) var(--progress),
@@ -90,10 +94,14 @@
   > * {
     position: relative;
     z-index: 1;
+    padding: 1rem;
+    text-align: center;
+    line-height: 1.4;
+    word-break: break-word;
   }
 }
 
-/* ✅ بدل ما نغيّر الـ background، نغيّر المتغيرات بس */
+/* حالة اكتمال الهدف */
 .complete {
   --ring-color: #4caf50;
   --ring-bg: #4caf50;
@@ -104,6 +112,7 @@
   }
 }
 
+/* حركة النبض عند النقر */
 .clicked {
   animation: pulse 0.15s ease;
 }
@@ -112,4 +121,36 @@
   0% { transform: scale(1); }
   50% { transform: scale(0.92); }
   100% { transform: scale(1); }
+}
+
+// ===================================
+// زر التسبيح عندما يكون في وضع التركيز
+// ===================================
+.floatingRightBtn {
+  position: fixed;
+  bottom: max(30px, env(safe-area-inset-bottom));
+  right: max(24px, env(safe-area-inset-right));
+  left: auto;
+  
+  width: 86px;
+  height: 86px;
+  font-size: 1.15rem;
+  font-weight: bold;
+  z-index: 10000;
+  
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), 0 0 0 2px rgba(255, 255, 255, 0.2);
+
+  // جعل إطار التقدم أرفع ليتناسب مع الحجم الصغير
+  &::before {
+    inset: 5px;
+  }
+
+  > * {
+    padding: 0;
+  }
+
+  // الضغط اليدوي المستمر (بدون كسر أنيميشن clicked)
+  &:active {
+    transform: scale(0.92);
+  }
 }

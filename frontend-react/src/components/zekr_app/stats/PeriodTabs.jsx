@@ -9,16 +9,21 @@ const PERIODS = [
 
 function PeriodTabs({ value, onChange }) {
   return (
-    <div className={styles.tabs}>
-      {PERIODS.map((p) => (
-        <button
-          key={p.id}
-          className={`${styles.tab} ${value === p.id ? styles.active : ''}`}
-          onClick={() => onChange(p.id)}
-        >
-          {p.label}
-        </button>
-      ))}
+    <div className={styles.tabsWrapper} role="tablist">
+      {PERIODS.map((p) => {
+        const isActive = value === p.id
+        return (
+          <button
+            key={p.id}
+            role="tab"
+            aria-selected={isActive}
+            className={`${styles.tab} ${isActive ? styles.active : ''}`}
+            onClick={() => onChange(p.id)}
+          >
+            {p.label}
+          </button>
+        )
+      })}
     </div>
   )
 }

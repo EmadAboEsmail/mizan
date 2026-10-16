@@ -1,98 +1,207 @@
 @use '@/styles/variables' as *;
 
-.list {
-  list-style: none;
+.sectionContainer {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-height: 300px;
-  overflow-y: auto;
+  gap: 1rem;
+  width: 100%;
+}
+
+// الشريط العلوي
+.topBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.1rem;
+  background: #059669;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+
+  &:hover {
+    background: #047857;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 160px;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.85rem;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
+  color: #0f172a;
+  outline: none;
+  transition: all 0.2s ease;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #f8fafc;
+  }
+
+  &:focus {
+    border-color: #059669;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+  }
+}
+
+// قائمة الأذكار
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
 }
 
 .item {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background-color: $bg-btn-light;
-  border-radius: calc(#{$border-radius} - 2px);
-  gap: 8px;
+  padding: 0.85rem 1rem;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 14px;
+  transition: all 0.2s ease;
 
   :global(body.dark) & {
-    background-color: $bg-btn-dark;
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.05);
   }
-}
-
-.text {
-  flex: 1;
-  font-size: 0.95rem;
-  color: $text-display-light;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-
-  :global(body.dark) & {
-    color: $text-display-dark;
-  }
-}
-
-.actions {
-  display: flex;
-  gap: 4px;
-}
-
-.action {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color $transition;
 
   &:hover {
-    background-color: $bg-btn-hover-light;
-
+    border-color: rgba(5, 150, 105, 0.3);
+    background: rgba(0, 0, 0, 0.03);
     :global(body.dark) & {
-      background-color: $bg-btn-hover-dark;
+      background: rgba(255, 255, 255, 0.04);
     }
   }
 }
 
-.danger:hover {
-  background-color: #ffcdd2;
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-left: 0.75rem; // مسافة من أزرار التحكم
+}
+
+.text {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.4;
 
   :global(body.dark) & {
-    background-color: #5a2424;
+    color: #f1f5f9;
   }
 }
 
-.addBtn {
-  width: 100%;
-  padding: 10px;
-  font-size: 0.95rem;
-  font-family: $font-main;
-  background-color: $text-light;
-  color: white;
-  border: none;
-  border-radius: $border-radius;
-  cursor: pointer;
-  transition: opacity $transition, transform $transition;
+.targetBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #059669;
+  background: rgba(5, 150, 105, 0.1);
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  align-self: flex-start;
 
   :global(body.dark) & {
-    background-color: $text-dark;
-    color: #111;
+    color: #34d399;
+    background: rgba(52, 211, 153, 0.1);
+  }
+}
+
+.noTargetBadge {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  align-self: flex-start;
+}
+
+// أزرار الإجراءات (تعديل / حذف)
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.actionBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+
+  :global(body.dark) & {
+    color: #94a3b8;
   }
 
-  &:hover {
-    opacity: 0.9;
+  &.edit:hover {
+    background: rgba(5, 150, 105, 0.1);
+    color: #059669;
+    border-color: rgba(5, 150, 105, 0.2);
+  }
+
+  &.danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2);
   }
 
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.9);
   }
+}
+
+// الحالة الفارغة
+.emptyState {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 14px;
+  border: 1px dashed rgba(0, 0, 0, 0.08);
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.emptyIcon {
+  font-size: 2rem;
+  margin-bottom: 0.4rem;
+}
+
+.emptyText {
+  font-size: 0.88rem;
+  color: #94a3b8;
+  margin: 0;
 }

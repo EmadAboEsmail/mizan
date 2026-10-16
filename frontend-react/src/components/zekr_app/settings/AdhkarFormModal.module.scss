@@ -1,102 +1,211 @@
 @use '@/styles/variables' as *;
 
-.label {
+.form {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label {
   font-size: 0.9rem;
-  color: $text-display-light;
+  font-weight: 700;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 
   :global(body.dark) & {
-    color: $text-display-dark;
+    color: #cbd5e1;
   }
 }
 
-.input {
+.required {
+  color: #ef4444;
+  font-weight: bold;
+}
+
+.optionalHint {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+// حقول الإدخال المشتركة
+.input,
+.textarea {
   width: 100%;
-  padding: 10px 12px;
-  font-size: 1rem;
-  font-family: $font-main;
-  background-color: $bg-display-light;
-  border: 1px solid $border-light;
-  border-radius: $border-radius;
-  color: $text-display-light;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.02);
+  color: #0f172a;
   outline: none;
-  transition: border-color $transition;
+  font-family: inherit;
+  transition: all 0.2s ease;
 
   :global(body.dark) & {
-    background-color: $bg-display-dark;
-    border-color: $border-dark;
-    color: $text-display-dark;
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+  }
+
+  &::placeholder {
+    color: #94a3b8;
+    font-size: 0.85rem;
   }
 
   &:focus {
-    border-color: $text-light;
+    border-color: #059669;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
 
     :global(body.dark) & {
-      border-color: $text-dark;
+      background: #1e293b;
+      border-color: #34d399;
+      box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
     }
   }
 }
 
-.error {
-  font-size: 0.9rem;
-  color: #d32f2f;
-  text-align: center;
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
 }
 
+// أزرار الاختصارات السريعة للأهداف
+.presetChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.25rem;
+}
+
+.presetBtn {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  touch-action: manipulation;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
+  }
+
+  &:hover {
+    border-color: #059669;
+    color: #059669;
+  }
+
+  &.activePreset {
+    background: #059669;
+    color: #fff;
+    border-color: #059669;
+
+    :global(body.dark) & {
+      background: #059669;
+      color: #fff;
+    }
+  }
+}
+
+// رسالة الخطأ
+.error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+// أزرار الإلغاء والحفظ
 .buttons {
   display: flex;
-  gap: 8px;
-  margin-top: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
 }
 
 .cancel,
 .confirm {
-  flex: 1;
-  padding: 10px;
-  font-size: 1rem;
-  font-family: $font-main;
-  border-radius: $border-radius;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: 10px;
   cursor: pointer;
-  transition: transform $transition, opacity $transition;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
 
-  &:active {
-    transform: scale(0.95);
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 }
 
 .cancel {
-  background-color: transparent;
-  border: 1px solid $border-light;
-  color: $text-display-light;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #64748b;
 
   :global(body.dark) & {
-    border-color: $border-dark;
-    color: $text-display-dark;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
   }
 
-  &:hover {
-    background-color: $bg-btn-hover-light;
-
+  &:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.05);
+    color: #0f172a;
     :global(body.dark) & {
-      background-color: $bg-btn-hover-dark;
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
     }
   }
 }
 
 .confirm {
-  background-color: $text-light;
-  border: 1px solid $text-light;
-  color: white;
+  background: #059669;
+  border: none;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(5, 150, 105, 0.25);
 
-  :global(body.dark) & {
-    background-color: $text-dark;
-    border-color: $text-dark;
-    color: #111;
+  &:hover:not(:disabled) {
+    background: #047857;
+    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
   }
 
-  &:hover {
-    opacity: 0.9;
+  &:active:not(:disabled) {
+    transform: scale(0.97);
   }
 }

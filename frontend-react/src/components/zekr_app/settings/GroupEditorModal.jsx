@@ -1,6 +1,39 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Modal from '@/components/ui/Modal.jsx'
 import styles from './GroupEditorModal.module.scss'
+
+// أيقونات SVG خفيفة
+const ArrowUpIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="18 15 12 9 6 15" />
+  </svg>
+)
+
+const ArrowDownIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+)
+
+const CheckIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+)
+
+const CloseIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+)
+
+const PlusIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+)
 
 function GroupEditorModal({
   isOpen,
@@ -11,82 +44,119 @@ function GroupEditorModal({
   onUpdateItem,
   onDeleteItem,
 }) {
-  // state محلي لتعديل الهدف
   const [editingTargetId, setEditingTargetId] = useState(null)
   const [tempTarget, setTempTarget] = useState('')
+  const [targetError, setTargetError] = useState('')
+  const [searchAvailable, setSearchAvailable] = useState('')
+  const [busyId, setBusyId] = useState(null)
 
-  // إعادة تعيين عند الإغلاق
   useEffect(() => {
     if (!isOpen) {
       setEditingTargetId(null)
       setTempTarget('')
+      setTargetError('')
+      setSearchAvailable('')
+      setBusyId(null)
     }
   }, [isOpen])
 
-  if (!group) return null
+  // حماية آمنة لعناصر المجموعة
+  const items = group?.items ?? []
 
-  // الأذكار المتاحة (مش في المجموعة)
-  const usedIds = new Set(group.items.map((i) => i.zekr_id))
-  const availableAdhkar = allAdhkar.filter((z) => !usedIds.has(z.id))
+  // استخراج الأذكار المتاحة وفلترتها بالبحث
+  const usedIds = useMemo(() => new Set(items.map((i) => i.zekr_id)), [items])
+
+  const filteredAvailableAdhkar = useMemo(() => {
+    const available = allAdhkar.filter((z) => !usedIds.has(z.id))
+    if (!searchAvailable.trim()) return available
+    return available.filter((z) =>
+      z.text.toLowerCase().includes(searchAvailable.trim().toLowerCase())
+    )
+  }, [allAdhkar, usedIds, searchAvailable])
+
+  if (!group) return null
 
   // ===========================
   // Handlers
   // ===========================
 
   const handleAdd = async (zekr_id) => {
-    const zekr = allAdhkar.find((z) => z.id === zekr_id)
-    const target = zekr?.default_target ?? null
-    await onAddItem(group.id, zekr_id, target)
+    setBusyId(`add-${zekr_id}`)
+    try {
+      const zekr = allAdhkar.find((z) => z.id === zekr_id)
+      const target = zekr?.default_target ?? null
+      await onAddItem(group.id, zekr_id, target)
+    } finally {
+      setBusyId(null)
+    }
   }
 
   const handleDelete = async (itemId) => {
-    await onDeleteItem(group.id, itemId)
+    setBusyId(`del-${itemId}`)
+    try {
+      await onDeleteItem(group.id, itemId)
+    } finally {
+      setBusyId(null)
+    }
   }
 
-  // ترتيب: فوق
   const handleMoveUp = async (item, index) => {
-    if (index === 0) return
-    const prev = group.items[index - 1]
-
-    // نبدّل الـ positions
-    await onUpdateItem(group.id, item.id, { position: prev.position })
-    await onUpdateItem(group.id, prev.id, { position: item.position })
+    if (index === 0 || busyId) return
+    const prev = items[index - 1]
+    setBusyId(`move-${item.id}`)
+    try {
+      await onUpdateItem(group.id, item.id, { position: prev.position ?? index - 1 })
+      await onUpdateItem(group.id, prev.id, { position: item.position ?? index })
+    } finally {
+      setBusyId(null)
+    }
   }
 
-  // ترتيب: تحت
   const handleMoveDown = async (item, index) => {
-    if (index === group.items.length - 1) return
-    const next = group.items[index + 1]
-
-    await onUpdateItem(group.id, item.id, { position: next.position })
-    await onUpdateItem(group.id, next.id, { position: item.position })
+    if (index === items.length - 1 || busyId) return
+    const next = items[index + 1]
+    setBusyId(`move-${item.id}`)
+    try {
+      await onUpdateItem(group.id, item.id, { position: next.position ?? index + 1 })
+      await onUpdateItem(group.id, next.id, { position: item.position ?? index })
+    } finally {
+      setBusyId(null)
+    }
   }
 
-  // تعديل الهدف
   const handleEditTarget = (item) => {
     setEditingTargetId(item.id)
-    setTempTarget(String(item.target ?? item.default_target ?? ''))
+    setTempTarget(item.target != null ? String(item.target) : '')
+    setTargetError('')
   }
 
   const handleSaveTarget = async (item) => {
-    const num = Number(tempTarget)
-    if (isNaN(num) || num < 1 || num > 10000) {
-      alert('الرجاء إدخال رقم صحيح بين 1 و 10000')
-      return
+    let finalTarget = null
+
+    if (tempTarget.trim() !== '') {
+      const num = Number(tempTarget)
+      if (!Number.isInteger(num) || num < 1 || num > 10000) {
+        setTargetError('بين 1 و 10,000')
+        return
+      }
+      finalTarget = num
     }
-    await onUpdateItem(group.id, item.id, { target: num })
-    setEditingTargetId(null)
-    setTempTarget('')
+
+    setBusyId(`target-${item.id}`)
+    try {
+      await onUpdateItem(group.id, item.id, { target: finalTarget })
+      setEditingTargetId(null)
+      setTempTarget('')
+      setTargetError('')
+    } finally {
+      setBusyId(null)
+    }
   }
 
   const handleCancelTarget = () => {
     setEditingTargetId(null)
     setTempTarget('')
-  }
-
-  const handleTargetKeyDown = (e, item) => {
-    if (e.key === 'Enter') handleSaveTarget(item)
-    if (e.key === 'Escape') handleCancelTarget()
+    setTargetError('')
   }
 
   return (
@@ -96,116 +166,159 @@ function GroupEditorModal({
           <p className={styles.description}>{group.description}</p>
         )}
 
-        {/* ===========================
-            أذكار المجموعة
-        =========================== */}
+        {/* قسم أذكار المجموعة الحالية */}
         <div className={styles.section}>
-          <h4 className={styles.sectionTitle}>
-            الأذكار ({group.items.length})
-          </h4>
+          <div className={styles.sectionHeader}>
+            <h4 className={styles.sectionTitle}>
+              أذكار المجموعة <span className={styles.badge}>{items.length}</span>
+            </h4>
+          </div>
 
-          {group.items.length === 0 ? (
-            <p className={styles.empty}>لا توجد أذكار بعد</p>
+          {items.length === 0 ? (
+            <div className={styles.emptyCard}>
+              لا توجد أذكار مضافة لهذه المجموعة حتى الآن.
+            </div>
           ) : (
             <ul className={styles.itemsList}>
-              {group.items.map((item, index) => (
-                <li key={item.id} className={styles.item}>
-                  <div className={styles.itemPosition}>{index + 1}</div>
+              {items.map((item, index) => {
+                const isCurrentBusy = busyId === `move-${item.id}` || busyId === `del-${item.id}`
+                return (
+                  <li
+                    key={item.id}
+                    className={`${styles.item} ${isCurrentBusy ? styles.isBusy : ''}`}
+                  >
+                    {/* رقم الترتيب */}
+                    <div className={styles.positionBadge}>{index + 1}</div>
 
-                  <div className={styles.itemInfo}>
-                    <div className={styles.itemText}>{item.text}</div>
+                    <div className={styles.itemInfo}>
+                      <span className={styles.itemText}>{item.text}</span>
 
-                    {editingTargetId === item.id ? (
-                      <div className={styles.targetEdit}>
-                        <input
-                          className={styles.targetInput}
-                          type="number"
-                          value={tempTarget}
-                          onChange={(e) => setTempTarget(e.target.value)}
-                          onKeyDown={(e) => handleTargetKeyDown(e, item)}
-                          autoFocus
-                          min={1}
-                          max={10000}
-                        />
+                      {/* تعديل الهدف أو عرضه */}
+                      {editingTargetId === item.id ? (
+                        <div className={styles.targetEditGroup}>
+                          <input
+                            className={`${styles.targetInput} ${targetError ? styles.hasError : ''}`}
+                            type="number"
+                            value={tempTarget}
+                            onChange={(e) => {
+                              setTempTarget(e.target.value)
+                              if (targetError) setTargetError('')
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveTarget(item)
+                              if (e.key === 'Escape') handleCancelTarget()
+                            }}
+                            autoFocus
+                            placeholder="افتراضي"
+                            min={1}
+                            max={10000}
+                          />
+                          <button
+                            type="button"
+                            className={styles.saveBtn}
+                            onClick={() => handleSaveTarget(item)}
+                            title="حفظ"
+                          >
+                            <CheckIcon />
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.cancelBtn}
+                            onClick={handleCancelTarget}
+                            title="إلغاء"
+                          >
+                            <CloseIcon />
+                          </button>
+                          {targetError && (
+                            <span className={styles.inlineError}>{targetError}</span>
+                          )}
+                        </div>
+                      ) : (
                         <button
-                          className={styles.saveBtn}
-                          onClick={() => handleSaveTarget(item)}
-                          aria-label="حفظ"
+                          type="button"
+                          className={styles.targetDisplay}
+                          onClick={() => handleEditTarget(item)}
+                          title="اضغط لتعديل هدف هذا الذكر"
                         >
-                          ✓
+                          🎯 الهدف: {item.target ?? item.default_target ?? 'مفتوح'}
                         </button>
-                        <button
-                          className={styles.cancelBtn}
-                          onClick={handleCancelTarget}
-                          aria-label="إلغاء"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ) : (
+                      )}
+                    </div>
+
+                    {/* أزرار الترتيب والحذف */}
+                    <div className={styles.itemActions}>
                       <button
-                        className={styles.targetDisplay}
-                        onClick={() => handleEditTarget(item)}
+                        type="button"
+                        className={styles.iconBtn}
+                        onClick={() => handleMoveUp(item, index)}
+                        disabled={index === 0 || !!busyId}
+                        title="تحريك لأعلى"
                       >
-                        الهدف: {item.target ?? item.default_target ?? '—'}
+                        <ArrowUpIcon />
                       </button>
-                    )}
-                  </div>
-
-                  <div className={styles.itemActions}>
-                    <button
-                      className={styles.moveBtn}
-                      onClick={() => handleMoveUp(item, index)}
-                      disabled={index === 0}
-                      aria-label="فوق"
-                    >
-                      ↑
-                    </button>
-                    <button
-                      className={styles.moveBtn}
-                      onClick={() => handleMoveDown(item, index)}
-                      disabled={index === group.items.length - 1}
-                      aria-label="تحت"
-                    >
-                      ↓
-                    </button>
-                    <button
-                      className={styles.deleteBtn}
-                      onClick={() => handleDelete(item.id)}
-                      aria-label="حذف"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </li>
-              ))}
+                      <button
+                        type="button"
+                        className={styles.iconBtn}
+                        onClick={() => handleMoveDown(item, index)}
+                        disabled={index === items.length - 1 || !!busyId}
+                        title="تحريك لأسفل"
+                      >
+                        <ArrowDownIcon />
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.iconBtn} ${styles.danger}`}
+                        onClick={() => handleDelete(item.id)}
+                        disabled={!!busyId}
+                        title="إزالة من المجموعة"
+                      >
+                        <CloseIcon />
+                      </button>
+                    </div>
+                  </li>
+                )
+              })}
             </ul>
           )}
         </div>
 
-        {/* ===========================
-            الأذكار المتاحة
-        =========================== */}
+        {/* قسم الأذكار المتاحة للإضافة */}
         <div className={styles.section}>
-          <h4 className={styles.sectionTitle}>
-            الأذكار المتاحة ({availableAdhkar.length})
-          </h4>
+          <div className={styles.sectionHeader}>
+            <h4 className={styles.sectionTitle}>
+              أذكار يمكنك إضافتها <span className={styles.badge}>{filteredAvailableAdhkar.length}</span>
+            </h4>
+          </div>
 
-          {availableAdhkar.length === 0 ? (
-            <p className={styles.empty}>كل الأذكار مضافة بالفعل</p>
+          {/* شريط البحث في الأذكار المتاحة */}
+          {allAdhkar.length > 5 && (
+            <input
+              type="text"
+              className={styles.searchInput}
+              placeholder="ابحث عن ذكر لإضافته..."
+              value={searchAvailable}
+              onChange={(e) => setSearchAvailable(e.target.value)}
+            />
+          )}
+
+          {filteredAvailableAdhkar.length === 0 ? (
+            <p className={styles.emptyHint}>
+              {searchAvailable ? 'لا توجد نتائج مطابقة' : 'جميع أذكارك مضافة بالفعل في هذه المجموعة.'}
+            </p>
           ) : (
-            <ul className={styles.itemsList}>
-              {availableAdhkar.map((zekr) => (
-                <li key={zekr.id} className={styles.item}>
-                  <div className={styles.itemInfo}>
-                    <div className={styles.itemText}>{zekr.text}</div>
-                  </div>
+            <ul className={`${styles.itemsList} ${styles.scrollable}`}>
+              {filteredAvailableAdhkar.map((zekr) => (
+                <li key={zekr.id} className={styles.availableItem}>
+                  <span className={styles.itemText}>{zekr.text}</span>
                   <button
+                    type="button"
                     className={styles.addBtn}
                     onClick={() => handleAdd(zekr.id)}
-                    aria-label="إضافة"
+                    disabled={busyId === `add-${zekr.id}`}
+                    title="إضافة للمجموعة"
                   >
-                    +
+                    <PlusIcon />
+                    <span>إضافة</span>
                   </button>
                 </li>
               ))}

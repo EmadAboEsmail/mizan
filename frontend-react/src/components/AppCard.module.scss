@@ -4,110 +4,226 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 32px 20px;
-  border-radius: $border-radius;
-  background-color: $bg-container-light;
-  border: 1px solid $border-light;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: transform $transition, box-shadow $transition,
-    border-color $transition;
-  animation: cardIn 0.4s ease backwards;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 1.4rem;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
   overflow: hidden;
 
   :global(body.dark) & {
-    background-color: $bg-container-dark;
-    border-color: $border-dark;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    background: #0f172a;
+    border-color: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   }
 
-  &:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
-    border-color: $text-light;
-
-    :global(body.dark) & {
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
-      border-color: $text-dark;
-    }
-
-    .icon {
-      transform: scale(1.15) rotate(-6deg);
-    }
+  // تأثير الخط الملون الخفي أعلى البطاقة
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--accent-color, #059669);
+    opacity: 0;
+    transition: opacity 0.25s ease;
   }
 }
 
+// ===================================
+// حالة البطاقة المتاحة (Interactive)
+// ===================================
+.available {
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-5px);
+    border-color: rgba(0, 0, 0, 0.12);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+
+    :global(body.dark) & {
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    }
+
+    &::before {
+      opacity: 1;
+    }
+
+    .arrow {
+      transform: translateX(-4px); // انزلاق السهم لليسار باللغة العربية
+      color: var(--accent-color, #059669);
+    }
+
+    .iconWrapper {
+      transform: scale(1.08);
+    }
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// ===================================
+// حالة البطاقة غير المتاحة (Disabled)
+// ===================================
 .disabled {
-  cursor: not-allowed;
-  opacity: 0.65;
+  cursor: default;
+  opacity: 0.72;
+  background: rgba(0, 0, 0, 0.015);
+  border-style: dashed;
 
-  &:hover {
-    transform: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    border-color: $border-light;
-
-    :global(body.dark) & {
-      border-color: $border-dark;
-    }
-
-    .icon {
-      transform: none;
-    }
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.015);
   }
 }
 
-.icon {
-  font-size: 3.5rem;
-  margin-bottom: 16px;
-  transition: transform 0.3s ease;
-  display: block;
-  line-height: 1;
+// رأس البطاقة
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.iconWrapper {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+.badgeGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+}
+
+.category {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.statusBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+}
+
+.statusActive {
+  background: rgba(5, 150, 105, 0.1);
+  color: #059669;
+
+  :global(body.dark) & {
+    background: rgba(52, 211, 153, 0.12);
+    color: #34d399;
+  }
+}
+
+.statusSoon {
+  background: rgba(0, 0, 0, 0.05);
+  color: #64748b;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.06);
+    color: #94a3b8;
+  }
+}
+
+// جسم البطاقة
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 .name {
-  font-size: 1.4rem;
-  margin-bottom: 8px;
-  color: $text-light;
-  font-weight: 700;
+  margin: 0;
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.3px;
 
   :global(body.dark) & {
-    color: $text-dark;
+    color: #f8fafc;
   }
 }
 
 .desc {
-  font-size: 0.9rem;
-  line-height: 1.5;
-  color: $text-display-light;
-  opacity: 0.75;
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: #64748b;
 
   :global(body.dark) & {
-    color: $text-display-dark;
+    color: #94a3b8;
   }
 }
 
-.badge {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  padding: 3px 10px;
-  font-size: 0.7rem;
-  font-weight: bold;
-  background-color: $text-light;
-  color: white;
-  border-radius: 20px;
+// تذييل البطاقة
+.footer {
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 
   :global(body.dark) & {
-    background-color: $text-dark;
-    color: #111;
+    border-top-color: rgba(255, 255, 255, 0.04);
   }
 }
 
-@keyframes cardIn {
+.actionText {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f172a;
+
+  :global(body.dark) & {
+    color: #f8fafc;
+  }
+}
+
+.arrow {
+  display: flex;
+  align-items: center;
+  color: #94a3b8;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.disabledHint {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+@keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;

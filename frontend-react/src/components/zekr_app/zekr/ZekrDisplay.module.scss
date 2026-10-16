@@ -1,63 +1,211 @@
 @use '@/styles/variables' as *;
 
-.display {
-  min-height: 70px;
-  background-color: $bg-display-light;
-  border: 1px solid $border-light;
-  border-radius: $border-radius;
+.displayCard {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: $padding;
-  gap: 4px;
+  gap: 1.5rem;
+  padding: 1.75rem 1.25rem 1.25rem;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  text-align: center;
+  transition: all 0.3s ease;
 
   :global(body.dark) & {
-    background-color: $bg-display-dark;
-    border-color: $border-dark;
-  }
-}
-
-.text {
-  font-size: 1rem;
-  color: $text-display-light;
-  opacity: 0.7;
-
-  :global(body.dark) & {
-    color: $text-display-dark;
-  }
-}
-
-.count {
-  font-size: clamp(2rem, 8vw, 3rem);
-  color: $text-display-light;
-  cursor: pointer;
-  user-select: none;
-
-  :global(body.dark) & {
-    color: $text-display-dark;
+    background: #0f172a;
+    border-color: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
   }
 
-  &:hover {
-    color: $text-light;
+  // توهج أخضر ناعم عند اكتمال الهدف
+  &.completeGlow {
+    border-color: rgba(5, 150, 105, 0.4);
+    box-shadow: 0 0 30px rgba(5, 150, 105, 0.15);
 
     :global(body.dark) & {
-      color: $text-dark;
+      border-color: rgba(52, 211, 153, 0.4);
+      box-shadow: 0 0 35px rgba(52, 211, 153, 0.18);
     }
   }
 }
-.complete {
-  color: #4caf50 !important;
+
+// قسم نص الذكر
+.textContainer {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.text {
+  margin: 0;
+  font-size: clamp(1.25rem, 4vw, 1.65rem);
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.6;
+  letter-spacing: -0.3px;
+  padding: 0 0.5rem;
 
   :global(body.dark) & {
-    color: #66bb6a !important;
+    color: #f8fafc;
+  }
+}
+
+// زر النسخ الخفيف
+.copyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
   }
 
   &:hover {
-    color: #388e3c !important;
+    background: rgba(5, 150, 105, 0.08);
+    border-color: rgba(5, 150, 105, 0.25);
+    color: #059669;
 
     :global(body.dark) & {
-      color: #81c784 !important;
+      background: rgba(52, 211, 153, 0.1);
+      color: #34d399;
+    }
+  }
+
+  &.copied {
+    background: #059669;
+    border-color: #059669;
+    color: #fff;
+  }
+}
+
+.copyText {
+  line-height: 1;
+}
+
+// قسم العداد والهدف
+.counterSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// الرقم الضخم في المنتصف
+.currentNumber {
+  font-size: clamp(3rem, 10vw, 4.5rem);
+  font-weight: 900;
+  color: #1e293b;
+  line-height: 1;
+  letter-spacing: -1.5px;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.3s ease;
+
+  :global(body.dark) & {
+    color: #f1f5f9;
+  }
+
+  &.completeNumber {
+    color: #059669;
+    :global(body.dark) & { color: #34d399; }
+  }
+}
+
+// شارة الهدف القابلة للنقر
+.targetBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.07);
+    color: #94a3b8;
+  }
+
+  &:hover {
+    background: rgba(5, 150, 105, 0.08);
+    border-color: rgba(5, 150, 105, 0.3);
+    color: #059669;
+    transform: translateY(-1px);
+
+    :global(body.dark) & {
+      color: #34d399;
+    }
+  }
+
+  &.targetComplete {
+    background: rgba(5, 150, 105, 0.1);
+    color: #059669;
+    border-color: rgba(5, 150, 105, 0.2);
+
+    :global(body.dark) & {
+      background: rgba(52, 211, 153, 0.12);
+      color: #34d399;
+    }
+  }
+}
+
+.editIcon {
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+}
+
+// زر تحديد هدف جديد لو لم يكن هناك هدف
+.setTargetBtn {
+  background: transparent;
+  border: 1px dashed rgba(0, 0, 0, 0.15);
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  :global(body.dark) & {
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #94a3b8;
+  }
+
+  &:hover {
+    border-color: #059669;
+    color: #059669;
+    background: rgba(5, 150, 105, 0.05);
+
+    :global(body.dark) & {
+      border-color: #34d399;
+      color: #34d399;
     }
   }
 }

@@ -1,8 +1,85 @@
 @use '@/styles/variables' as *;
 
-.settings {
+.settingsContainer {
   display: flex;
   flex-direction: column;
-  gap: $gap;
-  padding: $padding 0;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 680px; // عرض مريح للقراءة والتصفح على الشاشات الكبيرة
+  margin: 0 auto;
+  padding: 0.5rem 0 2rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+// رأس الصفحة
+.pageHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0.25rem;
+}
+
+.headerIconWrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(5, 150, 105, 0.1);
+  color: #059669;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  :global(body.dark) & {
+    background: rgba(52, 211, 153, 0.12);
+    color: #34d399;
+  }
+}
+
+.headerTextGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.pageTitle {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.3px;
+
+  :global(body.dark) & {
+    color: #f8fafc;
+  }
+}
+
+.pageSubtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.4;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+}
+
+// قائمة البطاقات
+.sectionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

@@ -1,0 +1,82 @@
+@use '@/styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  // أخذ المسافات الآمنة للهاتف بالحسبان مع المتغير الافتراضي
+  padding: max(#{$padding}, env(safe-area-inset-top)) 
+           max(#{$padding}, env(safe-area-inset-right)) 
+           max(#{$padding}, env(safe-area-inset-bottom)) 
+           max(#{$padding}, env(safe-area-inset-left));
+  
+  animation: fadeIn 0.25s ease-out;
+
+  // منع السحب والتحديث التلقائي في الموبايل
+  overscroll-behavior: contain;
+  
+  // منع تحديد النصوص بالخطأ أثناء الضغط السريع
+  user-select: none;
+  -webkit-user-select: none;
+
+  // منع الـ Double-tap Zoom لتحقيق استجابة لمس فورية بدون تأخير 300ms
+  touch-action: manipulation;
+}
+
+.closeBtn {
+  position: absolute;
+  // نزول آمن أسفل النوتش والكاميرا
+  top: max(20px, env(safe-area-inset-top));
+  // في الواجهات العربية يفضل استخدام inset-inline-end ليكون مرناً
+  inset-inline-end: max(20px, env(safe-area-inset-right));
+  
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  // تنعيم اللون وتأثير الضغط معاً
+  transition: background-color $transition, transform 0.15s ease;
+  z-index: 10;
+  
+  // إزالة الوميض الأزرق الافتراضي عند اللمس على الأندرويد
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $gap;
+  width: 100%;
+  max-width: 500px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
