@@ -20,21 +20,30 @@ function SettingsTab({
   onUpdateAdhkar,
   onDeleteAdhkar,
 
-  // بيانات المجموعات وإجراءاتها
+  // بيانات المجموعات وإجراءاتها (تدعم الاسمين لضمان عدم حدوث الخطأ نهائياً)
   groups = [],
   onAddGroup,
   onUpdateGroup,
   onDeleteGroup,
+  onAddGroupItem,
   onAddItem,
+  onUpdateGroupItem,
   onUpdateItem,
+  onDeleteGroupItem,
   onDeleteItem,
 
   // إجراءات مسح البيانات
   onDeleteCounts,
   onDeleteTargets,
   onDeleteClicks,
-  onDeleteAll,
+  onExportBackup,
+  onImportBackup, onDeleteAll,
 }) {
+  // دمج آمن للدوال لضمان أخذ الدالة المتاحة سواء جاءت باسم onAddGroupItem أو onAddItem
+  const handleAddItem = onAddGroupItem || onAddItem
+  const handleUpdateItem = onUpdateGroupItem || onUpdateItem
+  const handleDeleteItem = onDeleteGroupItem || onDeleteItem
+
   return (
     <div className={styles.settingsContainer}>
       {/* رأس تبويب الإعدادات */}
@@ -61,9 +70,9 @@ function SettingsTab({
           onAdd={onAddGroup}
           onUpdate={onUpdateGroup}
           onDelete={onDeleteGroup}
-          onAddItem={onAddItem}
-          onUpdateItem={onUpdateItem}
-          onDeleteItem={onDeleteItem}
+          onAddItem={handleAddItem}
+          onUpdateItem={handleUpdateItem}
+          onDeleteItem={handleDeleteItem}
           allAdhkar={adhkar}
         />
 
@@ -81,6 +90,8 @@ function SettingsTab({
           onDeleteTargets={onDeleteTargets}
           onDeleteClicks={onDeleteClicks}
           onDeleteAll={onDeleteAll}
+          onExportBackup={onExportBackup}
+          onImportBackup={onImportBackup}
         />
 
         {/* 5. عن التطبيق */}

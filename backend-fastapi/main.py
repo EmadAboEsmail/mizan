@@ -519,3 +519,161 @@ def delete_group_item(
 
     db.commit()
     return build_group_response(group, db)
+# ===========================
+# النسخ الاحتياطي الكامل (Backup & Restore)
+# ===========================
+
+@app.get("/api/backup")
+def export_backup(db: Session = Depends(get_db)):
+    adhkar = db.query(Adhkar).all()
+    counts = db.query(Count).all()
+    targets = db.query(Target).all()
+    clicks = db.query(Click).all()
+    groups = db.query(Group).all()
+    group_items = db.query(GroupItem).all()
+
+    return {
+        "version": "1.0",
+        "exported_at": int(time.time() * 1000),
+        "adhkar": [
+            {"id": a.id, "text": a.text, "default_target": a.default_target}
+            for a in adhkar
+        ],
+        "counts": [
+            {"zekr_id": c.zekr_id, "count": c.count}
+            for c in counts
+        ],
+        "targets": [
+            {"zekr_id": t.zekr_id, "target": t.target}
+            for t in targets
+        ],
+        "clicks": [
+            {"zekr_id": cl.zekr_id, "timestamp": cl.timestamp}
+            for cl in clicks
+        ],
+        "groups": [
+            {
+                "id": g.id,
+                "name": g.name,
+                "description": g.description,
+                "created_at": g.created_at,
+            }
+            for g in groups
+        ],
+        "group_items": [
+            {
+                "group_id": gi.group_id,
+                "zekr_id": gi.zekr_id,
+                "position": gi.position,
+                "target": gi.target,
+            }
+            for gi in group_items
+        ],
+    }
+
+
+@app.post("/api/backup")
+def import_backup(data: dict, db: Session = Depends(get_db)):
+    try:
+        # 1. تفريغ الجداول بالكامل لمنع تكرار أي عنصر عند الاستيراد
+        db.query(GroupItem).delete()
+        db.query(Group).delete()
+        db.query(Click).delete()
+        db.query(Count).delete()
+        db.query(Target).delete()
+        db.query(Adhkar).delete()
+        db.flush()
+
+        # 2. استرجاع الأذكار
+        adhkar_list = data.get("adhkar", [])
+        for a in adhkar_list:
+            db.add(Adhkar(
+                id=a["id"],
+                text=a["text"],
+                default_target=a.get("default_target"),
+            ))
+        db.flush()
+
+        # 3. استرجاع العدادات (يدعم كلاً من Dictionary أو List)
+        counts_data = data.get("counts", [])
+        counts_dict = {}
+        if isinstance(counts_data, dict):
+            for zid, cnt in counts_data.items():
+                db.add(Count(zekr_id=zid, count=int(cnt)))
+                counts_dict[zid] = int(cnt)
+        elif isinstance(counts_data, list):
+            for c in counts_data:
+                db.add(Count(zekr_id=c["zekr_id"], count=int(c["count"])))
+                counts_dict[c["zekr_id"]] = int(c["count"])
+        db.flush()
+
+        # 4. استرجاع الأهداف
+        targets_data = data.get("targets", [])
+        if isinstance(targets_data, dict):
+            for zid, trg in targets_data.items():
+                if trg is not None:
+                    db.add(Target(zekr_id=zid, target=int(trg)))
+        elif isinstance(targets_data, list):
+            for t in targets_data:
+                if t.get("target") is not None:
+                    db.add(Target(zekr_id=t["zekr_id"], target=int(t["target"])))
+        db.flush()
+
+        # 5. استرجاع الضغطات وتواريخ الإحصائيات
+        clicks_data = data.get("clicks", [])
+        if clicks_data and isinstance(clicks_data, list):
+            for cl in clicks_data:
+                db.add(Click(
+                    zekr_id=cl["zekr_id"],
+                    timestamp=int(cl["timestamp"]),
+                ))
+        else:
+            # لو ملف قديم بدون جدول ضغطات، ننشئ ضغطات مطابقة للعداد بتاريخ التصدير
+            backup_time = int(time.time() * 1000)
+            if "exportedAt" in data:
+                try:
+                    dt = datetime.fromisoformat(data["exportedAt"].replace("Z", "+00:00"))
+                    backup_time = int(dt.timestamp() * 1000)
+                except Exception:
+                    pass
+
+            for zid, cnt in counts_dict.items():
+                for _ in range(cnt):
+                    db.add(Click(zekr_id=zid, timestamp=backup_time))
+        db.flush()
+
+        # 6. استرجاع المجموعات
+        for g in data.get("groups", []):
+            db.add(Group(
+                id=g["id"],
+                name=g["name"],
+                description=g.get("description"),
+                created_at=g.get("created_at", int(time.time() * 1000)),
+            ))
+        db.flush()
+
+        # 7. استرجاع عناصر المجموعات
+        if "group_items" in data and isinstance(data["group_items"], list):
+            for gi in data["group_items"]:
+                db.add(GroupItem(
+                    group_id=gi["group_id"],
+                    zekr_id=gi["zekr_id"],
+                    position=gi.get("position", 1),
+                    target=gi.get("target"),
+                ))
+        else:
+            for g in data.get("groups", []):
+                for idx, item in enumerate(g.get("items", []), start=1):
+                    db.add(GroupItem(
+                        group_id=g["id"],
+                        zekr_id=item.get("zekr_id"),
+                        position=item.get("position", idx),
+                        target=item.get("target"),
+                    ))
+
+        db.commit()
+        return {"ok": True, "count": len(adhkar_list)}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"فشل استيراد النسخة: {str(e)}")

@@ -21,6 +21,8 @@ import {
   addGroupItem,
   updateGroupItem,
   deleteGroupItem,
+  getBackup,     // ✅ تم إضافة الاستيراد
+  restoreBackup, // ✅ تم إضافة الاستيراد
 } from '@/api/client.js'
 import Tabs from '@/components/zekr_app/zekr/Tabs.jsx'
 import ZekrDisplay from '@/components/zekr_app/zekr/ZekrDisplay.jsx'
@@ -33,10 +35,9 @@ import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import StatsTab from '@/components/zekr_app/stats/StatsTab.jsx'
 import SettingsTab from '@/components/zekr_app/settings/SettingsTab.jsx'
 import FocusMode from '@/components/zekr_app/zekr/FocusMode.jsx'
-import ThemeToggle from '@/components/ui/ThemeToggle.jsx' // زر المظهر السريع
+import ThemeToggle from '@/components/ui/ThemeToggle.jsx'
 import styles from './Zekr.module.scss'
 
-// التبويبات الرئيسية مع الأيقونات الدلالية
 const TABS = [
   { id: 'sabh', label: 'سبحة', icon: '📿' },
   { id: 'stats', label: 'إحصائيات', icon: '📊' },
@@ -63,9 +64,8 @@ function Zekr() {
   const [isResetModalOpen, setIsResetModalOpen] = useState(false)
   const [isFocusMode, setIsFocusMode] = useState(false)
 
-  // بيانات Modal تعديل الهدف
-  const [targetModalZekrId, setTargetModalZekrId] = useState(null)
-  const [targetModalValue, setTargetModalValue] = useState(null)
+  // سياق تعديل الهدف (حر أم مجموعات)
+  const [targetModalConfig, setTargetModalConfig] = useState(null)
 
   // ===========================
   // القيم المشتقة
@@ -106,7 +106,7 @@ function Zekr() {
     loadInitialData()
   }, [loadInitialData])
 
-  // اختيار أول ذكر تلقائياً في حال حذف الذكر الحالي
+  // اختيار أول ذكر تلقائياً عند حذف الذكر الحالي
   useEffect(() => {
     if (allAdhkar.length > 0 && !allAdhkar.some((z) => z.id === currentZekrId)) {
       setCurrentZekrId(allAdhkar[0].id)
@@ -122,7 +122,7 @@ function Zekr() {
   }, [isFocusMode, isComplete])
 
   // ===========================
-  // دالة موحدة للتسبيح (Optimistic Update)
+  // التسبيح بنظام التحديث التفاؤلي
   // ===========================
   const handlePerformClick = useCallback(async (zekrId) => {
     if (!zekrId) return
@@ -146,7 +146,6 @@ function Zekr() {
     }
   }, [])
 
-  // دالة النقر في الوضع العادي (مغلّفة بـ useCallback لتفادي تكرار ربط مستمع الكيبورد)
   const handleNormalClick = useCallback(() => {
     if (!currentZekrId) return
     if (currentTarget && currentCount >= currentTarget) return
@@ -167,24 +166,37 @@ function Zekr() {
     }
   }
 
+  const handleOpenNormalTargetModal = (zekrId, currentValue) => {
+    setTargetModalConfig({ mode: 'normal', zekrId, currentValue })
+    setIsTargetModalOpen(true)
+  }
+
+  const handleOpenGroupTargetModal = (groupId, itemId, currentValue) => {
+    setTargetModalConfig({ mode: 'group', groupId, itemId, currentValue })
+    setIsTargetModalOpen(true)
+  }
+
   const handleConfirmTarget = async (newTarget) => {
-    if (!targetModalZekrId) return
+    if (!targetModalConfig) return
     const numericTarget = newTarget ? parseInt(newTarget, 10) : null
+
     try {
-      await setTarget(targetModalZekrId, numericTarget)
-      setTargets((prev) => ({ ...prev, [targetModalZekrId]: numericTarget }))
+      if (targetModalConfig.mode === 'normal') {
+        await setTarget(targetModalConfig.zekrId, numericTarget)
+        setTargets((prev) => ({ ...prev, [targetModalConfig.zekrId]: numericTarget }))
+      } else if (targetModalConfig.mode === 'group') {
+        await handleUpdateGroupItem(
+          targetModalConfig.groupId,
+          targetModalConfig.itemId,
+          { target: numericTarget }
+        )
+      }
+
       setIsTargetModalOpen(false)
-      setTargetModalZekrId(null)
-      setTargetModalValue(null)
+      setTargetModalConfig(null)
     } catch (err) {
       console.error('فشل تعديل الهدف:', err)
     }
-  }
-
-  const handleOpenTargetModal = (zekrId, targetValue) => {
-    setTargetModalZekrId(zekrId)
-    setTargetModalValue(targetValue)
-    setIsTargetModalOpen(true)
   }
 
   const handleResetForZekr = async (zekr_id) => {
@@ -197,7 +209,7 @@ function Zekr() {
   }
 
   // ===========================
-  // Handlers — إدارة الأذكار
+  // Handlers — إدارة الأذكار والمجموعات
   // ===========================
   const handleAddAdhkar = async (text, target) => {
     try {
@@ -226,9 +238,6 @@ function Zekr() {
     }
   }
 
-  // ===========================
-  // Handlers — مسح البيانات
-  // ===========================
   const handleDeleteAllCounts = async () => {
     try {
       await deleteAllCounts()
@@ -266,9 +275,6 @@ function Zekr() {
     }
   }
 
-  // ===========================
-  // Handlers — المجموعات
-  // ===========================
   const handleAddGroup = async (name, description) => {
     try {
       const newGroup = await createGroup(name, description)
@@ -324,6 +330,49 @@ function Zekr() {
   }
 
   // ===========================
+  // النسخ الاحتياطي الكامل (سيرفر 100%)
+  // ===========================
+  const handleExportBackup = async () => {
+    try {
+      // ✅ نسحب النسخة الشاملة مباشرة من السيرفر (تحتوي على كل التواريخ والـ clicks)
+      const backupData = await getBackup()
+
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], {
+        type: 'application/json',
+      })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      const dateStr = new Date().toISOString().slice(0, 10)
+      a.href = url
+      a.download = `zekr-backup-${dateStr}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('فشل تصدير النسخة الاحتياطية:', err)
+      alert('فشل في تصدير النسخة الاحتياطية من السيرفر.')
+    }
+  }
+
+  const handleImportBackup = async (fileContent) => {
+    try {
+      const data = JSON.parse(fileContent)
+
+      // ✅ نرسل الملف بالكامل للسيرفر ليقوم بكتابة الجداول والتواريخ والعدادات
+      const res = await restoreBackup(data)
+
+      // تحديث كل البيانات في الواجهة فوراً
+      loadInitialData()
+
+      return { success: true, count: res?.count || data.adhkar?.length || 0 }
+    } catch (err) {
+      console.error('فشل استيراد النسخة الاحتياطية:', err)
+      throw err
+    }
+  }
+
+  // ===========================
   // اختصار الكيبورد (Space)
   // ===========================
   useEffect(() => {
@@ -354,7 +403,7 @@ function Zekr() {
   ])
 
   // ===========================
-  // شاشات التحميل والخطأ العصرية
+  // شاشات التحميل والخطأ
   // ===========================
   if (loading) {
     return (
@@ -380,7 +429,7 @@ function Zekr() {
     )
   }
 
-  // محتوى السبحة المشترك
+  // محتوى السبحة الحرة
   const renderNormalSabhContent = () => {
     if (!currentZekr) {
       return (
@@ -403,8 +452,9 @@ function Zekr() {
           zekrText={currentZekr.text}
           count={currentCount}
           target={currentTarget}
-          onClickCount={() => handleOpenTargetModal(currentZekrId, currentTarget)}
+          onClickCount={() => handleOpenNormalTargetModal(currentZekrId, currentTarget)}
           isComplete={isComplete}
+          isFocusMode={isFocusMode}
         />
 
         {!isFocusMode && (
@@ -448,19 +498,18 @@ function Zekr() {
   // ===========================
   return (
     <div className={styles.zekr}>
-      {/* الشريط العلوي المنسق (زر الرجوع وزر تبديل الثيم) */}
       <header className={styles.navHeader}>
         <Link to="/" className={styles.backBtn} title="الرجوع للرئيسية">
           <span>←</span>
           <span>الرئيسية</span>
         </Link>
-        <div>
+
+        <div className={styles.headerActions}>
           <ThemeToggle />
         </div>
       </header>
 
       <div className={styles.container}>
-        {/* شريط التبويبات الرئيسي */}
         <Tabs tabs={TABS} active={activeTab} onChange={setActiveTab} />
 
         <main className={styles.content}>
@@ -471,7 +520,9 @@ function Zekr() {
               {sabhMode === 'normal' && (
                 <div className={styles.normalModeContainer}>
                   {isFocusMode ? (
-                    <FocusMode onClose={() => setIsFocusMode(false)}>
+                    <FocusMode onClose={() => setIsFocusMode(false)}
+                      onCount={handleNormalClick}
+                    >
                       {renderNormalSabhContent()}
                     </FocusMode>
                   ) : (
@@ -483,10 +534,9 @@ function Zekr() {
               {sabhMode === 'group' && (
                 <GroupModeView
                   groups={groups}
-                  targets={targets}
                   onAddClick={handlePerformClick}
                   onResetClick={handleResetForZekr}
-                  onSetTarget={(id, target) => handleOpenTargetModal(id, target)}
+                  onSetTarget={handleOpenGroupTargetModal}
                 />
               )}
             </div>
@@ -511,22 +561,22 @@ function Zekr() {
               onAddGroupItem={handleAddGroupItem}
               onUpdateGroupItem={handleUpdateGroupItem}
               onDeleteGroupItem={handleDeleteGroupItem}
+              onExportBackup={handleExportBackup}
+              onImportBackup={handleImportBackup}
             />
           )}
         </main>
       </div>
 
-      {/* نوافذ التعديل والتأكيد المنبثقة */}
       <PromptModal
         isOpen={isTargetModalOpen}
         onClose={() => {
           setIsTargetModalOpen(false)
-          setTargetModalZekrId(null)
-          setTargetModalValue(null)
+          setTargetModalConfig(null)
         }}
         onConfirm={handleConfirmTarget}
-        title="الهدف الجديد"
-        defaultValue={targetModalValue ?? ''}
+        title={targetModalConfig?.mode === 'group' ? 'هدف الذكر في المجموعة' : 'الهدف للوضع الحر'}
+        defaultValue={targetModalConfig?.currentValue ?? ''}
         type="number"
         min={1}
         max={10000}

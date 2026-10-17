@@ -23,7 +23,7 @@ const CheckIcon = () => (
   </svg>
 )
 
-function ZekrDisplay({ zekrText, count = 0, target, onClickCount, isComplete }) {
+function ZekrDisplay({ zekrText, count = 0, target, onClickCount, isComplete, isFocusMode = false }) {
   const [copied, setCopied] = useState(false)
 
   // نسخ نص الذكر للحافظة
@@ -40,7 +40,11 @@ function ZekrDisplay({ zekrText, count = 0, target, onClickCount, isComplete }) 
   }
 
   return (
-    <div className={`${styles.displayCard} ${isComplete ? styles.completeGlow : ''}`}>
+    <div className={`
+        ${styles.displayCard} 
+        ${isComplete ? styles.completeGlow : ''} 
+        ${isFocusMode ? styles.focusDisplay : ''} 
+      `}>
       {/* بطاقة نص الذكر مع زر النسخ */}
       <div className={styles.textContainer}>
         <h2 className={styles.text}>{zekrText}</h2>

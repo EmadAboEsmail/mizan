@@ -13,7 +13,8 @@ function ActionButtons({
   const [clicked, setClicked] = useState(false)
   const timerRef = useRef(null)
 
-  const handleClick = () => {
+  const handleClick = (e) => {
+    e?.stopPropagation()
     setClicked(true)
     clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => setClicked(false), 150)

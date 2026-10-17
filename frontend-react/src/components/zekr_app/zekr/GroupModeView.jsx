@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react'
 import GroupSelect from './GroupSelect.jsx'
 import ZekrDisplay from './ZekrDisplay.jsx'
 import ActionButtons from './ActionButtons.jsx'
+import FocusMode from '@/components/zekr_app/zekr/FocusMode.jsx' // ✅ استيراد وضع التركيز
 import styles from './GroupModeView.module.scss'
 
-// أيقونات للتنقل
 const ArrowRightIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="9 18 15 12 9 6" />
@@ -19,7 +19,6 @@ const ArrowLeftIcon = () => (
 
 function GroupModeView({
   groups = [],
-  targets = {},
   onAddClick,
   onResetClick,
   onSetTarget,
@@ -29,8 +28,9 @@ function GroupModeView({
   const [localCount, setLocalCount] = useState(0)
   const [showTransition, setShowTransition] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
+  const [isFocusMode, setIsFocusMode] = useState(false) // ✅ حالة وضع التركيز للمجموعات
 
-  // 1. اختيار أول مجموعة تلقائياً إن وجدت
+  // 1. اختيار أول مجموعة تلقائياً إن وُجدت
   useEffect(() => {
     if (!selectedGroupId && groups.length > 0) {
       setSelectedGroupId(groups[0].id)
@@ -41,7 +41,7 @@ function GroupModeView({
   const items = selectedGroup?.items ?? []
   const currentItem = items[currentIndex]
 
-  // حماية الفهرس لو تم حذف عناصر من المجموعة
+  // حماية الفهرس لو حُذفت عناصر
   useEffect(() => {
     if (items.length > 0 && currentIndex >= items.length) {
       setCurrentIndex(0)
@@ -49,15 +49,20 @@ function GroupModeView({
     }
   }, [items.length, currentIndex])
 
-  // الهدف المطلوب للذكر الحالي
+  // هدف الذكر داخل المجموعة
   const currentTarget = currentItem
-    ? targets[currentItem.zekr_id] ??
-    currentItem.target ??
-    currentItem.default_target ??
-    null
+    ? currentItem.target ?? currentItem.default_target ?? null
     : null
 
-  // معالجة الانتقال للذكر التالي يدوياً أو بعد انتهاء المؤقت
+  // الخروج من وضع التركيز تلقائياً عند إتمام المجموعة كاملة
+  useEffect(() => {
+    if (isFocusMode && isComplete) {
+      const timer = setTimeout(() => setIsFocusMode(false), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [isFocusMode, isComplete])
+
+  // الانتقال للذكر التالي
   const goToNext = () => {
     setShowTransition(false)
     if (currentIndex < items.length - 1) {
@@ -77,7 +82,7 @@ function GroupModeView({
     }
   }
 
-  // إعادة البدء من أول ذكر
+  // إعادة البدء
   const restartGroup = () => {
     setIsComplete(false)
     setCurrentIndex(0)
@@ -91,6 +96,7 @@ function GroupModeView({
     setLocalCount(0)
     setShowTransition(false)
     setIsComplete(false)
+    setIsFocusMode(false)
   }
 
   // مراقبة الوصول للهدف
@@ -130,11 +136,10 @@ function GroupModeView({
   }
 
   const handleSetTarget = () => {
-    if (!currentItem) return
-    onSetTarget(currentItem.zekr_id, currentTarget)
+    if (!currentItem || !selectedGroup) return
+    onSetTarget(selectedGroup.id, currentItem.id, currentTarget)
   }
 
-  // إذا لم تكن هناك مجموعات مضافة في التطبيق
   if (groups.length === 0) {
     return (
       <div className={styles.emptyView}>
@@ -145,24 +150,19 @@ function GroupModeView({
     )
   }
 
-  return (
-    <div className={styles.view}>
-      {/* اختيار المجموعة */}
-      <div className={styles.selectWrapper}>
-        <GroupSelect
-          groups={groups}
-          value={selectedGroupId}
-          onChange={handleGroupChange}
-        />
-      </div>
-
-      {items.length === 0 ? (
+  // محتوى المجموعة التفاعلي (مشترك بين العرض العادي ووضع التركيز)
+  const renderGroupContent = () => {
+    if (items.length === 0) {
+      return (
         <div className={styles.emptyGroupCard}>
           <p>هذه المجموعة لا تحتوي على أذكار حتى الآن.</p>
           <span>أضف أذكاراً إليها من صفحة الإعدادات.</span>
         </div>
-      ) : isComplete ? (
-        /* شاشة اكتمال المجموعة (مع إمكانية النقر للإعادة فوراً) */
+      )
+    }
+
+    if (isComplete) {
+      return (
         <div className={styles.completeCard} onClick={restartGroup} title="اضغط للبدء من جديد">
           <div className={styles.celebrateIcon}>🎉</div>
           <h2 className={styles.completeTitle}>تقبل الله! أتممت الورد</h2>
@@ -171,8 +171,11 @@ function GroupModeView({
             إعادة المجموعة الآن ↺
           </button>
         </div>
-      ) : showTransition ? (
-        /* شاشة الانتقال للذكر التالي (قابلة للنقر للتخطي الفوري) */
+      )
+    }
+
+    if (showTransition) {
+      return (
         <div className={styles.transitionCard} onClick={goToNext} title="اضغط للمتابعة فوراً">
           <div className={styles.doneIcon}>✓</div>
           <h2 className={styles.transitionTitle}>أحسنت! أتممت الذكر</h2>
@@ -181,25 +184,28 @@ function GroupModeView({
           </p>
           <span className={styles.skipPrompt}>اضغط في أي مكان للمتابعة فوراً ⏭</span>
         </div>
-      ) : (
-        /* واجهة التسبيح في المجموعة */
-        <div className={styles.content}>
-          {/* شريط التقدم المجزأ (Segmented Progress) */}
-          <div className={styles.storyProgress} aria-label="تقدم المجموعة">
-            {items.map((_, idx) => (
-              <div
-                key={idx}
-                className={`${styles.progressBar} ${idx < currentIndex
-                    ? styles.barCompleted
-                    : idx === currentIndex
-                      ? styles.barActive
-                      : ''
-                  }`}
-              />
-            ))}
-          </div>
+      )
+    }
 
-          {/* شريط التنقل العلوي ومعلومات الذكر */}
+    return (
+      <div className={styles.content}>
+        {/* شريط التقدم المجزأ للورد */}
+        <div className={styles.storyProgress} aria-label="تقدم المجموعة">
+          {items.map((_, idx) => (
+            <div
+              key={idx}
+              className={`${styles.progressBar} ${idx < currentIndex
+                ? styles.barCompleted
+                : idx === currentIndex
+                  ? styles.barActive
+                  : ''
+                }`}
+            />
+          ))}
+        </div>
+
+        {/* أزرار التنقل تظهر خارج وضع التركيز */}
+        {!isFocusMode && (
           <div className={styles.navBar}>
             <button
               type="button"
@@ -227,36 +233,76 @@ function GroupModeView({
               <ArrowLeftIcon />
             </button>
           </div>
+        )}
 
-          {/* عرض الذكر والعداد */}
-          <ZekrDisplay
-            zekrText={currentItem.text}
-            count={localCount}
-            target={currentTarget}
-            onClickCount={handleSetTarget}
-            isComplete={!!currentTarget && localCount >= currentTarget}
-          />
+        {/* عرض الذكر والعداد */}
+        <ZekrDisplay
+          zekrText={currentItem.text}
+          count={localCount}
+          target={currentTarget}
+          onClickCount={handleSetTarget}
+          isComplete={!!currentTarget && localCount >= currentTarget}
+          isFocusMode={isFocusMode}
+        />
 
-          {/* تنبيه إذا كان الذكر مفتوحاً بدون هدف */}
-          {!currentTarget && (
-            <div className={styles.openTargetAlert}>
-              <span>هذا الذكر بدون هدف محدد. اضغط "تخطي" عند الانتهاء منه.</span>
-            </div>
-          )}
+        {!currentTarget && (
+          <div className={styles.openTargetAlert}>
+            <span>هذا الذكر بدون هدف محدد. اضغط "تخطي" عند الانتهاء منه.</span>
+          </div>
+        )}
 
-          {/* أزرار التسبيح */}
-          <ActionButtons
-            zekrText={currentItem.text}
-            onReset={handleReset}
-            onClick={handleAddClick}
-            progress={
-              currentTarget
-                ? Math.min((localCount / currentTarget) * 100, 100)
-                : 0
-            }
-            isComplete={!!currentTarget && localCount >= currentTarget}
+        {/* أزرار التسبيح */}
+        <ActionButtons
+          zekrText={currentItem.text}
+          onReset={handleReset}
+          onClick={handleAddClick}
+          progress={
+            currentTarget
+              ? Math.min((localCount / currentTarget) * 100, 100)
+              : 0
+          }
+          isComplete={!!currentTarget && localCount >= currentTarget}
+          isFocusMode={isFocusMode}
+          showReset={!isFocusMode}
+        />
+
+        {/* زر تفعيل وضع التركيز للمجموعة */}
+        {!isFocusMode && items.length > 0 && (
+          <button
+            type="button"
+            className={styles.focusBtn}
+            onClick={() => setIsFocusMode(true)}
+            title="الانتقال لوضع التركيز بدون مشتتات"
+          >
+            🌙 وضع التركيز
+          </button>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div className={styles.view}>
+      {/* قائمة اختيار المجموعة تختفي أثناء وضع التركيز لمنع التشتيت */}
+      {!isFocusMode && (
+        <div className={styles.selectWrapper}>
+          <GroupSelect
+            groups={groups}
+            value={selectedGroupId}
+            onChange={handleGroupChange}
           />
         </div>
+      )}
+
+      {/* التبديل بين وضع التركيز والعرض العادي */}
+      {isFocusMode ? (
+        <FocusMode
+          onCount={handleAddClick}
+          onClose={() => setIsFocusMode(false)}>
+          {renderGroupContent()}
+        </FocusMode>
+      ) : (
+        renderGroupContent()
       )}
     </div>
   )
