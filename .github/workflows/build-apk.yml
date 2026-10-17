@@ -3,7 +3,7 @@ name: Build Android APK
 on:
   push:
     branches: [main, master]
-  workflow_dispatch: # بيسمح لك تشغله يدوياً من GitHub
+  workflow_dispatch:
 
 jobs:
   build:
@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: "npm"
           cache-dependency-path: frontend-react/package-lock.json
 
@@ -24,10 +24,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
-          java-version: 17
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+          java-version: 21
 
       - name: Install Dependencies
         working-directory: frontend-react
