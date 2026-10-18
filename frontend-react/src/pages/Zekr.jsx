@@ -127,25 +127,28 @@ function Zekr() {
   const handlePerformClick = useCallback(async (zekrId) => {
     if (!zekrId) return
 
+    // 1. تحديث فوري ومضمون في الواجهة
     setCounts((prev) => {
       const prevCount = prev[zekrId] || 0
       return { ...prev, [zekrId]: prevCount + 1 }
     })
 
     try {
+      // 2. الحفظ في قاعدة البيانات
       const result = await addClick(zekrId)
+      // تأكيد الرقم (لو الـ API رجع رقم مختلف)
       if (result && typeof result.count === 'number') {
         setCounts((prev) => ({ ...prev, [zekrId]: result.count }))
       }
     } catch (err) {
       console.error('فشل تسجيل الضغطة بالسيرفر:', err)
+      // 3. لو فشل الحفظ، نرجع الرقم زي ما كان عشان ميزعلش المستخدم
       setCounts((prev) => ({
         ...prev,
         [zekrId]: Math.max(0, (prev[zekrId] || 1) - 1),
       }))
     }
   }, [])
-
   const handleNormalClick = useCallback(() => {
     if (!currentZekrId) return
     if (currentTarget && currentCount >= currentTarget) return

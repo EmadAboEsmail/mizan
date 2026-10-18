@@ -1,13 +1,21 @@
 {
   "appId": "com.omda.zekr",
-  "appName": "زكر",
+  "appName": "ذكر",
   "webDir": "dist",
+  "android": {
+    "backgroundColor": "#000000"
+  },
   "plugins": {
     "CapacitorSQLite": {
       "androidIsEncryption": false,
       "androidBiometric": {
         "biometricAuth": false
       }
+    },
+    "StatusBar": {
+      "overlaysWebView": true,
+      "style": "DARK",
+      "backgroundColor": "#000000"
     }
   }
 }

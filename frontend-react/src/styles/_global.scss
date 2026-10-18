@@ -5,12 +5,14 @@
   margin: 0;
   padding: 0;
 }
+
 html,
 body,
 #root {
   direction: rtl;
-  text-align: right;min-height: 100vh;
-  padding-right: 5px;
+  text-align: right;
+  min-height: 100vh;
+  width: 100%;
 }
 
 body {
@@ -18,6 +20,10 @@ body {
   background-color: $bg-page-light;
   color: $text-display-light;
   transition: background-color $transition, color $transition;
+
+  /* إعدادات ملء الشاشة (الأندرويد) */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 body.dark {
