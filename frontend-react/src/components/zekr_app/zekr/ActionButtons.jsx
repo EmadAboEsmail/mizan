@@ -14,29 +14,41 @@ function ActionButtons({
   const timerRef = useRef(null)
 
   const handleClick = (e) => {
+    e?.preventDefault()
     e?.stopPropagation()
+
+    // تشغيل الأنيميشن
     setClicked(true)
     clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => setClicked(false), 150)
+
+    // تنفيذ دالة التسبيح
     onClick()
   }
 
-  // تنظيف الـ timer لو المكوّن اتقفل أثناء الضغط
   useEffect(() => {
     return () => clearTimeout(timerRef.current)
   }, [])
 
   return (
     <div className={`${styles.buttons} ${isFocusMode ? styles.focusButtons : ''}`}>
-      {/* زر التصفير: يظهر فقط إذا لم نكن في وضع التركيز وكان مسموحاً */}
-      {showReset && onReset && !isFocusMode && (
-        <button className={styles.reset} onClick={onReset} title="تصفير">
+
+      {/* زر المسح: يظهر دائماً في الوضع العادي، ويختفي فقط في وضع التركيز */}
+      {showReset && !isFocusMode && (
+        <button
+          type="button"
+          className={styles.reset}
+          onClick={onReset}
+          disabled={!onReset} // بيتعطل لو العدد 0، بس بيفضل ظاهر
+          title="تصفير"
+        >
           ↺
         </button>
       )}
 
       {/* زر التسبيح */}
       <button
+        type="button"
         className={`
           ${styles.click} 
           ${clicked ? styles.clicked : ''} 
@@ -47,9 +59,9 @@ function ActionButtons({
         onClick={handleClick}
         aria-label="تسبيح"
       >
-        {/* في وضع التركيز نعرض 'سبّح' فقط لصغر حجم الزر، وفي الوضع العادي نعرض نص الذكر */}
         <span>{isFocusMode ? 'سبّح' : zekrText}</span>
       </button>
+
     </div>
   )
 }

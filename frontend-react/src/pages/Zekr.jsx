@@ -466,8 +466,7 @@ function Zekr() {
         )}
 
         <ActionButtons
-          zekrText={currentZekr.text}
-          onReset={!isFocusMode && currentCount > 0 ? () => setIsResetModalOpen(true) : undefined}
+          onReset={!isFocusMode ? () => setIsResetModalOpen(true) : undefined} zekrText={currentZekr.text}
           showReset={!isFocusMode}
           onClick={handleNormalClick}
           progress={
