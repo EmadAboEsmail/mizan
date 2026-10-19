@@ -1,0 +1,72 @@
+@use '@/styles/variables' as *;
+
+.stats {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 0.55rem 1.25rem;
+  margin-bottom: 1rem;
+  background: rgba(5, 150, 105, 0.06);
+  border: 1px solid rgba(5, 150, 105, 0.15);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  animation: fadeIn 0.4s ease-out 0.2s both;
+
+  :global(body.dark) & {
+    background: rgba(52, 211, 153, 0.08);
+    border-color: rgba(52, 211, 153, 0.2);
+  }
+
+  @media (max-width: 480px) {
+    gap: 0.85rem;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.8rem;
+  }
+}
+
+.stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #64748b;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+}
+
+.icon {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.value {
+  font-weight: 800;
+  color: #0f172a;
+
+  :global(body.dark) & {
+    color: #f8fafc;
+  }
+}
+
+.label {
+  font-size: 0.78rem;
+  font-weight: 600;
+
+  @media (max-width: 480px) {
+    font-size: 0.72rem;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import Home from "./pages/Home.jsx";
+import Home from "./pages/home/Home.jsx";
 import ZekrLayout from "./pages/zekr/ZekrLayout.jsx";
 import ZekrSabh from "./pages/zekr/ZekrSabh.jsx";
 import ZekrStats from "./pages/zekr/ZekrStats.jsx";

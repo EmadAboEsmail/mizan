@@ -1,6 +1,9 @@
-import AppCard from '@/components/AppCard.jsx'
-import ThemeToggle from '@/components/ui/ThemeToggle.jsx'  // ← جديد
+import AppCard from './AppCard.jsx'
+import ThemeToggle from '@/components/ui/ThemeToggle.jsx'
+import QuickStats from './QuickStates.jsx'
+import ContinueCard from './ContinueCard.jsx'
 import styles from './Home.module.scss'
+
 const APPS = [
   {
     id: 'zekr',
@@ -10,7 +13,7 @@ const APPS = [
     path: '/zekr',
     icon: '📿',
     available: true,
-    accentColor: '#059669', // لون مميز للمشروع (زمردي)
+    accentColor: '#059669',
   },
   {
     id: 'bubble-sort',
@@ -20,7 +23,7 @@ const APPS = [
     path: '/bubble-sort',
     icon: '🔢',
     available: false,
-    accentColor: '#3b82f6', // أزرق
+    accentColor: '#3b82f6',
   },
   {
     id: 'selection-sort',
@@ -30,21 +33,22 @@ const APPS = [
     path: '/selection-sort',
     icon: '📊',
     available: false,
-    accentColor: '#8b5cf6', // بنفسجي
+    accentColor: '#8b5cf6',
   },
 ]
 
-function Home() {
-  const availableCount = APPS.filter((a) => a.available).length
+const AVAILABLE_COUNT = APPS.filter((a) => a.available).length
 
+function Home() {
   return (
     <div className={styles.home}>
-      {/* توهج ضوئي ناعم في الخلفية */}
       <div className={styles.ambientGlow} />
-      <div className={styles.ThemeToggleFloat}>
+
+      {/* ✅ إصلاح: themeToggleFloat (lowercase) */}
+      <div className={styles.themeToggleFloat}>
         <ThemeToggle />
       </div>
-      {/* الرأس والترحيب (Hero Section) */}
+
       <header className={styles.header}>
         <div className={styles.badge}>
           <span className={styles.badgeDot} />
@@ -53,27 +57,34 @@ function Home() {
 
         <h1 className={styles.title}>مساحتي الرقمية</h1>
         <p className={styles.subtitle}>
-          مجموعة من الأدوات التفاعلية والتطبيقات المفيدة المصنوعة بشغف وتجربة مستخدم مدروسة.
+          مجموعة من الأدوات التفاعلية والتطبيقات المفيدة المصنوعة بشغف وتجربة مستخدم
+          مدروسة.
         </p>
 
-        {/* إحصائية سريعة */}
+        {/* ✅ نشاط المستخدم (يظهر لو عنده بيانات) */}
+        <QuickStats />
+
+        {/* إحصائيات المنصة */}
         <div className={styles.statsBar}>
           <span className={styles.statItem}>
             <strong>{APPS.length}</strong> مشاريع
           </span>
           <span className={styles.statDivider}>•</span>
           <span className={styles.statItem}>
-            <strong className={styles.activeText}>{availableCount}</strong> متاح الآن
+            <strong className={styles.activeText}>{AVAILABLE_COUNT}</strong> متاح
+            الآن
           </span>
           <span className={styles.statDivider}>•</span>
           <span className={styles.statItem}>
-            <strong>{APPS.length - availableCount}</strong> قيد التطوير
+            <strong>{APPS.length - AVAILABLE_COUNT}</strong> قيد التطوير
           </span>
         </div>
       </header>
 
-      {/* شبكة التطبيقات */}
       <main className={styles.gridSection}>
+        {/* ✅ تابع من حيث توقفت */}
+        <ContinueCard />
+
         <div className={styles.grid}>
           {APPS.map((app, i) => (
             <AppCard key={app.id} app={app} index={i} />
@@ -81,8 +92,6 @@ function Home() {
         </div>
       </main>
 
-
-      {/* تذييل الصفحة */}
       <footer className={styles.footer}>
         <p className={styles.footerText}>
           صُنع بإتقان وشغف 🤍 • {new Date().getFullYear()}
