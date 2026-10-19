@@ -6,9 +6,10 @@ function ActionButtons({
   onReset,
   onClick,
   progress,
+  count = 0,        // ← جديد: العدد الحالي (لتعطيل reset عند 0)
   isComplete,
   showReset = true,
-  isFocusMode = false
+  isFocusMode = false,
 }) {
   const [clicked, setClicked] = useState(false)
   const timerRef = useRef(null)
@@ -17,12 +18,11 @@ function ActionButtons({
     e?.preventDefault()
     e?.stopPropagation()
 
-    // تشغيل الأنيميشن
+    // ✅ animation مع timer واحد (يمنع تراكم timers)
     setClicked(true)
     clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => setClicked(false), 150)
 
-    // تنفيذ دالة التسبيح
     onClick()
   }
 
@@ -30,29 +30,29 @@ function ActionButtons({
     return () => clearTimeout(timerRef.current)
   }, [])
 
+  const resetDisabled = !onReset || count === 0
+
   return (
     <div className={`${styles.buttons} ${isFocusMode ? styles.focusButtons : ''}`}>
-
-      {/* زر المسح: يظهر دائماً في الوضع العادي، ويختفي فقط في وضع التركيز */}
       {showReset && !isFocusMode && (
         <button
           type="button"
           className={styles.reset}
           onClick={onReset}
-          disabled={!onReset} // بيتعطل لو العدد 0، بس بيفضل ظاهر
-          title="تصفير"
+          disabled={resetDisabled}
+          title={resetDisabled ? 'لا يوجد عدد لتصفيره' : 'تصفير العدد'}
+          aria-label="تصفير العدد"
         >
           ↺
         </button>
       )}
 
-      {/* زر التسبيح */}
       <button
         type="button"
         className={`
-          ${styles.click} 
-          ${clicked ? styles.clicked : ''} 
-          ${isComplete ? styles.complete : ''} 
+          ${styles.click}
+          ${clicked ? styles.clicked : ''}
+          ${isComplete ? styles.complete : ''}
           ${isFocusMode ? styles.floatingRightBtn : ''}
         `}
         style={{ '--progress': `${progress}%` }}
@@ -61,7 +61,6 @@ function ActionButtons({
       >
         <span>{isFocusMode ? 'سبّح' : zekrText}</span>
       </button>
-
     </div>
   )
 }

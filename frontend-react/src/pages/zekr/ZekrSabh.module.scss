@@ -85,3 +85,23 @@
     background: #047857;
   }
 }
+// kbd hint صغير على زر focus
+.kbdHint {
+  display: inline-block;
+  margin-inline-start: 0.5rem;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  background: rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  color: #475569;
+  line-height: 1.2;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #cbd5e1;
+  }
+}

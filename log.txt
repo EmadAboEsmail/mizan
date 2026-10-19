@@ -1,508 +1,1816 @@
-import styles from './BarChart.module.scss'
+import { useState, useRef, useEffect } from 'react'
+import styles from './ActionButtons.module.scss'
 
-function BarChart({ labels = [], values = [] }) {
-  const maxValue = Math.max(...values, 1)
+function ActionButtons({
+  zekrText,
+  onReset,
+  onClick,
+  progress,
+  isComplete,
+  showReset = true,
+  isFocusMode = false
+}) {
+  const [clicked, setClicked] = useState(false)
+  const timerRef = useRef(null)
+
+  const handleClick = (e) => {
+    e?.preventDefault()
+    e?.stopPropagation()
+
+    // تشغيل الأنيميشن
+    setClicked(true)
+    clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => setClicked(false), 150)
+
+    // تنفيذ دالة التسبيح
+    onClick()
+  }
+
+  useEffect(() => {
+    return () => clearTimeout(timerRef.current)
+  }, [])
 
   return (
-    <div className={styles.chartCard}>
-      <div className={styles.barsContainer}>
-        {labels.map((label, i) => {
-          const value = values[i] || 0
-          const heightPercent = Math.round((value / maxValue) * 100)
-          const isHighest = value === maxValue && value > 0
+    <div className={`${styles.buttons} ${isFocusMode ? styles.focusButtons : ''}`}>
 
-          return (
-            <div key={label + i} className={styles.barColumn}>
-              {/* القيمة المنبثقة فوق العمود */}
-              <span className={`${styles.barValue} ${value === 0 ? styles.zero : ''}`}>
-                {value > 0 ? value.toLocaleString('en') : ''}
-              </span>
+      {/* زر المسح: يظهر دائماً في الوضع العادي، ويختفي فقط في وضع التركيز */}
+      {showReset && !isFocusMode && (
+        <button
+          type="button"
+          className={styles.reset}
+          onClick={onReset}
+          disabled={!onReset} // بيتعطل لو العدد 0، بس بيفضل ظاهر
+          title="تصفير"
+        >
+          ↺
+        </button>
+      )}
 
-              {/* مسار العمود والخلفية */}
-              <div className={styles.barTrack}>
-                <div
-                  className={`${styles.barFill} ${isHighest ? styles.highest : ''}`}
-                  style={{ height: `${heightPercent}%` }}
-                />
-              </div>
+      {/* زر التسبيح */}
+      <button
+        type="button"
+        className={`
+          ${styles.click} 
+          ${clicked ? styles.clicked : ''} 
+          ${isComplete ? styles.complete : ''} 
+          ${isFocusMode ? styles.floatingRightBtn : ''}
+        `}
+        style={{ '--progress': `${progress}%` }}
+        onClick={handleClick}
+        aria-label="تسبيح"
+      >
+        <span>{isFocusMode ? 'سبّح' : zekrText}</span>
+      </button>
 
-              {/* اسم اليوم / الفترة */}
-              <span className={styles.barLabel}>{label}</span>
-            </div>
-          )
-        })}
-      </div>
     </div>
   )
 }
 
-export default BarChart
+export default ActionButtons
 @use '@/styles/variables' as *;
 
-.chartCard {
-  width: 100%;
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 18px;
-  padding: 1.5rem 1rem 1rem;
-
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.02);
-    border-color: rgba(255, 255, 255, 0.06);
-  }
-}
-
-.barsContainer {
+.buttons {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  height: 180px;
-  gap: 0.5rem;
-}
-
-.barColumn {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+  justify-content: space-around;
   align-items: center;
-  height: 100%;
-  min-width: 0;
+  gap: $gap;
 }
 
-.barValue {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #64748b;
-  margin-bottom: 6px;
-  height: 16px;
-  display: flex;
-  align-items: center;
-  transition: opacity 0.2s;
-
-  &.zero {
-    opacity: 0;
-  }
-
-  :global(body.dark) & {
-    color: #94a3b8;
-  }
-}
-
-.barTrack {
-  flex: 1;
-  width: 100%;
-  max-width: 24px;
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 8px;
-  display: flex;
-  align-items: flex-end;
-  overflow: hidden;
-
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.05);
-  }
-}
-
-.barFill {
-  width: 100%;
-  background: linear-gradient(180deg, #34d399 0%, #059669 100%);
-  border-radius: 8px 8px 0 0;
-  transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  &.highest {
-    background: linear-gradient(180deg, #10b981 0%, #047857 100%);
-    box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
-  }
-}
-
-.barLabel {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #94a3b8;
-  margin-top: 10px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  text-align: center;
-}
-import styles from './PeriodTabs.module.scss'
-
-const PERIODS = [
-  { id: 'day', label: 'يومي' },
-  { id: 'week', label: 'أسبوعي' },
-  { id: 'month', label: 'شهري' },
-  { id: 'year', label: 'سنوي' },
-]
-
-function PeriodTabs({ value, onChange }) {
-  return (
-    <div className={styles.tabsWrapper} role="tablist">
-      {PERIODS.map((p) => {
-        const isActive = value === p.id
-        return (
-          <button
-            key={p.id}
-            role="tab"
-            aria-selected={isActive}
-            className={`${styles.tab} ${isActive ? styles.active : ''}`}
-            onClick={() => onChange(p.id)}
-          >
-            {p.label}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
-export default PeriodTabs
-@use '@/styles/variables' as *;
-
-.tabsWrapper {
-  display: flex;
-  background: rgba(0, 0, 0, 0.05);
-  padding: 4px;
-  border-radius: 14px;
-  gap: 4px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.08);
-  }
-}
-
-.tab {
-  flex: 1;
-  padding: 0.6rem 0.5rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border: none;
-  background: transparent;
-  color: #64748b;
-  border-radius: 10px;
+.reset {
+  width: min(20vw, 60px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background-color: $bg-btn-light;
+  color: $text-light;
+  border: 1px solid $border-light;
+  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform $transition, background-color $transition;
 
   :global(body.dark) & {
-    color: #94a3b8;
+    background-color: $bg-btn-dark;
+    border-color: $border-dark;
+    color: $text-dark;
   }
 
   &:hover {
-    color: #0f172a;
+    background-color: $bg-btn-hover-light;
+
     :global(body.dark) & {
-      color: #fff;
+      background-color: $bg-btn-hover-dark;
     }
   }
 
-  &.active {
-    background: #fff;
-    color: #059669; // أخضر زمردي مريح
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-
-    :global(body.dark) & {
-      background: #1e293b;
-      color: #34d399;
-      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
-    }
+  &:active {
+    transform: scale(0.9);
   }
 }
-import { useState, useEffect } from 'react'
-import { getStats } from '@/api/client.js'
-import PeriodTabs from './PeriodTabs.jsx'
-import BarChart from './BarChart.jsx'
-import ZekrFilter from './ZekrFilter.jsx'
-import styles from './StatsTab.module.scss'
 
-function StatsTab({ adhkar }) {
-  const [period, setPeriod] = useState('day')
-  const [zekrId, setZekrId] = useState(null)
-  const [stats, setStats] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+.click {
+  /* المتغيرات */
+  --ring-color: #{$text-light};
+  --ring-bg: #ddd;
 
-  useEffect(() => {
-    let isCurrent = true
-    setLoading(true)
-    setError(null)
+  width: min(60vw, 220px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $text-light;
+  font-size: 1.5rem;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 
-    getStats(period, zekrId)
-      .then((data) => {
-        if (isCurrent) {
-          setStats(data)
-          setLoading(false)
-        }
-      })
-      .catch((err) => {
-        if (isCurrent) {
-          console.error('فشل تحميل الإحصائيات:', err)
-          setError(err.message || 'فشل تحميل الإحصائيات')
-          setLoading(false)
-        }
-      })
+  background: conic-gradient(
+    var(--ring-color) var(--progress),
+    var(--ring-bg) var(--progress)
+  );
 
-    return () => {
-      isCurrent = false
-    }
-  }, [period, zekrId])
-
-  const formatNumber = (num) => {
-    return typeof num === 'number' ? num.toLocaleString('en') : num || 0
+  :global(body.dark) & {
+    --ring-color: #{$text-dark};
+    --ring-bg: #444;
+    color: $text-dark;
   }
 
-  // حساب أعلى ذكر تم قراءته
-  const topZekr = stats?.breakdown?.length
-    ? stats.breakdown.reduce((prev, curr) => (curr.count > prev.count ? curr : prev), stats.breakdown[0])
-    : null
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 9px;
+    background: $bg-btn-light;
+    border-radius: 50%;
+    z-index: 0;
+    transition: background-color $transition;
 
-  const maxBreakdownCount = stats?.breakdown?.length
-    ? Math.max(...stats.breakdown.map((i) => i.count), 1)
-    : 1
+    :global(body.dark) & {
+      background: $bg-btn-dark;
+    }
+  }
+
+  &:hover::before {
+    background: $bg-btn-hover-light;
+
+    :global(body.dark) & {
+      background: $bg-btn-hover-dark;
+    }
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+    padding: 1rem;
+    text-align: center;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+}
+
+/* حالة اكتمال الهدف */
+.complete {
+  --ring-color: #4caf50;
+  --ring-bg: #4caf50;
+
+  :global(body.dark) & {
+    --ring-color: #66bb6a;
+    --ring-bg: #66bb6a;
+  }
+}
+
+/* حركة النبض عند النقر */
+.clicked {
+  animation: pulse 0.15s ease;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+// ===================================
+// زر التسبيح عندما يكون في وضع التركيز
+// ===================================
+.floatingRightBtn {
+  position: fixed;
+  bottom: max(30px, env(safe-area-inset-bottom));
+  right: max(24px, env(safe-area-inset-right));
+  left: auto;
+  
+  width: 86px;
+  height: 86px;
+  font-size: 1.15rem;
+  font-weight: bold;
+  z-index: 10000;
+  
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), 0 0 0 2px rgba(255, 255, 255, 0.2);
+
+  // جعل إطار التقدم أرفع ليتناسب مع الحجم الصغير
+  &::before {
+    inset: 5px;
+  }
+
+  > * {
+    padding: 0;
+  }
+
+  // الضغط اليدوي المستمر (بدون كسر أنيميشن clicked)
+  &:active {
+    transform: scale(0.92);
+  }
+}
+import { useState, useEffect, useRef, useMemo } from 'react'
+import styles from './AdhkarSelect.module.scss'
+
+// أيقونة السهم الدائري
+const ChevronDownIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+)
+
+// أيقونة علامة الصح
+const CheckIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+)
+
+function AdhkarSelect({ adhkar = [], value, onChange }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const ref = useRef(null)
+  const searchInputRef = useRef(null)
+
+  const selected = adhkar.find((z) => z.id === value)
+
+  // فلترة الأذكار بالبحث
+  const filteredAdhkar = useMemo(() => {
+    if (!search.trim()) return adhkar
+    return adhkar.filter((z) =>
+      z.text.toLowerCase().includes(search.trim().toLowerCase())
+    )
+  }, [adhkar, search])
+
+  // إغلاق القائمة عند النقر خارجها
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleClickOutside = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isOpen])
+
+  // إغلاق بـ Escape
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleKeyDown = (e) => {
+      if (e.code === 'Escape') setIsOpen(false)
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen])
+
+  // إعادة ضبط البحث وتركيز حقل البحث عند الفتح
+  useEffect(() => {
+    if (isOpen) {
+      setSearch('')
+      if (adhkar.length > 5) {
+        setTimeout(() => searchInputRef.current?.focus(), 50)
+      }
+    }
+  }, [isOpen, adhkar.length])
+
+  const handleSelect = (id) => {
+    onChange(id)
+    setIsOpen(false)
+  }
 
   return (
-    <div className={styles.stats}>
-      {/* 1. التبويبات والفلاتر */}
-      <PeriodTabs value={period} onChange={setPeriod} />
-      <ZekrFilter adhkar={adhkar} value={zekrId} onChange={setZekrId} />
+    <div className={styles.wrapper} ref={ref}>
+      {/* زر فتح القائمة */}
+      <button
+        type="button"
+        className={`${styles.trigger} ${isOpen ? styles.open : ''}`}
+        onClick={() => setIsOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-label="اختيار الذكر الحالي"
+      >
+        <span className={styles.label}>
+          {selected?.text ?? 'اختر ذكرًا للبدء...'}
+        </span>
+        <span className={styles.arrow}>
+          <ChevronDownIcon />
+        </span>
+      </button>
 
-      {/* 2. رسالة الخطأ */}
-      {error && (
-        <div className={styles.errorMessage}>
-          <span>⚠️ {error}</span>
-          <button className={styles.retryBtn} onClick={() => setPeriod((p) => p)}>
-            إعادة المحاولة
-          </button>
-        </div>
-      )}
-
-      {/* 3. هيكل التحميل (Skeleton Loader) */}
-      {loading && !stats && (
-        <div className={styles.skeletonContainer}>
-          <div className={styles.skeletonCards}>
-            <div className={styles.skeletonCard} />
-            <div className={styles.skeletonCard} />
-          </div>
-          <div className={styles.skeletonChart} />
-        </div>
-      )}
-
-      {/* 4. عرض المحتوى الإحصائي */}
-      {stats && (
-        <div className={`${styles.content} ${loading ? styles.updating : ''}`}>
-
-          {/* كروت الأرقام السريعة (Metrics) */}
-          <div className={styles.metricsGrid}>
-            <div className={styles.metricCard}>
-              <span className={styles.metricLabel}>إجمالي التسبيحات</span>
-              <span className={styles.metricValue}>{formatNumber(stats.total)}</span>
+      {/* القائمة المنسدلة */}
+      {isOpen && (
+        <div className={styles.dropdown}>
+          {/* شريط بحث يظهر لو كانت الأذكار أكثر من 5 */}
+          {adhkar.length > 5 && (
+            <div className={styles.searchBox}>
+              <input
+                ref={searchInputRef}
+                type="text"
+                className={styles.searchInput}
+                placeholder="ابحث عن ذكر..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+              />
             </div>
+          )}
 
-            {topZekr && topZekr.count > 0 && (
-              <div className={styles.metricCard}>
-                <span className={styles.metricLabel}>أعلى ذكر تكراراً</span>
-                <span className={styles.metricValueTop} title={topZekr.text}>
-                  {topZekr.text}
-                </span>
-                <span className={styles.metricSub}>{formatNumber(topZekr.count)} مرة</span>
-              </div>
-            )}
-          </div>
-
-          {/* الرسم البياني */}
-          <BarChart
-            labels={stats.labels ?? []}
-            values={stats.values ?? []}
-          />
-
-          {/* تفاصيل كل ذكر بأشرطة ملونة */}
-          {stats.breakdown && stats.breakdown.length > 0 ? (
-            <div className={styles.breakdownSection}>
-              <h3 className={styles.sectionTitle}>تفاصيل الأذكار</h3>
-              <ul className={styles.breakdownList}>
-                {stats.breakdown.map((item) => {
-                  const percentage = Math.round((item.count / maxBreakdownCount) * 100)
-                  return (
-                    <li key={item.zekr_id} className={styles.breakdownItem}>
-                      {/* شريط التقدم الخلفي */}
-                      <div
-                        className={styles.itemProgressFill}
-                        style={{ width: `${percentage}%` }}
-                      />
-
-                      <div className={styles.itemContent}>
-                        <span className={styles.itemText}>{item.text}</span>
-                        <span className={styles.itemBadge}>
-                          {formatNumber(item.count)}
+          <ul className={styles.menu} role="listbox">
+            {filteredAdhkar.length === 0 ? (
+              <li className={styles.empty}>لا توجد أذكار مطابقة للبحث</li>
+            ) : (
+              filteredAdhkar.map((zekr) => {
+                const isSelected = zekr.id === value
+                return (
+                  <li
+                    key={zekr.id}
+                    role="option"
+                    aria-selected={isSelected}
+                    className={`${styles.item} ${isSelected ? styles.selected : ''}`}
+                    onClick={() => handleSelect(zekr.id)}
+                  >
+                    <div className={styles.itemInfo}>
+                      <span className={styles.itemText}>{zekr.text}</span>
+                      {zekr.default_target ? (
+                        <span className={styles.targetBadge}>
+                          {zekr.default_target}
                         </span>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-          ) : stats.total === 0 ? (
-            <div className={styles.emptyCard}>
-              <div className={styles.emptyIcon}>📿</div>
-              <p className={styles.emptyTitle}>لا توجد تسبيحات في هذه الفترة</p>
-              <p className={styles.emptySub}>ابدأ بالذكر وسيظهر تقدمك هنا مباشرة.</p>
-            </div>
-          ) : null}
+                      ) : null}
+                    </div>
+
+                    {isSelected && (
+                      <span className={styles.checkIcon}>
+                        <CheckIcon />
+                      </span>
+                    )}
+                  </li>
+                )
+              })
+            )}
+          </ul>
         </div>
       )}
     </div>
   )
 }
 
-export default StatsTab
+export default AdhkarSelect
 @use '@/styles/variables' as *;
 
-.stats {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+.wrapper {
+  position: relative;
   width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
 }
 
-.content {
+// زر فتح القائمة (Trigger)
+.trigger {
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  transition: opacity 0.2s ease;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1.1rem;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  touch-action: manipulation;
 
-  &.updating {
-    opacity: 0.55;
-    pointer-events: none;
+  :global(body.dark) & {
+    background: #0f172a;
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #f1f5f9;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  &:hover {
+    border-color: rgba(5, 150, 105, 0.4);
+
+    :global(body.dark) & {
+      border-color: rgba(52, 211, 153, 0.4);
+    }
+  }
+
+  &.open {
+    border-color: #059669;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+
+    :global(body.dark) & {
+      border-color: #34d399;
+      box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
+    }
+
+    .arrow {
+      transform: rotate(180deg);
+      color: #059669;
+      :global(body.dark) & { color: #34d399; }
+    }
   }
 }
 
-// كروت الإحصائيات (Metrics)
-.metricsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 0.75rem;
+.label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
 }
 
-.metricCard {
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 16px;
-  padding: 1rem 1.1rem;
+.arrow {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  align-items: center;
+  color: #94a3b8;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
+  flex-shrink: 0;
+}
+
+// القائمة المنسدلة (Dropdown Container)
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  animation: dropdownFade 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  :global(body.dark) & {
+    background: #0f172a;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+  }
+}
+
+// حقل البحث المدمج
+.searchBox {
+  padding: 0.6rem 0.75rem 0.4rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+  :global(body.dark) & {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+  }
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.85rem;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
+  color: #0f172a;
+  outline: none;
+  font-family: inherit;
 
   :global(body.dark) & {
     background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #f8fafc;
+  }
+
+  &:focus {
+    border-color: #059669;
+    box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.12);
   }
 }
 
-.metricLabel {
-  font-size: 0.75rem;
-  font-weight: 600;
+// القائمة
+.menu {
+  list-style: none;
+  padding: 0.4rem;
+  margin: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+// عناصر الذكر
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  touch-action: manipulation;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.03);
+    :global(body.dark) & {
+      background: rgba(255, 255, 255, 0.04);
+    }
+  }
+
+  &.selected {
+    background: rgba(5, 150, 105, 0.08);
+    color: #059669;
+    font-weight: 700;
+
+    :global(body.dark) & {
+      background: rgba(52, 211, 153, 0.1);
+      color: #34d399;
+    }
+  }
+}
+
+.itemInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.itemText {
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.targetBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.05);
   color: #64748b;
+
   :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.06);
     color: #94a3b8;
   }
 }
 
-.metricValue {
-  font-size: 1.6rem;
-  font-weight: 800;
+.checkIcon {
+  display: flex;
+  align-items: center;
   color: #059669;
-  letter-spacing: -0.5px;
+  flex-shrink: 0;
 
   :global(body.dark) & {
     color: #34d399;
   }
 }
 
-.metricValueTop {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #0f172a;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  :global(body.dark) & {
-    color: #f8fafc;
-  }
-}
-
-.metricSub {
-  font-size: 0.75rem;
+.empty {
+  padding: 1.5rem 1rem;
+  text-align: center;
+  font-size: 0.85rem;
   color: #94a3b8;
 }
 
-// قائمة تفاصيل الأذكار
-.breakdownSection {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.sectionTitle {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #334155;
-  margin: 0;
-
-  :global(body.dark) & {
-    color: #e2e8f0;
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
+import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
+import styles from './FocusMode.module.scss'
 
-.breakdownList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+const ExitFocusIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+)
+
+function FocusMode({ isOpen = true, onClose, onCount, children }) {
+  const wakeLockRef = useRef(null)
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
+
+  // 1. ملء الشاشة الكامل
+  useEffect(() => {
+    if (!isOpen) return
+
+    const docEl = document.documentElement
+    const enterFullscreen = async () => {
+      try {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          if (docEl.requestFullscreen) {
+            await docEl.requestFullscreen({ navigationUI: 'hide' })
+          } else if (docEl.webkitRequestFullscreen) {
+            await docEl.webkitRequestFullscreen()
+          }
+        }
+      } catch (err) {
+        console.warn('تعذر تفعيل ملء الشاشة:', err)
+      }
+    }
+
+    enterFullscreen()
+
+    const handleFullscreenChange = () => {
+      const isStillFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement)
+      if (!isStillFullscreen) {
+        onCloseRef.current?.()
+      }
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange)
+
+      try {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          if (document.exitFullscreen) {
+            document.exitFullscreen()
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen()
+          }
+        }
+      } catch (err) { }
+    }
+  }, [isOpen])
+
+  // 2. زر Escape
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e) => {
+      if (e.code === 'Escape') onCloseRef.current?.()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen])
+
+  // 3. منع انطفاء الشاشة
+  useEffect(() => {
+    if (!isOpen) return
+    const requestWakeLock = async () => {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLockRef.current = await navigator.wakeLock.request('screen')
+        }
+      } catch (err) { }
+    }
+    requestWakeLock()
+    return () => {
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release().catch(() => { })
+        wakeLockRef.current = null
+      }
+    }
+  }, [isOpen])
+
+  // 4. قفل التمرير
+  useEffect(() => {
+    if (!isOpen) return
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = originalOverflow
+    }
+  }, [isOpen])
+
+  if (!isOpen) return null
+
+  // ✅ التسبيح بالنقر على أي مكان في الشاشة + اهتزاز خفيف
+  const handleTapScreen = (e) => {
+    if (onCount) {
+      onCount()
+      if ('vibrate' in navigator) {
+        navigator.vibrate(15) // اهتزاز خفيف جداً يؤكد التسبيحة
+      }
+    }
+  }
+
+  return createPortal(
+    <div
+      className={styles.overlay}
+      onClick={handleTapScreen} // ✅ النقر في أي مكان بالشاشة يحسب تسبيحة
+      role="dialog"
+      aria-modal="true"
+      aria-label="وضع التركيز التام"
+    >
+      {/* زر الخروج: نوقف انتشار الحدث stopPropagation حتى لا يحسب تسبيحة عند الخروج */}
+      <button
+        type="button"
+        className={styles.exitBtn}
+        onClick={(e) => {
+          e.stopPropagation()
+          onCloseRef.current?.()
+        }}
+        aria-label="خروج من وضع التركيز"
+        title="خروج من وضع التركيز"
+      >
+        <ExitFocusIcon />
+      </button>
+
+      {/* محتوى الشاشة */}
+      <div className={styles.centerContainer}>
+        {children}
+      </div>
+    </div>,
+    document.body
+  )
 }
 
-.breakdownItem {
-  position: relative;
-  border-radius: 12px;
+export default FocusMode
+@use '@/styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000000 !important; // سواد OLED نقي 100%
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.02);
-    border-color: rgba(255, 255, 255, 0.05);
-  }
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  overscroll-behavior: contain;
+  animation: fadeIn 0.25s ease-out;
 }
 
-.itemProgressFill {
+// زر الخروج الزجاجي الهادئ (أعلى اليسار أو اليمين بحسب اللغة)
+.exitBtn {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0; // لليمين بالواجهات العربية
-  background: rgba(5, 150, 105, 0.12);
-  border-radius: 12px;
-  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  top: max(20px, env(safe-area-inset-top));
+  inset-inline-start: max(20px, env(safe-area-inset-left));
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08); // زجاجي خافت جداً
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10000;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  -webkit-tap-highlight-color: transparent;
 
-  :global(body.dark) & {
-    background: rgba(52, 211, 153, 0.12);
+  &:hover {
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.92);
   }
 }
 
-.itemContent {
-  position: relative;
-  z-index: 1;
+// الحاوية المركزية التي تحمل نص الذكر والعداد
+.centerContainer {
+  width: 100%;
+  max-width: 520px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+import { useState, useEffect } from 'react'
+import GroupSelect from './GroupSelect.jsx'
+import ZekrDisplay from './ZekrDisplay.jsx'
+import ActionButtons from './ActionButtons.jsx'
+import FocusMode from '@/components/zekr_app/zekr/FocusMode.jsx' // ✅ استيراد وضع التركيز
+import styles from './GroupModeView.module.scss'
+
+const ArrowRightIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+)
+
+const ArrowLeftIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+)
+
+function GroupModeView({
+  groups = [],
+  onAddClick,
+  onResetClick,
+  onSetTarget,
+}) {
+  const [selectedGroupId, setSelectedGroupId] = useState(null)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [localCount, setLocalCount] = useState(0)
+  const [showTransition, setShowTransition] = useState(false)
+  const [isComplete, setIsComplete] = useState(false)
+  const [isFocusMode, setIsFocusMode] = useState(false) // ✅ حالة وضع التركيز للمجموعات
+
+  // 1. اختيار أول مجموعة تلقائياً إن وُجدت
+  useEffect(() => {
+    if (!selectedGroupId && groups.length > 0) {
+      setSelectedGroupId(groups[0].id)
+    }
+  }, [groups, selectedGroupId])
+
+  const selectedGroup = groups.find((g) => g.id === selectedGroupId)
+  const items = selectedGroup?.items ?? []
+  const currentItem = items[currentIndex]
+
+  // حماية الفهرس لو حُذفت عناصر
+  useEffect(() => {
+    if (items.length > 0 && currentIndex >= items.length) {
+      setCurrentIndex(0)
+      setLocalCount(0)
+    }
+  }, [items.length, currentIndex])
+
+  // هدف الذكر داخل المجموعة
+  const currentTarget = currentItem
+    ? currentItem.target ?? currentItem.default_target ?? null
+    : null
+
+  // الخروج من وضع التركيز تلقائياً عند إتمام المجموعة كاملة
+  useEffect(() => {
+    if (isFocusMode && isComplete) {
+      const timer = setTimeout(() => setIsFocusMode(false), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [isFocusMode, isComplete])
+
+  // الانتقال للذكر التالي
+  const goToNext = () => {
+    setShowTransition(false)
+    if (currentIndex < items.length - 1) {
+      setCurrentIndex((prev) => prev + 1)
+      setLocalCount(0)
+    } else {
+      setIsComplete(true)
+    }
+  }
+
+  // الرجوع للذكر السابق
+  const goToPrev = () => {
+    if (currentIndex > 0) {
+      setShowTransition(false)
+      setCurrentIndex((prev) => prev - 1)
+      setLocalCount(0)
+    }
+  }
+
+  // إعادة البدء
+  const restartGroup = () => {
+    setIsComplete(false)
+    setCurrentIndex(0)
+    setLocalCount(0)
+  }
+
+  // تغيير المجموعة
+  const handleGroupChange = (newGroupId) => {
+    setSelectedGroupId(newGroupId)
+    setCurrentIndex(0)
+    setLocalCount(0)
+    setShowTransition(false)
+    setIsComplete(false)
+    setIsFocusMode(false)
+  }
+
+  // مراقبة الوصول للهدف
+  useEffect(() => {
+    if (!currentItem || !currentTarget) return
+    if (localCount < currentTarget) return
+    if (showTransition || isComplete) return
+
+    const isLast = currentIndex === items.length - 1
+
+    if (isLast) {
+      setIsComplete(true)
+      const timer = setTimeout(() => {
+        restartGroup()
+      }, 3000)
+      return () => clearTimeout(timer)
+    } else {
+      setShowTransition(true)
+      const timer = setTimeout(() => {
+        goToNext()
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [localCount, currentTarget, currentIndex, items.length])
+
+  const handleAddClick = () => {
+    if (!currentItem) return
+    if (currentTarget && localCount >= currentTarget) return
+    setLocalCount((prev) => prev + 1)
+    onAddClick(currentItem.zekr_id)
+  }
+
+  const handleReset = () => {
+    if (!currentItem) return
+    setLocalCount(0)
+    onResetClick(currentItem.zekr_id)
+  }
+
+  const handleSetTarget = () => {
+    if (!currentItem || !selectedGroup) return
+    onSetTarget(selectedGroup.id, currentItem.id, currentTarget)
+  }
+
+  if (groups.length === 0) {
+    return (
+      <div className={styles.emptyView}>
+        <div className={styles.emptyIcon}>📂</div>
+        <h3>لا توجد مجموعات أذكار بعد</h3>
+        <p>قم بإنشاء مجموعتك الأولى من تبويب الإعدادات لتبدأ التسبيح التلقائي.</p>
+      </div>
+    )
+  }
+
+  // محتوى المجموعة التفاعلي (مشترك بين العرض العادي ووضع التركيز)
+  const renderGroupContent = () => {
+    if (items.length === 0) {
+      return (
+        <div className={styles.emptyGroupCard}>
+          <p>هذه المجموعة لا تحتوي على أذكار حتى الآن.</p>
+          <span>أضف أذكاراً إليها من صفحة الإعدادات.</span>
+        </div>
+      )
+    }
+
+    if (isComplete) {
+      return (
+        <div className={styles.completeCard} onClick={restartGroup} title="اضغط للبدء من جديد">
+          <div className={styles.celebrateIcon}>🎉</div>
+          <h2 className={styles.completeTitle}>تقبل الله! أتممت الورد</h2>
+          <p className={styles.groupName}>{selectedGroup?.name}</p>
+          <button type="button" className={styles.restartBtn} onClick={restartGroup}>
+            إعادة المجموعة الآن ↺
+          </button>
+        </div>
+      )
+    }
+
+    if (showTransition) {
+      return (
+        <div className={styles.transitionCard} onClick={goToNext} title="اضغط للمتابعة فوراً">
+          <div className={styles.doneIcon}>✓</div>
+          <h2 className={styles.transitionTitle}>أحسنت! أتممت الذكر</h2>
+          <p className={styles.nextPreview}>
+            التالي: <strong>{items[currentIndex + 1]?.text ?? ''}</strong>
+          </p>
+          <span className={styles.skipPrompt}>اضغط في أي مكان للمتابعة فوراً ⏭</span>
+        </div>
+      )
+    }
+
+    return (
+      <div className={styles.content}>
+        {/* شريط التقدم المجزأ للورد */}
+        <div className={styles.storyProgress} aria-label="تقدم المجموعة">
+          {items.map((_, idx) => (
+            <div
+              key={idx}
+              className={`${styles.progressBar} ${idx < currentIndex
+                ? styles.barCompleted
+                : idx === currentIndex
+                  ? styles.barActive
+                  : ''
+                }`}
+            />
+          ))}
+        </div>
+
+        {/* أزرار التنقل تظهر خارج وضع التركيز */}
+        {!isFocusMode && (
+          <div className={styles.navBar}>
+            <button
+              type="button"
+              className={styles.navBtn}
+              onClick={goToPrev}
+              disabled={currentIndex === 0}
+              title="الذكر السابق"
+            >
+              <ArrowRightIcon />
+              <span>السابق</span>
+            </button>
+
+            <span className={styles.stepIndicator}>
+              الذكر {currentIndex + 1} من {items.length}
+            </span>
+
+            <button
+              type="button"
+              className={styles.navBtn}
+              onClick={goToNext}
+              disabled={currentIndex === items.length - 1}
+              title="تخطي للذكر التالي"
+            >
+              <span>تخطي</span>
+              <ArrowLeftIcon />
+            </button>
+          </div>
+        )}
+
+        {/* عرض الذكر والعداد */}
+        <ZekrDisplay
+          zekrText={currentItem.text}
+          count={localCount}
+          target={currentTarget}
+          onClickCount={handleSetTarget}
+          isComplete={!!currentTarget && localCount >= currentTarget}
+          isFocusMode={isFocusMode}
+        />
+
+        {!currentTarget && (
+          <div className={styles.openTargetAlert}>
+            <span>هذا الذكر بدون هدف محدد. اضغط "تخطي" عند الانتهاء منه.</span>
+          </div>
+        )}
+
+        {/* أزرار التسبيح */}
+        <ActionButtons
+          zekrText={currentItem.text}
+          onReset={handleReset}
+          onClick={handleAddClick}
+          progress={
+            currentTarget
+              ? Math.min((localCount / currentTarget) * 100, 100)
+              : 0
+          }
+          isComplete={!!currentTarget && localCount >= currentTarget}
+          isFocusMode={isFocusMode}
+          showReset={!isFocusMode}
+        />
+
+        {/* زر تفعيل وضع التركيز للمجموعة */}
+        {!isFocusMode && items.length > 0 && (
+          <button
+            type="button"
+            className={styles.focusBtn}
+            onClick={() => setIsFocusMode(true)}
+            title="الانتقال لوضع التركيز بدون مشتتات"
+          >
+            🌙 وضع التركيز
+          </button>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div className={styles.view}>
+      {/* قائمة اختيار المجموعة تختفي أثناء وضع التركيز لمنع التشتيت */}
+      {!isFocusMode && (
+        <div className={styles.selectWrapper}>
+          <GroupSelect
+            groups={groups}
+            value={selectedGroupId}
+            onChange={handleGroupChange}
+          />
+        </div>
+      )}
+
+      {/* التبديل بين وضع التركيز والعرض العادي */}
+      {isFocusMode ? (
+        <FocusMode
+          onCount={handleAddClick}
+          onClose={() => setIsFocusMode(false)}>
+          {renderGroupContent()}
+        </FocusMode>
+      ) : (
+        renderGroupContent()
+      )}
+    </div>
+  )
+}
+
+export default GroupModeView
+@use '@/styles/variables' as *;
+
+.view {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.selectWrapper {
+  width: 100%;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+// شريط التقدم المجزأ (Story Bar)
+.storyProgress {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.25rem 0.1rem;
+}
+
+.progressBar {
+  flex: 1;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  &.barCompleted {
+    background: #059669;
+    :global(body.dark) & { background: #34d399; }
+  }
+
+  &.barActive {
+    background: #059669;
+    box-shadow: 0 0 8px rgba(5, 150, 105, 0.5);
+    :global(body.dark) & {
+      background: #34d399;
+      box-shadow: 0 0 8px rgba(52, 211, 153, 0.6);
+    }
+  }
+}
+
+// شريط التنقل اليدوي
+.navBar {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.85rem 1rem;
 }
 
-.itemText {
-  font-size: 0.9rem;
+.stepIndicator {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #64748b;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.04);
+    color: #94a3b8;
+  }
+}
+
+.navBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0.3rem 0.65rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  touch-action: manipulation;
+
+  :global(body.dark) & {
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #cbd5e1;
+  }
+
+  &:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.04);
+    color: #059669;
+    border-color: rgba(5, 150, 105, 0.3);
+
+    :global(body.dark) & {
+      background: rgba(255, 255, 255, 0.06);
+      color: #34d399;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+// تنبيه الذكر المفتوح
+.openTargetAlert {
+  font-size: 0.8rem;
+  color: #059669;
+  background: rgba(5, 150, 105, 0.08);
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 90%;
+
+  :global(body.dark) & {
+    background: rgba(52, 211, 153, 0.1);
+    color: #34d399;
+  }
+}
+
+// ===================================
+// شاشة الانتقال للذكر التالي
+// ===================================
+.transitionCard {
+  width: 100%;
+  padding: 2.5rem 1.5rem;
+  background: rgba(5, 150, 105, 0.04);
+  border: 1.5px dashed rgba(5, 150, 105, 0.3);
+  border-radius: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  animation: scalePop 0.25s ease-out;
+
+  :global(body.dark) & {
+    background: rgba(52, 211, 153, 0.04);
+    border-color: rgba(52, 211, 153, 0.25);
+  }
+}
+
+.doneIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #059669;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.3);
+
+  :global(body.dark) & {
+    background: #34d399;
+    color: #0f172a;
+  }
+}
+
+.transitionTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  :global(body.dark) & { color: #f8fafc; }
+}
+
+.nextPreview {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #64748b;
+  line-height: 1.5;
+
+  strong {
+    color: #059669;
+    :global(body.dark) & { color: #34d399; }
+  }
+}
+
+.skipPrompt {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+
+// ===================================
+// شاشة اكتمال المجموعة
+// ===================================
+.completeCard {
+  width: 100%;
+  padding: 3rem 1.5rem;
+  background: rgba(5, 150, 105, 0.06);
+  border: 2px solid #059669;
+  border-radius: 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  box-shadow: 0 8px 30px rgba(5, 150, 105, 0.15);
+  animation: scalePop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+  :global(body.dark) & {
+    background: rgba(52, 211, 153, 0.06);
+    border-color: #34d399;
+  }
+}
+
+.celebrateIcon {
+  font-size: 3rem;
+  animation: bounce 1s infinite alternate;
+}
+
+.completeTitle {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #059669;
+  :global(body.dark) & { color: #34d399; }
+}
+
+.groupName {
+  margin: 0;
+  font-size: 1rem;
   font-weight: 600;
+  color: #64748b;
+  :global(body.dark) & { color: #94a3b8; }
+}
+
+.restartBtn {
+  margin-top: 0.75rem;
+  padding: 0.65rem 1.5rem;
+  background: #059669;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);
+
+  &:hover {
+    background: #047857;
+    transform: translateY(-2px);
+  }
+}
+
+// الحالات الفارغة
+.emptyView,
+.emptyGroupCard {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  border-radius: 18px;
+  border: 1px dashed rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.015);
+
+  :global(body.dark) & {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .emptyIcon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+    color: #1e293b;
+    :global(body.dark) & { color: #f1f5f9; }
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #64748b;
+    :global(body.dark) & { color: #94a3b8; }
+  }
+
+  span {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin-top: 0.25rem;
+    display: block;
+  }
+}
+// زر وضع التركيز
+.focusBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: 999px;
+  background: rgba(5, 150, 105, 0.08);
+  border: 1px solid rgba(5, 150, 105, 0.25);
+  color: #059669;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+  margin-top: 0.5rem;
+
+  :global(body.dark) & {
+    background: rgba(52, 211, 153, 0.1);
+    border-color: rgba(52, 211, 153, 0.3);
+    color: #34d399;
+  }
+
+  &:hover {
+    background: #059669;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);
+
+    :global(body.dark) & {
+      background: #34d399;
+      color: #0f172a;
+    }
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+@keyframes scalePop {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-8px); }
+}
+import { useState, useEffect, useRef } from 'react'
+import styles from './GroupSelect.module.scss'
+
+// أيقونات SVG أنيقة
+const ChevronDownIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+)
+
+const FolderIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+  </svg>
+)
+
+const CheckIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+)
+
+function GroupSelect({ groups = [], value, onChange }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const ref = useRef(null)
+
+  // العثور على المجموعة المحددة حالياً
+  const selected = groups.find((g) => g.id === value)
+
+  // إغلاق القائمة عند النقر خارجها
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleClickOutside = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isOpen])
+
+  // إغلاق بـ Escape
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleKeyDown = (e) => {
+      if (e.code === 'Escape') setIsOpen(false)
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen])
+
+  if (groups.length === 0) {
+    return (
+      <div className={styles.empty}>
+        📂 لا توجد مجموعات أذكار. أضِف واحدة من صفحة الإعدادات.
+      </div>
+    )
+  }
+
+  const handleSelect = (group) => {
+    onChange(group.id) // نرسل الـ ID بنوعه الأصلي (رقم أو نص) دون تشويه
+    setIsOpen(false)
+  }
+
+  return (
+    <div className={styles.wrapper} ref={ref}>
+      {/* زر فتح القائمة */}
+      <button
+        type="button"
+        className={`${styles.trigger} ${isOpen ? styles.open : ''}`}
+        onClick={() => setIsOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-label="اختيار مجموعة الأذكار"
+      >
+        <div className={styles.triggerContent}>
+          <span className={styles.folderIcon}>
+            <FolderIcon />
+          </span>
+          <span className={styles.label}>
+            {selected ? selected.name : 'اختر مجموعة أذكار للبدء...'}
+          </span>
+          {selected && (
+            <span className={styles.countBadge}>
+              {selected.items?.length ?? 0} ذكر
+            </span>
+          )}
+        </div>
+
+        <span className={styles.arrow}>
+          <ChevronDownIcon />
+        </span>
+      </button>
+
+      {/* القائمة المنسدلة */}
+      {isOpen && (
+        <div className={styles.dropdown}>
+          <ul className={styles.menu} role="listbox">
+            {groups.map((g) => {
+              const isSelected = g.id === value
+              const itemCount = g.items?.length ?? 0
+              return (
+                <li
+                  key={g.id}
+                  role="option"
+                  aria-selected={isSelected}
+                  className={`${styles.item} ${isSelected ? styles.selected : ''}`}
+                  onClick={() => handleSelect(g)}
+                >
+                  <div className={styles.itemInfo}>
+                    <div className={styles.titleLine}>
+                      <span className={styles.name}>{g.name}</span>
+                      <span className={styles.itemCountBadge}>
+                        {itemCount} ذكر
+                      </span>
+                    </div>
+
+                    {g.description && (
+                      <span className={styles.desc}>{g.description}</span>
+                    )}
+                  </div>
+
+                  {isSelected && (
+                    <span className={styles.checkIcon}>
+                      <CheckIcon />
+                    </span>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default GroupSelect
+@use '@/styles/variables' as *;
+
+.wrapper {
+  position: relative;
+  width: 100%;
+}
+
+// زر فتح القائمة
+.trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  touch-action: manipulation;
+
+  :global(body.dark) & {
+    background: #0f172a;
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #f1f5f9;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  &:hover {
+    border-color: rgba(5, 150, 105, 0.4);
+
+    :global(body.dark) & {
+      border-color: rgba(52, 211, 153, 0.4);
+    }
+  }
+
+  &.open {
+    border-color: #059669;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+
+    :global(body.dark) & {
+      border-color: #34d399;
+      box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
+    }
+
+    .arrow {
+      transform: rotate(180deg);
+      color: #059669;
+      :global(body.dark) & { color: #34d399; }
+    }
+  }
+}
+
+.triggerContent {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.folderIcon {
+  display: flex;
+  align-items: center;
+  color: #059669;
+  flex-shrink: 0;
+
+  :global(body.dark) & {
+    color: #34d399;
+  }
+}
+
+.label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+}
+
+.countBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(5, 150, 105, 0.1);
+  color: #059669;
+  white-space: nowrap;
+
+  :global(body.dark) & {
+    background: rgba(52, 211, 153, 0.12);
+    color: #34d399;
+  }
+}
+
+.arrow {
+  display: flex;
+  align-items: center;
+  color: #94a3b8;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
+  flex-shrink: 0;
+}
+
+// القائمة المنسدلة
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  animation: dropdownFade 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  :global(body.dark) & {
+    background: #0f172a;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.menu {
+  list-style: none;
+  padding: 0.4rem;
+  margin: 0;
+  max-height: 250px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  touch-action: manipulation;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.03);
+    :global(body.dark) & {
+      background: rgba(255, 255, 255, 0.04);
+    }
+  }
+
+  &.selected {
+    background: rgba(5, 150, 105, 0.08);
+
+    :global(body.dark) & {
+      background: rgba(52, 211, 153, 0.1);
+    }
+
+    .name {
+      color: #059669;
+      :global(body.dark) & { color: #34d399; }
+    }
+  }
+}
+
+.itemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.titleLine {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.name {
+  font-size: 0.92rem;
+  font-weight: 700;
   color: #1e293b;
 
   :global(body.dark) & {
@@ -510,26 +1818,47 @@ export default StatsTab
   }
 }
 
-.itemBadge {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #059669;
-  background: rgba(5, 150, 105, 0.1);
-  padding: 0.2rem 0.6rem;
-  border-radius: 8px;
+.itemCountBadge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.05);
+  color: #64748b;
 
   :global(body.dark) & {
-    color: #34d399;
-    background: rgba(52, 211, 153, 0.1);
+    background: rgba(255, 255, 255, 0.06);
+    color: #94a3b8;
   }
 }
 
-// الشاشة الفارغة
-.emptyCard {
+.desc {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.checkIcon {
+  display: flex;
+  align-items: center;
+  color: #059669;
+  flex-shrink: 0;
+
+  :global(body.dark) & {
+    color: #34d399;
+  }
+}
+
+// الحالة الفارغة
+.empty {
+  padding: 1.25rem 1rem;
   text-align: center;
-  padding: 2.5rem 1rem;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  border-radius: 14px;
   background: rgba(0, 0, 0, 0.02);
-  border-radius: 18px;
   border: 1px dashed rgba(0, 0, 0, 0.08);
 
   :global(body.dark) & {
@@ -538,172 +1867,642 @@ export default StatsTab
   }
 }
 
-.emptyIcon {
-  font-size: 2.2rem;
-  margin-bottom: 0.5rem;
-}
-
-.emptyTitle {
-  font-size: 1rem;
-  font-weight: 700;
-  margin: 0 0 0.25rem 0;
-  color: #334155;
-
-  :global(body.dark) & {
-    color: #e2e8f0;
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
+import styles from './SabhModeTabs.module.scss'
 
-.emptySub {
-  font-size: 0.85rem;
-  color: #94a3b8;
-  margin: 0;
+// أيقونة الوضع العادي (تسبيح حر / مفرد)
+const SingleIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+)
+
+// أيقونة وضع المجموعات (أوراد مجمعة / طبقات)
+const LayersIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="12 2 2 7 12 12 22 7 12 2" />
+    <polyline points="2 17 12 22 22 17" />
+    <polyline points="2 12 12 17 22 12" />
+  </svg>
+)
+
+const MODES = [
+  { id: 'normal', label: 'تسبيح حر', Icon: SingleIcon },
+  { id: 'group', label: 'المجموعات', Icon: LayersIcon },
+]
+
+function SabhModeTabs({ value, onChange }) {
+  return (
+    <div className={styles.tabsWrapper} role="tablist" aria-label="وضع السبحة">
+      {MODES.map((m) => {
+        const isActive = value === m.id
+        const IconComponent = m.Icon
+
+        return (
+          <button
+            key={m.id}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            className={`${styles.tab} ${isActive ? styles.active : ''}`}
+            onClick={() => onChange(m.id)}
+          >
+            <span className={styles.icon}>
+              <IconComponent />
+            </span>
+            <span>{m.label}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
 }
 
-// هيكل التحميل (Skeleton)
-.skeletonContainer {
+export default SabhModeTabs
+@use '@/styles/variables' as *;
+
+.tabsWrapper {
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.skeletonCards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-}
-
-.skeletonCard {
-  height: 80px;
-  border-radius: 16px;
   background: rgba(0, 0, 0, 0.04);
-  animation: pulse 1.4s infinite ease-in-out;
+  padding: 4px;
+  border-radius: 14px;
+  gap: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
 
   :global(body.dark) & {
     background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.06);
   }
 }
 
-.skeletonChart {
-  height: 200px;
-  border-radius: 18px;
-  background: rgba(0, 0, 0, 0.04);
-  animation: pulse 1.4s infinite ease-in-out;
-
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.04);
-  }
-}
-
-@keyframes pulse {
-  0% { opacity: 0.5; }
-  50% { opacity: 1; }
-  100% { opacity: 0.5; }
-}
-
-// رسائل الأخطاء
-.errorMessage {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
+.tab {
+  flex: 1;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: 0.85rem;
-}
-
-.retryBtn {
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border: none;
   background: transparent;
-  border: 1px solid currentColor;
-  color: inherit;
-  padding: 0.2rem 0.7rem;
-  border-radius: 6px;
+  color: #64748b;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 0.8rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+
+  &:hover:not(.active) {
+    color: #1e293b;
+
+    :global(body.dark) & {
+      color: #f1f5f9;
+    }
+  }
+
+  // التاب المختار
+  &.active {
+    background: #ffffff;
+    color: #059669; // أخضر زمردي
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+
+    :global(body.dark) & {
+      background: #1e293b;
+      color: #34d399;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.35);
+    }
+
+    .icon {
+      color: #059669;
+      :global(body.dark) & { color: #34d399; }
+    }
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
 }
-import styles from './ZekrFilter.module.scss'
 
-function ZekrFilter({ adhkar = [], value, onChange }) {
+.icon {
+  display: flex;
+  align-items: center;
+  color: inherit;
+  transition: color 0.2s ease;
+}
+import styles from './Tabs.module.scss'
+
+function Tabs({ tabs = [], active, onChange }) {
   return (
-    <div className={styles.filterContainer}>
-      <div className={styles.scrollArea}>
-        <button
-          className={`${styles.chip} ${value === null ? styles.active : ''}`}
-          onClick={() => onChange(null)}
-        >
-          الكل
-        </button>
+    <div className={styles.tabsWrapper} role="tablist" aria-label="أقسام التطبيق الرئيسية">
+      {tabs.map((tab) => {
+        const isActive = active === tab.id
+        const IconComponent = tab.icon
 
-        {adhkar.map((z) => (
+        return (
           <button
-            key={z.id}
-            className={`${styles.chip} ${value === z.id ? styles.active : ''}`}
-            onClick={() => onChange(z.id)}
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            className={`${styles.tab} ${isActive ? styles.active : ''}`}
+            onClick={() => onChange(tab.id)}
           >
-            {z.text}
+            {/* أيقونة اختيارية إن وُجدت */}
+            {IconComponent && (
+              <span className={styles.icon}>
+                {typeof IconComponent === 'function' ? <IconComponent /> : IconComponent}
+              </span>
+            )}
+
+            <span className={styles.label}>{tab.label}</span>
+
+            {/* مؤشر ناعم أسفل التاب النشط */}
+            {isActive && <span className={styles.activeIndicator} />}
           </button>
-        ))}
+        )
+      })}
+    </div>
+  )
+}
+
+export default Tabs
+@use '@/styles/variables' as *;
+
+.tabsWrapper {
+  width: 100%;
+  max-width: 100%; // يمنع تجاوز عرض الحاوية الأب نهائياً
+  box-sizing: border-box; // يضمن أن الحواف والبادينج داخل العرض
+  margin: 0 auto 1.5rem;
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 4px;
+  border-radius: 14px;
+  gap: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+}
+
+.tab {
+  position: relative;
+  flex: 1 1 0; // توزيع متساوٍ تماماً للأزرار
+  min-width: 0; // سطر سحري: يمنع تمدد الزر ودفع الحاوية للخارج عند ضيق الشاشة
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  border-radius: 10px;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+
+  &:hover:not(.active) {
+    color: #1e293b;
+    :global(body.dark) & {
+      color: #f8fafc;
+    }
+  }
+
+  // التبويب المختار
+  &.active {
+    background: #ffffff;
+    color: #059669;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+
+    :global(body.dark) & {
+      background: #1e293b;
+      color: #34d399;
+      box-shadow: 0 3px 14px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; // يمنع النص من كسر الحاوية لو الشاشة ضيقة جداً
+}
+
+.activeIndicator {
+  position: absolute;
+  bottom: 3px;
+  width: 12px;
+  height: 2.5px;
+  border-radius: 2px;
+  background: #059669;
+
+  :global(body.dark) & {
+    background: #34d399;
+  }
+}
+import { useState } from 'react'
+import styles from './ZekrDisplay.module.scss'
+
+// أيقونة التعديل
+const EditIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+  </svg>
+)
+
+// أيقونة النسخ
+const CopyIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+  </svg>
+)
+
+const CheckIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+)
+
+function ZekrDisplay({ zekrText, count = 0, target, onClickCount, isComplete, isFocusMode = false }) {
+  const [copied, setCopied] = useState(false)
+
+  // نسخ نص الذكر للحافظة
+  const handleCopy = async (e) => {
+    e.stopPropagation()
+    if (!zekrText) return
+    try {
+      await navigator.clipboard.writeText(zekrText)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1800)
+    } catch (err) {
+      console.error('فشل النسخ:', err)
+    }
+  }
+
+  return (
+    <div className={`
+        ${styles.displayCard} 
+        ${isComplete ? styles.completeGlow : ''} 
+        ${isFocusMode ? styles.focusDisplay : ''} 
+      `}>
+      {/* بطاقة نص الذكر مع زر النسخ */}
+      <div className={styles.textContainer}>
+        <h2 className={styles.text}>{zekrText}</h2>
+
+        <button
+          type="button"
+          className={`${styles.copyBtn} ${copied ? styles.copied : ''}`}
+          onClick={handleCopy}
+          title="نسخ نص الذكر"
+          aria-label="نسخ نص الذكر"
+        >
+          {copied ? (
+            <>
+              <CheckIcon />
+              <span className={styles.copyText}>تم النسخ</span>
+            </>
+          ) : (
+            <>
+              <CopyIcon />
+              <span className={styles.copyText}>نسخ</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* قسم العداد والهدف التفاعلي */}
+      <div className={styles.counterSection}>
+        {/* الرقم الحالي (ضخم وواضح) */}
+        <div className={`${styles.currentNumber} ${isComplete ? styles.completeNumber : ''}`}>
+          {count.toLocaleString('en')}
+        </div>
+
+        {/* شارة الهدف القابلة للنقر للتعديل */}
+        {target ? (
+          <button
+            type="button"
+            className={`${styles.targetBadge} ${isComplete ? styles.targetComplete : ''}`}
+            onClick={onClickCount}
+            title="اضغط لتعديل الهدف"
+            aria-label={`الهدف الحالي ${target}، اضغط للتعديل`}
+          >
+            <span>🎯 الهدف: {target.toLocaleString('en')}</span>
+            <span className={styles.editIcon}>
+              <EditIcon />
+            </span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={styles.setTargetBtn}
+            onClick={onClickCount}
+            title="اضغط لتحديد هدف لهذا الذكر"
+          >
+            <span>+ تحديد هدف</span>
+          </button>
+        )}
       </div>
     </div>
   )
 }
 
-export default ZekrFilter
+export default ZekrDisplay
 @use '@/styles/variables' as *;
 
-.filterContainer {
-  position: relative;
+.displayCard {
   width: 100%;
-}
-
-.scrollArea {
+  max-width: 480px;
+  margin: 0 auto;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  overflow-x: auto;
-  padding: 0.25rem 0.1rem 0.6rem;
-  scrollbar-width: none; // إخفاء شريط التمرير على فايرفوكس
-  -ms-overflow-style: none;
+  gap: 1.5rem;
+  padding: 1.75rem 1.25rem 1.25rem;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  text-align: center;
+  transition: all 0.3s ease;
 
-  &::-webkit-scrollbar {
-    display: none; // إخفاء شريط التمرير على كروم وسفاري
+  :global(body.dark) & {
+    background: #0f172a;
+    border-color: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  // توهج أخضر ناعم عند اكتمال الهدف
+  &.completeGlow {
+    border-color: rgba(5, 150, 105, 0.4);
+    box-shadow: 0 0 30px rgba(5, 150, 105, 0.15);
+
+    :global(body.dark) & {
+      border-color: rgba(52, 211, 153, 0.4);
+      box-shadow: 0 0 35px rgba(52, 211, 153, 0.18);
+    }
   }
 }
 
-.chip {
-  flex-shrink: 0;
-  padding: 0.45rem 1rem;
-  font-size: 0.85rem;
+// قسم نص الذكر
+.textContainer {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.text {
+  margin: 0;
+  font-size: clamp(1.25rem, 4vw, 1.65rem);
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.6;
+  letter-spacing: -0.3px;
+  padding: 0 0.5rem;
+
+  :global(body.dark) & {
+    color: #f8fafc;
+  }
+}
+
+// زر النسخ الخفيف
+.copyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
   border-radius: 999px;
   border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(0, 0, 0, 0.03);
-  color: #475569;
+  background: rgba(0, 0, 0, 0.02);
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 600;
   cursor: pointer;
-  white-space: nowrap;
   transition: all 0.2s ease;
   touch-action: manipulation;
 
   :global(body.dark) & {
     background: rgba(255, 255, 255, 0.04);
     border-color: rgba(255, 255, 255, 0.08);
-    color: #cbd5e1;
+    color: #94a3b8;
   }
 
   &:hover {
-    border-color: rgba(5, 150, 105, 0.4);
+    background: rgba(5, 150, 105, 0.08);
+    border-color: rgba(5, 150, 105, 0.25);
     color: #059669;
-  }
-
-  &.active {
-    background: #059669;
-    color: #fff;
-    border-color: #059669;
-    box-shadow: 0 2px 10px rgba(5, 150, 105, 0.25);
 
     :global(body.dark) & {
-      background: #059669;
-      color: #fff;
+      background: rgba(52, 211, 153, 0.1);
+      color: #34d399;
+    }
+  }
+
+  &.copied {
+    background: #059669;
+    border-color: #059669;
+    color: #fff;
+  }
+}
+
+.copyText {
+  line-height: 1;
+}
+
+// قسم العداد والهدف
+.counterSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// الرقم الضخم في المنتصف
+.currentNumber {
+  font-size: clamp(3rem, 10vw, 4.5rem);
+  font-weight: 900;
+  color: #1e293b;
+  line-height: 1;
+  letter-spacing: -1.5px;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.3s ease;
+
+  :global(body.dark) & {
+    color: #f1f5f9;
+  }
+
+  &.completeNumber {
+    color: #059669;
+    :global(body.dark) & { color: #34d399; }
+  }
+}
+
+// شارة الهدف القابلة للنقر
+.targetBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.07);
+    color: #94a3b8;
+  }
+
+  &:hover {
+    background: rgba(5, 150, 105, 0.08);
+    border-color: rgba(5, 150, 105, 0.3);
+    color: #059669;
+    transform: translateY(-1px);
+
+    :global(body.dark) & {
+      color: #34d399;
+    }
+  }
+
+  &.targetComplete {
+    background: rgba(5, 150, 105, 0.1);
+    color: #059669;
+    border-color: rgba(5, 150, 105, 0.2);
+
+    :global(body.dark) & {
+      background: rgba(52, 211, 153, 0.12);
+      color: #34d399;
+    }
+  }
+}
+
+.editIcon {
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+}
+
+// زر تحديد هدف جديد لو لم يكن هناك هدف
+.setTargetBtn {
+  background: transparent;
+  border: 1px dashed rgba(0, 0, 0, 0.15);
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  :global(body.dark) & {
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #94a3b8;
+  }
+
+  &:hover {
+    border-color: #059669;
+    color: #059669;
+    background: rgba(5, 150, 105, 0.05);
+
+    :global(body.dark) & {
+      border-color: #34d399;
+      color: #34d399;
+    }
+  }
+}
+// ===================================
+// مظهر شاشة العرض في وضع التركيز (OLED Zen Mode)
+// ===================================
+.focusDisplay {
+  background: transparent !important; // خلفية شفافة تندمج مع سواد الشاشة
+  border: 1px solid rgba(255, 255, 255, 0.08) !important; // إطار خافت جداً وناعم
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+
+  // لون نص الذكر أبيض ناصع
+  .text {
+    color: #f8fafc !important;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  }
+
+  // الرقم الحالي ضخم ومتوهج
+  .currentNumber {
+    color: #ffffff !important;
+    text-shadow: 0 0 30px rgba(52, 211, 153, 0.25); // توهج زمردي خفيف يريح العين
+  }
+
+  // شارة الهدف وزر النسخ بألوان ليلية هادئة
+  .targetBadge,
+  .setTargetBtn,
+  .copyBtn {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #cbd5e1 !important;
+
+    &:hover {
+      background: rgba(5, 150, 105, 0.2) !important;
+      color: #34d399 !important;
+    }
+  }
+
+  // عند اكتمال الهدف
+  &.completeGlow {
+    border-color: rgba(52, 211, 153, 0.4) !important;
+    box-shadow: 0 0 35px rgba(52, 211, 153, 0.15) !important;
+
+    .currentNumber {
+      color: #34d399 !important;
+      text-shadow: 0 0 35px rgba(52, 211, 153, 0.6);
     }
   }
 }

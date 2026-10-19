@@ -1,7 +1,7 @@
 import { useState } from 'react'
+import { useAnimatedNumber } from '@/hooks/useAnimatedNumber'
 import styles from './ZekrDisplay.module.scss'
 
-// أيقونة التعديل
 const EditIcon = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -9,7 +9,6 @@ const EditIcon = () => (
   </svg>
 )
 
-// أيقونة النسخ
 const CopyIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
@@ -23,10 +22,19 @@ const CheckIcon = () => (
   </svg>
 )
 
-function ZekrDisplay({ zekrText, count = 0, target, onClickCount, isComplete, isFocusMode = false }) {
+function ZekrDisplay({
+  zekrText,
+  count = 0,
+  target,
+  onClickCount,
+  isComplete,
+  isFocusMode = false,
+}) {
   const [copied, setCopied] = useState(false)
 
-  // نسخ نص الذكر للحافظة
+  // ✅ counter animation — 350ms يكفي عشان يبقى سريع ومتجاوب
+  const animatedCount = useAnimatedNumber(count, 350)
+
   const handleCopy = async (e) => {
     e.stopPropagation()
     if (!zekrText) return
@@ -40,12 +48,13 @@ function ZekrDisplay({ zekrText, count = 0, target, onClickCount, isComplete, is
   }
 
   return (
-    <div className={`
-        ${styles.displayCard} 
-        ${isComplete ? styles.completeGlow : ''} 
-        ${isFocusMode ? styles.focusDisplay : ''} 
-      `}>
-      {/* بطاقة نص الذكر مع زر النسخ */}
+    <div
+      className={`
+        ${styles.displayCard}
+        ${isComplete ? styles.completeGlow : ''}
+        ${isFocusMode ? styles.focusDisplay : ''}
+      `}
+    >
       <div className={styles.textContainer}>
         <h2 className={styles.text}>{zekrText}</h2>
 
@@ -70,18 +79,23 @@ function ZekrDisplay({ zekrText, count = 0, target, onClickCount, isComplete, is
         </button>
       </div>
 
-      {/* قسم العداد والهدف التفاعلي */}
       <div className={styles.counterSection}>
-        {/* الرقم الحالي (ضخم وواضح) */}
-        <div className={`${styles.currentNumber} ${isComplete ? styles.completeNumber : ''}`}>
-          {count.toLocaleString('en')}
+        {/* ✅ aria-live: screen reader يعلن كل تغيير */}
+        <div
+          className={`${styles.currentNumber} ${isComplete ? styles.completeNumber : ''
+            }`}
+          aria-live="polite"
+          aria-atomic="true"
+          aria-label={`العدد الحالي ${count}`}
+        >
+          {animatedCount.toLocaleString('en')}
         </div>
 
-        {/* شارة الهدف القابلة للنقر للتعديل */}
         {target ? (
           <button
             type="button"
-            className={`${styles.targetBadge} ${isComplete ? styles.targetComplete : ''}`}
+            className={`${styles.targetBadge} ${isComplete ? styles.targetComplete : ''
+              }`}
             onClick={onClickCount}
             title="اضغط لتعديل الهدف"
             aria-label={`الهدف الحالي ${target}، اضغط للتعديل`}

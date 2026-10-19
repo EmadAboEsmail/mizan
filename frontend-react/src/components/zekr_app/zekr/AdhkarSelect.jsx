@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, memo } from 'react'
 import styles from './AdhkarSelect.module.scss'
 
 // أيقونة السهم الدائري
@@ -148,4 +148,4 @@ function AdhkarSelect({ adhkar = [], value, onChange }) {
   )
 }
 
-export default AdhkarSelect
+export default memo(AdhkarSelect)

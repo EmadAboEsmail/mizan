@@ -15,53 +15,41 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
   onCloseRef.current = onClose
 
   // 1. ملء الشاشة الكامل
+  // 3. منع انطفاء الشاشة + إعادة الطلب لو الـ tab رجع visible
   useEffect(() => {
     if (!isOpen) return
 
-    const docEl = document.documentElement
-    const enterFullscreen = async () => {
+    let wakeLock = null
+
+    const requestWakeLock = async () => {
       try {
-        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-          if (docEl.requestFullscreen) {
-            await docEl.requestFullscreen({ navigationUI: 'hide' })
-          } else if (docEl.webkitRequestFullscreen) {
-            await docEl.webkitRequestFullscreen()
-          }
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen')
         }
       } catch (err) {
-        console.warn('تعذر تفعيل ملء الشاشة:', err)
+        // المتصفح ممكن يرفض — مش مشكلة
       }
     }
 
-    enterFullscreen()
+    requestWakeLock()
 
-    const handleFullscreenChange = () => {
-      const isStillFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement)
-      if (!isStillFullscreen) {
-        onCloseRef.current?.()
+    // ✅ لما الـ tab يرجع visible، نطلب wakeLock تاني (المتصفح بيفكّه لما الـ tab يروح background)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        requestWakeLock()
       }
     }
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange)
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange)
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange)
-
-      try {
-        if (document.fullscreenElement || document.webkitFullscreenElement) {
-          if (document.exitFullscreen) {
-            document.exitFullscreen()
-          } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen()
-          }
-        }
-      } catch (err) { }
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      if (wakeLock) {
+        wakeLock.release().catch(() => { })
+        wakeLock = null
+      }
     }
-  }, [isOpen])
-
-  // 2. زر Escape
+  }, [isOpen])  // 2. زر Escape
   useEffect(() => {
     if (!isOpen) return
     const handleKeyDown = (e) => {

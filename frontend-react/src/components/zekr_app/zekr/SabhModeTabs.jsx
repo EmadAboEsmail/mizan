@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import styles from './SabhModeTabs.module.scss'
 
 // أيقونة الوضع العادي (تسبيح حر / مفرد)
@@ -49,4 +50,4 @@ function SabhModeTabs({ value, onChange }) {
   )
 }
 
-export default SabhModeTabs
+export default memo(SabhModeTabs)

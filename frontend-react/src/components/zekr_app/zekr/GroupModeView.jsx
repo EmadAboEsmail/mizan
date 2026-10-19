@@ -20,22 +20,17 @@ const ArrowLeftIcon = () => (
 function GroupModeView({
   groups = [],
   onAddClick,
+  selectedGroupId,
+  onGroupChenge,
   onResetClick,
   onSetTarget,
 }) {
-  const [selectedGroupId, setSelectedGroupId] = useState(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [localCount, setLocalCount] = useState(0)
   const [showTransition, setShowTransition] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
   const [isFocusMode, setIsFocusMode] = useState(false) // ✅ حالة وضع التركيز للمجموعات
 
-  // 1. اختيار أول مجموعة تلقائياً إن وُجدت
-  useEffect(() => {
-    if (!selectedGroupId && groups.length > 0) {
-      setSelectedGroupId(groups[0].id)
-    }
-  }, [groups, selectedGroupId])
 
   const selectedGroup = groups.find((g) => g.id === selectedGroupId)
   const items = selectedGroup?.items ?? []
@@ -91,7 +86,7 @@ function GroupModeView({
 
   // تغيير المجموعة
   const handleGroupChange = (newGroupId) => {
-    setSelectedGroupId(newGroupId)
+    onGroupChenge(newGroupId)
     setCurrentIndex(0)
     setLocalCount(0)
     setShowTransition(false)
@@ -256,6 +251,7 @@ function GroupModeView({
           zekrText={currentItem.text}
           onReset={handleReset}
           onClick={handleAddClick}
+          count={localCount}
           progress={
             currentTarget
               ? Math.min((localCount / currentTarget) * 100, 100)
