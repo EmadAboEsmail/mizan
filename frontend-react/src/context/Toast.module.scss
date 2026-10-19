@@ -1,0 +1,60 @@
+@use '@/styles/variables' as *;
+
+.toastContainer {
+  position: fixed;
+  top: 20px; /* أو ممكن تحطها تحت لو تحب */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 12px 24px;
+  border-radius: $border-radius;
+  background-color: $bg-container-light;
+  color: $text-display-light;
+  font-family: $font-main;
+  font-size: 0.95rem;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-right: 4px solid transparent;
+  animation: slideDown 0.3s ease forwards;
+  pointer-events: auto;
+
+  :global(body.dark) & {
+    background-color: $bg-container-dark;
+    color: $text-display-dark;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ألوان الإشعارات */
+.success {
+  border-right-color: #4caf50;
+}
+
+.error {
+  border-right-color: #d32f2f;
+}
+
+.info {
+  border-right-color: $text-light;
+  :global(body.dark) & {
+    border-right-color: $text-dark;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,0 +1,186 @@
+@use '@/styles/variables' as *;
+
+.zekr {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.25rem 1rem 3rem;
+  background-color: #f8fafc;
+  color: #0f172a;
+  transition: background-color 0.3s ease, color 0.3s ease;
+
+  :global(body.dark) & {
+    background-color: #090d16;
+    color: #f8fafc;
+  }
+}
+
+// الشريط العلوي (الهيدر)
+.navHeader {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  color: #64748b;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
+  }
+
+  &:hover {
+    color: #059669;
+    border-color: rgba(5, 150, 105, 0.3);
+    :global(body.dark) & {
+      color: #34d399;
+    }
+  }
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+}
+
+// الحاوية المركزية
+.container {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.content {
+  width: 100%;
+  animation: fadeIn 0.3s ease;
+}
+
+// شاشة التحميل
+.loadingScreen {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+.spinner {
+  width: 44px;
+  height: 44px;
+  border: 3.5px solid rgba(5, 150, 105, 0.15);
+  border-top-color: #059669;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+
+  :global(body.dark) & {
+    border-color: rgba(52, 211, 153, 0.15);
+    border-top-color: #34d399;
+  }
+}
+
+.loadingText {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+}
+
+// شاشة الخطأ
+.errorScreen {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.errorCard {
+  max-width: 420px;
+  background: rgba(239, 68, 68, 0.04);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+
+  :global(body.dark) & {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+}
+
+.errorIcon {
+  font-size: 2.5rem;
+}
+
+.errorTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ef4444;
+}
+
+.errorMessage {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #64748b;
+  line-height: 1.5;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+}
+
+.retryBtn {
+  margin-top: 0.5rem;
+  padding: 0.6rem 1.4rem;
+  border-radius: 10px;
+  background: #059669;
+  color: #fff;
+  border: none;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #047857;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

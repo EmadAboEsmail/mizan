@@ -1,0 +1,87 @@
+@use '@/styles/variables' as *;
+
+.sabhView {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.normalModeContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+// زر وضع التركيز
+.focusBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  background: rgba(5, 150, 105, 0.08);
+  border: 1px solid rgba(5, 150, 105, 0.25);
+  color: #059669;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+
+  :global(body.dark) & {
+    background: rgba(52, 211, 153, 0.1);
+    border-color: rgba(52, 211, 153, 0.3);
+    color: #34d399;
+  }
+
+  &:hover {
+    background: #059669;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);
+
+    :global(body.dark) & {
+      background: #34d399;
+      color: #0f172a;
+    }
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+// الحالة الفارغة
+.emptyContainer {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.empty {
+  font-size: 1rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.addFirstBtn {
+  padding: 0.65rem 1.25rem;
+  background: #059669;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #047857;
+  }
+}

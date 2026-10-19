@@ -22,7 +22,12 @@
     padding: 2rem 1rem 1.5rem;
   }
 }
-
+.themeToggleFloat {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 100;
+}
 // توهج خلفي جمالي (Ambient Glow)
 .ambientGlow {
   position: absolute;

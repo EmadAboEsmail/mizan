@@ -1,6 +1,6 @@
 import SettingsSection from './SettingsSection.jsx'
 import styles from './AboutSection.module.scss'
-
+import { useToast } from '../../../context/ToastContext.jsx'
 function AboutSection() {
   const handleShare = async () => {
     const shareData = {
@@ -8,6 +8,7 @@ function AboutSection() {
       text: 'تطبيق ذِكر - سبحة إلكترونية لمتابعة وإحصاء أذكارك اليومية 📿',
       url: window.location.origin,
     }
+    const { showTost } = useToast()
 
     if (navigator.share) {
       try {
@@ -18,7 +19,7 @@ function AboutSection() {
     } else {
       // نسخ الرابط لو كان المتصفح لا يدعم Web Share
       await navigator.clipboard?.writeText(window.location.origin)
-      alert('تم نسخ رابط التطبيق بنجاح!')
+      showTost('تم نسخ رابط التطبيق بنجاح!')
     }
   }
 

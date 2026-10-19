@@ -1,6 +1,6 @@
 import AppCard from '@/components/AppCard.jsx'
+import ThemeToggle from '@/components/ui/ThemeToggle.jsx'  // ← جديد
 import styles from './Home.module.scss'
-
 const APPS = [
   {
     id: 'zekr',
@@ -41,7 +41,9 @@ function Home() {
     <div className={styles.home}>
       {/* توهج ضوئي ناعم في الخلفية */}
       <div className={styles.ambientGlow} />
-
+      <div className={styles.ThemeToggleFloat}>
+        <ThemeToggle />
+      </div>
       {/* الرأس والترحيب (Hero Section) */}
       <header className={styles.header}>
         <div className={styles.badge}>
@@ -78,6 +80,7 @@ function Home() {
           ))}
         </div>
       </main>
+
 
       {/* تذييل الصفحة */}
       <footer className={styles.footer}>

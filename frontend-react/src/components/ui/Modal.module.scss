@@ -10,6 +10,9 @@
   z-index: 1000;
   padding: $padding;
   animation: fadeIn 0.2s ease;
+
+  // ✅ منع تمرير الصفحة خلف المودال (احتياطي بجانب الـ hook)
+  // overscroll-behavior: contain;
 }
 
 .modal {
@@ -21,6 +24,8 @@
   width: 100%;
   max-width: 400px;
   animation: scaleIn 0.2s ease;
+  max-height: 90vh;
+  overflow-y: auto;
 
   :global(body.dark) & {
     background-color: $bg-container-dark;
