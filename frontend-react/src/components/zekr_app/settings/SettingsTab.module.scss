@@ -3,15 +3,14 @@
 .settingsContainer {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
   width: 100%;
-  max-width: 680px; // عرض مريح للقراءة والتصفح على الشاشات الكبيرة
+  max-width: 680px;
   margin: 0 auto;
   padding: 0.5rem 0 2rem;
   animation: fadeIn 0.3s ease-out;
 }
 
-// رأس الصفحة
 .pageHeader {
   display: flex;
   align-items: center;
@@ -65,11 +64,10 @@
   }
 }
 
-// قائمة البطاقات
 .sectionsList {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
   width: 100%;
 }
 
@@ -83,3 +81,4 @@
     transform: translateY(0);
   }
 }
+

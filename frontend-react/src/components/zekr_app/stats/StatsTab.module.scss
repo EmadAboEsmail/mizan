@@ -264,3 +264,71 @@
   cursor: pointer;
   font-size: 0.8rem;
 }
+// ============ شريط الأدوات ============
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.exportBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border-radius: 10px;
+  border: 1px solid rgba(5, 150, 105, 0.25);
+  background: rgba(5, 150, 105, 0.06);
+  color: #059669;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+
+  :global(body.dark) & {
+    background: rgba(52, 211, 153, 0.08);
+    border-color: rgba(52, 211, 153, 0.3);
+    color: #34d399;
+  }
+
+  &:hover {
+    background: #059669;
+    color: #fff;
+    border-color: #059669;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+
+    :global(body.dark) & {
+      background: #34d399;
+      color: #0f172a;
+      border-color: #34d399;
+    }
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+// ============ Metric card مميزة (أفضل فترة) ============
+.metricCard.highlight {
+  background: rgba(5, 150, 105, 0.06);
+  border-color: rgba(5, 150, 105, 0.25);
+
+  :global(body.dark) & {
+    background: rgba(52, 211, 153, 0.08);
+    border-color: rgba(52, 211, 153, 0.25);
+  }
+
+  .metricValueTop {
+    color: #059669;
+
+    :global(body.dark) & {
+      color: #34d399;
+    }
+  }
+}

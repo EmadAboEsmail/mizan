@@ -1,11 +1,12 @@
-import AppearanceSection from './AppearanceSection.jsx'
-import GroupsSection from './GroupsSection.jsx'
-import AdhkarSection from './AdhkarSection.jsx'
-import DataSection from './DataSection.jsx'
-import AboutSection from './AboutSection.jsx'
+import { SettingsAccordionProvider } from './SettingsAccordionContext'
+import SettingsSectionNav from './SettingsSectionNav'
+import AppearanceSection from './AppearanceSection'
+import GroupsSection from './GroupsSection'
+import AdhkarSection from './AdhkarSection'
+import DataSection from './DataSection'
+import AboutSection from './AboutSection'
 import styles from './SettingsTab.module.scss'
 
-// أيقونة الترس للرأس
 const SettingsIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="3" />
@@ -13,92 +14,35 @@ const SettingsIcon = () => (
   </svg>
 )
 
-function SettingsTab({
-  // بيانات الأذكار وإجراءاتها
-  adhkar = [],
-  onAddAdhkar,
-  onUpdateAdhkar,
-  onDeleteAdhkar,
-
-  // بيانات المجموعات وإجراءاتها (تدعم الاسمين لضمان عدم حدوث الخطأ نهائياً)
-  groups = [],
-  onAddGroup,
-  onUpdateGroup,
-  onDeleteGroup,
-  onAddGroupItem,
-  onAddItem,
-  onUpdateGroupItem,
-  onUpdateItem,
-  onDeleteGroupItem,
-  onDeleteItem,
-
-  // إجراءات مسح البيانات
-  onDeleteCounts,
-  onDeleteTargets,
-  onDeleteClicks,
-  onExportBackup,
-  onImportBackup, onDeleteAll,
-}) {
-  // دمج آمن للدوال لضمان أخذ الدالة المتاحة سواء جاءت باسم onAddGroupItem أو onAddItem
-  const handleAddItem = onAddGroupItem || onAddItem
-  const handleUpdateItem = onUpdateGroupItem || onUpdateItem
-  const handleDeleteItem = onDeleteGroupItem || onDeleteItem
-
+function SettingsTab() {
   return (
-    <div className={styles.settingsContainer}>
-      {/* رأس تبويب الإعدادات */}
-      <div className={styles.pageHeader}>
-        <div className={styles.headerIconWrapper}>
-          <SettingsIcon />
+    <SettingsAccordionProvider>
+      <div className={styles.settingsContainer}>
+        <div className={styles.pageHeader}>
+          <div className={styles.headerIconWrapper}>
+            <SettingsIcon />
+          </div>
+          <div className={styles.headerTextGroup}>
+            <h2 className={styles.pageTitle}>الإعدادات</h2>
+            <p className={styles.pageSubtitle}>
+              خصّص مظهر التطبيق، رتّب أذكارك ومجموعاتك، وتحكّم في بياناتك
+            </p>
+          </div>
         </div>
-        <div className={styles.headerTextGroup}>
-          <h2 className={styles.pageTitle}>الإعدادات</h2>
-          <p className={styles.pageSubtitle}>
-            خصّص مظهر التطبيق، رتّب أذكارك ومجموعاتك، وتحكّم في بياناتك
-          </p>
+
+        <SettingsSectionNav />
+
+        <div className={styles.sectionsList}>
+          <AppearanceSection />
+          <GroupsSection />
+          <AdhkarSection />
+          <DataSection />
+          <AboutSection />
         </div>
       </div>
-
-      {/* قائمة أقسام الإعدادات */}
-      <div className={styles.sectionsList}>
-        {/* 1. تخصيص المظهر (ثيم فاتح / داكن) */}
-        <AppearanceSection />
-
-        {/* 2. إدارة المجموعات */}
-        <GroupsSection
-          groups={groups}
-          onAdd={onAddGroup}
-          onUpdate={onUpdateGroup}
-          onDelete={onDeleteGroup}
-          onAddItem={handleAddItem}
-          onUpdateItem={handleUpdateItem}
-          onDeleteItem={handleDeleteItem}
-          allAdhkar={adhkar}
-        />
-
-        {/* 3. إدارة قائمة الأذكار */}
-        <AdhkarSection
-          adhkar={adhkar}
-          onAdd={onAddAdhkar}
-          onUpdate={onUpdateAdhkar}
-          onDelete={onDeleteAdhkar}
-        />
-
-        {/* 4. إدارة البيانات والذاكرة */}
-        <DataSection
-          onDeleteCounts={onDeleteCounts}
-          onDeleteTargets={onDeleteTargets}
-          onDeleteClicks={onDeleteClicks}
-          onDeleteAll={onDeleteAll}
-          onExportBackup={onExportBackup}
-          onImportBackup={onImportBackup}
-        />
-
-        {/* 5. عن التطبيق */}
-        <AboutSection />
-      </div>
-    </div>
+    </SettingsAccordionProvider>
   )
 }
 
 export default SettingsTab
+

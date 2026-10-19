@@ -150,7 +150,7 @@ function ZekrSabh() {
           isFocusMode={isFocusMode}
         />
 
-        {!isFocusMode && currentTarget && currentTarget > 33 && (
+        {!isFocusMode && currentTarget && currentTarget && (
           <button
             type="button"
             className={styles.focusBtn}

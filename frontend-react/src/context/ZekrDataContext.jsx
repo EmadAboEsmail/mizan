@@ -34,6 +34,24 @@ import { useToast } from './ToastContext'
 
 const ZekrDataContext = createContext(null)
 
+// ===========================
+// دوال مساعدة
+// ===========================
+const dedupeById = (list) => {
+  if (!Array.isArray(list)) return []
+  const seen = new Set()
+  return list.filter((item) => {
+    if (!item?.id || seen.has(item.id)) return false
+    seen.add(item.id)
+    return true
+  })
+}
+
+const isNotFoundError = (err) => {
+  const msg = String(err?.message || '').toLowerCase()
+  return msg.includes('غير موجود') || msg.includes('not found')
+}
+
 export function ZekrDataProvider({ children }) {
   // ===========================
   // Data State
@@ -50,7 +68,7 @@ export function ZekrDataProvider({ children }) {
   const { showToast } = useToast()
 
   // ===========================
-  // تحميل البيانات الأولية
+  // تحميل البيانات الأولية (مع dedupe)
   // ===========================
   const loadInitialData = useCallback(() => {
     setLoading(true)
@@ -58,20 +76,28 @@ export function ZekrDataProvider({ children }) {
 
     Promise.all([getAdhkar(), getCounts(), getTargets(), getGroups()])
       .then(([adhkarData, countsData, targetsData, groupsData]) => {
-        setAllAdhkar(adhkarData || [])
+        const cleanAdhkar = dedupeById(adhkarData)
+        const cleanGroups = dedupeById(groupsData)
+
+        setAllAdhkar(cleanAdhkar)
         setCounts(countsData || {})
         setTargets(targetsData || {})
-        setGroups(groupsData || [])
-        if (adhkarData && adhkarData.length > 0) {
+        setGroups(cleanGroups)
+
+        if (cleanAdhkar.length > 0) {
           setCurrentZekrId((prev) =>
-            prev && adhkarData.some((z) => z.id === prev) ? prev : adhkarData[0].id
+            prev && cleanAdhkar.some((z) => z.id === prev)
+              ? prev
+              : cleanAdhkar[0].id
           )
         }
         setLoading(false)
       })
       .catch((err) => {
         console.error('فشل تحميل البيانات:', err)
-        setError(err.message || 'فشل الاتصال بالخادم، يرجى التأكد من تشغيل السيرفر.')
+        setError(
+          err.message || 'فشل الاتصال بالخادم، يرجى التأكد من تشغيل السيرفر.'
+        )
         setLoading(false)
       })
   }, [])
@@ -101,7 +127,10 @@ export function ZekrDataProvider({ children }) {
 
     try {
       const result = await addClick(zekrId)
-      pendingRef.current[zekrId] = Math.max(0, (pendingRef.current[zekrId] || 1) - 1)
+      pendingRef.current[zekrId] = Math.max(
+        0,
+        (pendingRef.current[zekrId] || 1) - 1
+      )
 
       if (
         pendingRef.current[zekrId] === 0 &&
@@ -112,7 +141,10 @@ export function ZekrDataProvider({ children }) {
       }
     } catch (err) {
       console.error('فشل تسجيل الضغطة بالسيرفر:', err)
-      pendingRef.current[zekrId] = Math.max(0, (pendingRef.current[zekrId] || 1) - 1)
+      pendingRef.current[zekrId] = Math.max(
+        0,
+        (pendingRef.current[zekrId] || 1) - 1
+      )
       setCounts((prev) => ({
         ...prev,
         [zekrId]: Math.max(0, (prev[zekrId] || 1) - 1),
@@ -129,16 +161,22 @@ export function ZekrDataProvider({ children }) {
       setCounts((prev) => ({ ...prev, [zekrId]: 0 }))
     } catch (err) {
       console.error('فشل تصفير العدد:', err)
+      throw err
     }
   }
 
   const updateZekrTarget = async (zekrId, numericTarget) => {
-    await setTarget(zekrId, numericTarget)
-    setTargets((prev) => ({ ...prev, [zekrId]: numericTarget }))
+    try {
+      await setTarget(zekrId, numericTarget)
+      setTargets((prev) => ({ ...prev, [zekrId]: numericTarget }))
+    } catch (err) {
+      console.error('فشل تعديل الهدف:', err)
+      throw err
+    }
   }
 
   // ===========================
-  // إدارة الأذكار
+  // إدارة الأذكار (re-throw + self-heal)
   // ===========================
   const handleAddAdhkar = async (text, target) => {
     try {
@@ -147,6 +185,7 @@ export function ZekrDataProvider({ children }) {
       return newZekr
     } catch (err) {
       console.error('فشل إضافة الذكر:', err)
+      throw err
     }
   }
 
@@ -156,6 +195,11 @@ export function ZekrDataProvider({ children }) {
       setAllAdhkar((prev) => prev.map((z) => (z.id === id ? updated : z)))
     } catch (err) {
       console.error('فشل تحديث الذكر:', err)
+      if (isNotFoundError(err)) {
+        console.warn('🔄 الذكر غير موجود في السيرفر — إعادة مزامنة...')
+        loadInitialData()
+      }
+      throw err
     }
   }
 
@@ -165,6 +209,11 @@ export function ZekrDataProvider({ children }) {
       setAllAdhkar((prev) => prev.filter((z) => z.id !== id))
     } catch (err) {
       console.error('فشل حذف الذكر:', err)
+      if (isNotFoundError(err)) {
+        console.warn('🔄 الذكر غير موجود في السيرفر — إعادة مزامنة...')
+        loadInitialData()
+      }
+      throw err
     }
   }
 
@@ -176,7 +225,8 @@ export function ZekrDataProvider({ children }) {
       await deleteAllCounts()
       setCounts({})
     } catch (err) {
-      console.error(err)
+      console.error('فشل مسح الأعداد:', err)
+      throw err
     }
   }
 
@@ -185,7 +235,8 @@ export function ZekrDataProvider({ children }) {
       await deleteAllTargets()
       setTargets({})
     } catch (err) {
-      console.error(err)
+      console.error('فشل مسح الأهداف:', err)
+      throw err
     }
   }
 
@@ -194,7 +245,8 @@ export function ZekrDataProvider({ children }) {
       await deleteAllClicks()
       setCounts({})
     } catch (err) {
-      console.error(err)
+      console.error('فشل مسح الإحصائيات:', err)
+      throw err
     }
   }
 
@@ -204,19 +256,22 @@ export function ZekrDataProvider({ children }) {
       setCounts({})
       setTargets({})
     } catch (err) {
-      console.error(err)
+      console.error('فشل مسح كل البيانات:', err)
+      throw err
     }
   }
 
   // ===========================
-  // إدارة المجموعات
+  // إدارة المجموعات (re-throw + self-heal)
   // ===========================
   const handleAddGroup = async (name, description) => {
     try {
       const newGroup = await createGroup(name, description)
       setGroups((prev) => [newGroup, ...prev])
+      return newGroup
     } catch (err) {
-      console.error(err)
+      console.error('فشل إضافة المجموعة:', err)
+      throw err
     }
   }
 
@@ -225,7 +280,12 @@ export function ZekrDataProvider({ children }) {
       const updated = await updateGroup(id, name, description)
       setGroups((prev) => prev.map((g) => (g.id === id ? updated : g)))
     } catch (err) {
-      console.error(err)
+      console.error('فشل تحديث المجموعة:', err)
+      if (isNotFoundError(err)) {
+        console.warn('🔄 المجموعة غير موجودة في السيرفر — إعادة مزامنة...')
+        loadInitialData()
+      }
+      throw err
     }
   }
 
@@ -234,7 +294,12 @@ export function ZekrDataProvider({ children }) {
       await deleteGroup(id)
       setGroups((prev) => prev.filter((g) => g.id !== id))
     } catch (err) {
-      console.error(err)
+      console.error('فشل حذف المجموعة:', err)
+      if (isNotFoundError(err)) {
+        console.warn('🔄 المجموعة غير موجودة في السيرفر — إعادة مزامنة...')
+        loadInitialData()
+      }
+      throw err
     }
   }
 
@@ -243,7 +308,9 @@ export function ZekrDataProvider({ children }) {
       const updated = await addGroupItem(groupId, zekr_id, target)
       setGroups((prev) => prev.map((g) => (g.id === groupId ? updated : g)))
     } catch (err) {
-      console.error(err)
+      console.error('فشل إضافة الذكر للمجموعة:', err)
+      if (isNotFoundError(err)) loadInitialData()
+      throw err
     }
   }
 
@@ -253,7 +320,9 @@ export function ZekrDataProvider({ children }) {
       setGroups((prev) => prev.map((g) => (g.id === groupId ? updated : g)))
       return updated
     } catch (err) {
-      console.error(err)
+      console.error('فشل تحديث الذكر في المجموعة:', err)
+      if (isNotFoundError(err)) loadInitialData()
+      throw err
     }
   }
 
@@ -262,12 +331,14 @@ export function ZekrDataProvider({ children }) {
       const updated = await deleteGroupItem(groupId, itemId)
       setGroups((prev) => prev.map((g) => (g.id === groupId ? updated : g)))
     } catch (err) {
-      console.error(err)
+      console.error('فشل حذف الذكر من المجموعة:', err)
+      if (isNotFoundError(err)) loadInitialData()
+      throw err
     }
   }
 
   // ===========================
-  // النسخ الاحتياطي
+  // النسخ الاحتياطي (مع dedupe)
   // ===========================
   const handleExportBackup = async () => {
     try {
@@ -287,15 +358,28 @@ export function ZekrDataProvider({ children }) {
     } catch (err) {
       console.error('فشل تصدير النسخة الاحتياطية:', err)
       showToast('فشل في تصدير النسخة الاحتياطية من السيرفر.')
+      throw err
     }
   }
 
   const handleImportBackup = async (fileContent) => {
     try {
       const data = JSON.parse(fileContent)
-      const res = await restoreBackup(data)
+
+      // ✅ dedupe قبل الإرسال للسيرفر لمنع التكرار
+      const sanitized = {
+        ...data,
+        adhkar: dedupeById(data?.adhkar),
+        groups: dedupeById(data?.groups),
+      }
+
+      const res = await restoreBackup(sanitized)
       loadInitialData()
-      return { success: true, count: res?.count || data.adhkar?.length || 0 }
+
+      return {
+        success: true,
+        count: res?.count || sanitized.adhkar?.length || 0,
+      }
     } catch (err) {
       console.error('فشل استيراد النسخة الاحتياطية:', err)
       throw err

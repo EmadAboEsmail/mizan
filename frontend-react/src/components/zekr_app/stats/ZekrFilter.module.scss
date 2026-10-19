@@ -3,6 +3,45 @@
 .filterContainer {
   position: relative;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+// 🆕 حقل البحث
+.searchInput {
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.85rem;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
+  color: #0f172a;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.2s ease;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #f8fafc;
+  }
+
+  &::placeholder {
+    color: #94a3b8;
+  }
+
+  &:focus {
+    border-color: #059669;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+
+    :global(body.dark) & {
+      background: #1e293b;
+      border-color: #34d399;
+      box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
+    }
+  }
 }
 
 .scrollArea {
@@ -10,12 +49,12 @@
   align-items: center;
   gap: 0.5rem;
   overflow-x: auto;
-  padding: 0.25rem 0.1rem 0.6rem;
-  scrollbar-width: none; // إخفاء شريط التمرير على فايرفوكس
+  padding: 0.15rem 0.1rem 0.5rem;
+  scrollbar-width: none;
   -ms-overflow-style: none;
 
   &::-webkit-scrollbar {
-    display: none; // إخفاء شريط التمرير على كروم وسفاري
+    display: none;
   }
 }
 
@@ -31,6 +70,11 @@
   white-space: nowrap;
   transition: all 0.2s ease;
   touch-action: manipulation;
+
+  // 🆕 truncation للـ text الطويل
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   :global(body.dark) & {
     background: rgba(255, 255, 255, 0.04);
@@ -53,5 +97,18 @@
       background: #059669;
       color: #fff;
     }
+  }
+}
+
+// 🆕 رسالة "لا توجد نتائج"
+.noResults {
+  padding: 0.45rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #94a3b8;
+  white-space: nowrap;
+
+  :global(body.dark) & {
+    color: #64748b;
   }
 }

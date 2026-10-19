@@ -10,7 +10,8 @@
   border-radius: 20px;
   padding: 1.25rem 1.4rem;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
-  transition: all 0.25s ease;
+  transition: box-shadow 0.25s ease;
+  scroll-margin-top: 70px; // عشان sticky nav ميتغطاش
 
   :global(body.dark) & {
     background: #0f172a;
@@ -18,7 +19,6 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   }
 
-  // تجاوب مريح لشاشات الموبايل الصغيرة
   @media (max-width: 480px) {
     padding: 1rem;
     border-radius: 16px;
@@ -30,22 +30,35 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-
-  :global(body.dark) & {
-    border-bottom-color: rgba(255, 255, 255, 0.04);
-  }
+  gap: 0.5rem;
 }
 
-.titleWrapper {
+.headerToggle {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 0.65rem;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-align: start;
+  color: inherit;
+  font: inherit;
+  border-radius: 8px;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #059669;
+    outline-offset: 4px;
+  }
 }
 
-// مؤشر أخضر زمردي عمودي ناعم يبرز العنوان
 .titleIndicator {
   width: 4px;
   height: 18px;
@@ -62,6 +75,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .title {
@@ -87,17 +102,62 @@
   }
 }
 
-// مساحة الإجراء العلوي
+// chevron
+.chevronWrapper {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #94a3b8;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease;
+  transform: rotate(-90deg); // مقفول: يشير لليسار
+}
+
+.chevronOpen {
+  transform: rotate(0deg); // مفتوح: يشير لأسفل
+  color: #059669;
+
+  :global(body.dark) & {
+    color: #34d399;
+  }
+}
+
+.chevron {
+  width: 20px;
+  height: 20px;
+}
+
 .action {
   display: flex;
   align-items: center;
   flex-shrink: 0;
 }
 
-// حاوية المحتوى
+// محتوى القسم
 .content {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   width: 100%;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  animation: expandContent 0.25s ease-out;
+
+  :global(body.dark) & {
+    border-top-color: rgba(255, 255, 255, 0.04);
+  }
 }
+
+@keyframes expandContent {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

@@ -1,4 +1,6 @@
 import { useState, useRef } from 'react'
+import { useZekrData } from '@/context/ZekrDataContext'
+import { useToast } from '@/context/ToastContext'
 import SettingsSection from './SettingsSection.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import styles from './DataSection.module.scss'
@@ -43,31 +45,37 @@ const DANGER_OPTION = {
   icon: '⚠️',
 }
 
-function DataSection({
-  onDeleteCounts,
-  onDeleteTargets,
-  onDeleteClicks,
-  onDeleteAll,
-  onExportBackup,
-  onImportBackup,
-}) {
+function DataSection() {
+  // ✅ الـ context مباشرة — بدون props
+  const {
+    handleDeleteAllCounts,
+    handleDeleteAllTargets,
+    handleDeleteAllClicks,
+    handleDeleteAll,
+    handleExportBackup,
+    handleImportBackup,
+  } = useZekrData()
+
+  const { showToast } = useToast()
+
   const [confirmType, setConfirmType] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [importStatus, setImportStatus] = useState(null) // رسائل نجاح أو خطأ
+  const [importStatus, setImportStatus] = useState(null)
   const [pendingFileContent, setPendingFileContent] = useState(null)
 
   const fileInputRef = useRef(null)
 
   const actionHandlers = {
-    counts: onDeleteCounts,
-    targets: onDeleteTargets,
-    clicks: onDeleteClicks,
-    all: onDeleteAll,
+    counts: handleDeleteAllCounts,
+    targets: handleDeleteAllTargets,
+    clicks: handleDeleteAllClicks,
+    all: handleDeleteAll,
   }
 
-  const currentConfirmData = confirmType === 'all'
-    ? DANGER_OPTION
-    : RESET_OPTIONS.find((opt) => opt.id === confirmType)
+  const currentConfirmData =
+    confirmType === 'all'
+      ? DANGER_OPTION
+      : RESET_OPTIONS.find((opt) => opt.id === confirmType)
 
   const handleConfirm = async () => {
     if (!confirmType || !actionHandlers[confirmType]) return
@@ -76,8 +84,10 @@ function DataSection({
     try {
       await actionHandlers[confirmType]()
       setConfirmType(null)
+      showToast('تمت العملية بنجاح')
     } catch (err) {
       console.error('فشل تنفيذ عملية المسح:', err)
+      showToast('فشلت العملية، يرجى المحاولة مرة أخرى.')
     } finally {
       setLoading(false)
     }
@@ -94,7 +104,6 @@ function DataSection({
     }
     reader.readAsText(file)
 
-    // تفريغ الحقل لاختياره مجدداً مستقبلاً
     e.target.value = ''
   }
 
@@ -105,11 +114,12 @@ function DataSection({
     setLoading(true)
     setImportStatus(null)
     try {
-      const result = await onImportBackup(pendingFileContent)
+      const result = await handleImportBackup(pendingFileContent)
       setImportStatus({
         type: 'success',
         text: `تم استرجاع البيانات بنجاح (${result.count} ذكر ومجموعاتها).`,
       })
+      showToast('تم استيراد النسخة الاحتياطية بنجاح!')
       setPendingFileContent(null)
     } catch (err) {
       setImportStatus({
@@ -122,18 +132,24 @@ function DataSection({
     }
   }
 
-  return (
-    <SettingsSection title="إدارة البيانات والذاكرة">
-      <div className={styles.container}>
+  // تصدير مع toast
+  const handleExportClick = async () => {
+    try {
+      await handleExportBackup()
+      showToast('تم تصدير النسخة الاحتياطية بنجاح!')
+    } catch (err) {
+      // الـ context already shows a toast on error
+    }
+  }
 
-        {/* ===================================
-            1. قسم النسخ الاحتياطي (Backup & Restore)
-        =================================== */}
+  return (
+    <SettingsSection id="data" title="إدارة البيانات والذاكرة">
+      <div className={styles.container}>
+        {/* 1. قسم النسخ الاحتياطي */}
         <div className={styles.backupSection}>
           <h4 className={styles.subSectionTitle}>النسخ الاحتياطي السحابي والمحلي</h4>
 
           <div className={styles.backupGrid}>
-            {/* بطاقة التصدير */}
             <div className={styles.backupCard}>
               <div className={styles.backupHeader}>
                 <span className={styles.backupIcon}>📥</span>
@@ -147,13 +163,12 @@ function DataSection({
               <button
                 type="button"
                 className={styles.exportBtn}
-                onClick={onExportBackup}
+                onClick={handleExportClick}
               >
                 تنزيل الملف
               </button>
             </div>
 
-            {/* بطاقة الاستيراد */}
             <div className={styles.backupCard}>
               <div className={styles.backupHeader}>
                 <span className={styles.backupIcon}>📤</span>
@@ -165,7 +180,6 @@ function DataSection({
                 </div>
               </div>
 
-              {/* حقل رفع الملف غير المرئي */}
               <input
                 ref={fileInputRef}
                 type="file"
@@ -184,10 +198,11 @@ function DataSection({
             </div>
           </div>
 
-          {/* رسالة حالة الاستيراد */}
           {importStatus && (
             <div
-              className={`${styles.statusMessage} ${importStatus.type === 'success' ? styles.statusSuccess : styles.statusError
+              className={`${styles.statusMessage} ${importStatus.type === 'success'
+                ? styles.statusSuccess
+                : styles.statusError
                 }`}
             >
               {importStatus.type === 'success' ? '✓ ' : '⚠️ '}
@@ -196,9 +211,7 @@ function DataSection({
           )}
         </div>
 
-        {/* ===================================
-            2. العمليات الجزئية والتصفير
-        =================================== */}
+        {/* 2. العمليات الجزئية والتصفير */}
         <div className={styles.optionsList}>
           <h4 className={styles.subSectionTitle}>خيارات التصفير السريع</h4>
           {RESET_OPTIONS.map((item) => (
@@ -222,9 +235,7 @@ function DataSection({
           ))}
         </div>
 
-        {/* ===================================
-            3. منطقة الخطر (إعادة ضبط شاملة)
-        =================================== */}
+        {/* 3. منطقة الخطر */}
         <div className={styles.dangerZone}>
           <div className={styles.dangerHeader}>
             <span className={styles.dangerIcon}>{DANGER_OPTION.icon}</span>
@@ -242,7 +253,6 @@ function DataSection({
             {DANGER_OPTION.btnLabel}
           </button>
         </div>
-
       </div>
 
       {/* نافذة تأكيد عمليات المسح */}

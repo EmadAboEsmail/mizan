@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react'
+import { useZekrData } from '@/context/ZekrDataContext'
 import SettingsSection from './SettingsSection.jsx'
 import AdhkarFormModal from './AdhkarFormModal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import styles from './AdhkarSection.module.scss'
 
-// أيقونات SVG مدمجة ونظيفة
 const EditIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -21,7 +21,15 @@ const DeleteIcon = () => (
   </svg>
 )
 
-function AdhkarSection({ adhkar = [], onAdd, onUpdate, onDelete }) {
+function AdhkarSection() {
+  // ✅ الـ context مباشرة — بدون props
+  const {
+    allAdhkar,
+    handleAddAdhkar,
+    handleUpdateAdhkar,
+    handleDeleteAdhkar,
+  } = useZekrData()
+
   const [formMode, setFormMode] = useState(null) // null | 'add' | { editing: zekr }
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -29,19 +37,19 @@ function AdhkarSection({ adhkar = [], onAdd, onUpdate, onDelete }) {
 
   // فلترة الأذكار بالبحث
   const filteredAdhkar = useMemo(() => {
-    if (!search.trim()) return adhkar
-    return adhkar.filter((z) =>
+    if (!search.trim()) return allAdhkar
+    return allAdhkar.filter((z) =>
       z.text.toLowerCase().includes(search.trim().toLowerCase())
     )
-  }, [adhkar, search])
+  }, [allAdhkar, search])
 
   const handleAdd = async (text, target) => {
-    await onAdd(text, target)
+    await handleAddAdhkar(text, target)
     setFormMode(null)
   }
 
   const handleUpdate = async (text, target) => {
-    await onUpdate(formMode.editing.id, text, target)
+    await handleUpdateAdhkar(formMode.editing.id, text, target)
     setFormMode(null)
   }
 
@@ -49,7 +57,7 @@ function AdhkarSection({ adhkar = [], onAdd, onUpdate, onDelete }) {
     if (!deleteTarget) return
     try {
       setIsDeleting(true)
-      await onDelete(deleteTarget.id)
+      await handleDeleteAdhkar(deleteTarget.id)
       setDeleteTarget(null)
     } catch (err) {
       console.error('فشل حذف الذكر:', err)
@@ -59,7 +67,7 @@ function AdhkarSection({ adhkar = [], onAdd, onUpdate, onDelete }) {
   }
 
   return (
-    <SettingsSection title={`الأذكار (${adhkar.length})`}>
+    <SettingsSection id="adhkar" title={`الأذكار (${allAdhkar.length})`}>
       <div className={styles.sectionContainer}>
         {/* شريط الإجراءات العلوي: زر الإضافة وشريط البحث */}
         <div className={styles.topBar}>
@@ -72,7 +80,7 @@ function AdhkarSection({ adhkar = [], onAdd, onUpdate, onDelete }) {
             <span>إضافة ذكر جديد</span>
           </button>
 
-          {adhkar.length > 4 && (
+          {allAdhkar.length > 4 && (
             <input
               type="text"
               className={styles.searchInput}

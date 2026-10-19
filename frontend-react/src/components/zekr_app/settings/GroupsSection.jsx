@@ -1,11 +1,11 @@
 import { useState } from 'react'
+import { useZekrData } from '@/context/ZekrDataContext'
 import SettingsSection from './SettingsSection.jsx'
 import GroupFormModal from './GroupFormModal.jsx'
 import GroupEditorModal from './GroupEditorModal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import styles from './GroupsSection.module.scss'
 
-// أيقونات SVG نظيفة ومتناسقة
 const EditIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -34,16 +34,19 @@ const ArrowLeftIcon = () => (
   </svg>
 )
 
-function GroupsSection({
-  groups = [],
-  onAdd,
-  onUpdate,
-  onDelete,
-  onAddItem,
-  onUpdateItem,
-  onDeleteItem,
-  allAdhkar = [],
-}) {
+function GroupsSection() {
+  // ✅ الـ context مباشرة — بدون props
+  const {
+    groups,
+    allAdhkar,
+    handleAddGroup,
+    handleUpdateGroup,
+    handleDeleteGroup,
+    handleAddGroupItem,
+    handleUpdateGroupItem,
+    handleDeleteGroupItem,
+  } = useZekrData()
+
   const [formMode, setFormMode] = useState(null) // null | 'add' | { editing: group }
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [editorGroupId, setEditorGroupId] = useState(null)
@@ -52,12 +55,12 @@ function GroupsSection({
   const editorGroup = groups.find((g) => g.id === editorGroupId)
 
   const handleAdd = async (name, description) => {
-    await onAdd(name, description)
+    await handleAddGroup(name, description)
     setFormMode(null)
   }
 
   const handleUpdate = async (name, description) => {
-    await onUpdate(formMode.editing.id, name, description)
+    await handleUpdateGroup(formMode.editing.id, name, description)
     setFormMode(null)
   }
 
@@ -65,7 +68,7 @@ function GroupsSection({
     if (!deleteTarget) return
     try {
       setIsDeleting(true)
-      await onDelete(deleteTarget.id)
+      await handleDeleteGroup(deleteTarget.id)
       setDeleteTarget(null)
     } catch (err) {
       console.error('فشل حذف المجموعة:', err)
@@ -75,7 +78,7 @@ function GroupsSection({
   }
 
   return (
-    <SettingsSection title={`المجموعات (${groups.length})`}>
+    <SettingsSection id="groups" title={`المجموعات (${groups.length})`}>
       <div className={styles.container}>
         {/* شريط الإجراءات العلوي */}
         <div className={styles.topBar}>
@@ -107,7 +110,6 @@ function GroupsSection({
               const count = g.items?.length ?? 0
               return (
                 <li key={g.id} className={styles.item}>
-                  {/* زر الدخول لمحرر أذكار المجموعة */}
                   <button
                     type="button"
                     className={styles.mainClickable}
@@ -136,7 +138,6 @@ function GroupsSection({
                     </span>
                   </button>
 
-                  {/* أزرار الإجراءات (تعديل الاسم / حذف المجموعة) */}
                   <div className={styles.actions}>
                     <button
                       type="button"
@@ -190,9 +191,9 @@ function GroupsSection({
         onClose={() => setEditorGroupId(null)}
         group={editorGroup}
         allAdhkar={allAdhkar}
-        onAddItem={onAddItem}
-        onUpdateItem={onUpdateItem}
-        onDeleteItem={onDeleteItem}
+        onAddItem={handleAddGroupItem}
+        onUpdateItem={handleUpdateGroupItem}
+        onDeleteItem={handleDeleteGroupItem}
       />
     </SettingsSection>
   )

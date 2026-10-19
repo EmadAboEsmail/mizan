@@ -42,7 +42,7 @@ function AppearanceSection() {
   }
 
   return (
-    <SettingsSection title="المظهر">
+    <SettingsSection id="appearance" title="المظهر">
       <div className={styles.container}>
         <p className={styles.hint}>
           اختر المظهر المريح لعينيك أثناء التسبيح والقراءة:

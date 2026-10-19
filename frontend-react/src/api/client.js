@@ -13,12 +13,12 @@ async function apiRequest(path, options = {}) {
 
   return res.json()
 }
-export function getStats(period = 'day', zekr_id = null) {
+export function getStats(period = 'day', zekr_id = null, compare = false) {
   const params = new URLSearchParams({ period })
   if (zekr_id) params.set('zekr_id', zekr_id)
+  if (compare) params.set('compare', 'true')
   return apiRequest(`/api/stats?${params.toString()}`)
-}
-export function getAdhkar() {
+} export function getAdhkar() {
   return apiRequest('/api/adhkar')
 }
 
@@ -142,4 +142,10 @@ export function restoreBackup(data) {
     method: 'POST',
     body: JSON.stringify(data),
   })
+}
+// ===========================
+// الإحصائيات المتقدمة
+// ===========================
+export function getStreak() {
+  return apiRequest('/api/stats/streak')
 }

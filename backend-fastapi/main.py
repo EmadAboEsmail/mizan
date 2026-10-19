@@ -167,6 +167,7 @@ def generate_buckets(now: datetime, period: str):
 def get_stats(
     period: str = "day",
     zekr_id: str | None = None,
+    compare: bool = False,
     db: Session = Depends(get_db),
 ):
     if period not in ("day", "week", "month", "year"):
@@ -189,7 +190,6 @@ def get_stats(
 
     clicks = query.all()
 
-    # التجميع للرسم البياني
     counts_by_bucket: dict[str, int] = {}
     for c in clicks:
         label = get_bucket(datetime.fromtimestamp(c.timestamp / 1000), period)
@@ -197,14 +197,12 @@ def get_stats(
 
     values = [counts_by_bucket.get(b, 0) for b in buckets]
 
-    # breakdown (بس لما الكل)
     breakdown = []
     if not zekr_id:
         counts_by_zekr: dict[str, int] = {}
         for c in clicks:
             counts_by_zekr[c.zekr_id] = counts_by_zekr.get(c.zekr_id, 0) + 1
 
-        # نجيب نصوص الأذكار
         all_adhkar = db.query(Adhkar).all()
         text_map = {a.id: a.text for a in all_adhkar}
 
@@ -219,14 +217,44 @@ def get_stats(
             )
         ]
 
-    return {
+    total = sum(values)
+
+    result = {
         "labels": buckets,
         "values": values,
-        "total": sum(values),
+        "total": total,
         "breakdown": breakdown,
     }
 
+    # ✅ مقارنة بالفترة السابقة (اختياري)
+    if compare:
+        now_ms = int(now.timestamp() * 1000)
+        duration_ms = now_ms - start_ms
+        prev_start_ms = start_ms - duration_ms
+        prev_end_ms = start_ms
 
+        prev_query = db.query(Click).filter(
+            Click.timestamp >= prev_start_ms,
+            Click.timestamp < prev_end_ms,
+        )
+        if zekr_id:
+            prev_query = prev_query.filter(Click.zekr_id == zekr_id)
+
+        prev_total = prev_query.count()
+
+        change_percent = 0
+        if prev_total > 0:
+            change_percent = round(((total - prev_total) / prev_total) * 100, 1)
+        elif total > 0:
+            change_percent = 100.0  # من صفر لرقم = زيادة 100%
+
+        result["comparison"] = {
+            "previous_total": prev_total,
+            "current_total": total,
+            "change_percent": change_percent,
+        }
+
+    return result
 # ===========================
 # مسح كل البيانات
 # ===========================
@@ -677,3 +705,64 @@ def import_backup(data: dict, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=400, detail=f"فشل استيراد النسخة: {str(e)}")
+
+
+# ===========================
+# Streak (سلسلة الأيام المتتالية)
+# ===========================
+
+@app.get("/api/stats/streak")
+def get_streak(db: Session = Depends(get_db)):
+    """يحسب سلسلة الأيام المتتالية اللي فيها تسبيح."""
+    clicks = db.query(Click).all()
+    if not clicks:
+        return {
+            "current": 0,
+            "longest": 0,
+            "total_days": 0,
+            "last_date": None,
+        }
+
+    # تجميع الأيام اللي فيها تسبيح
+    days_with_clicks = set()
+    for c in clicks:
+        dt = datetime.fromtimestamp(c.timestamp / 1000)
+        days_with_clicks.add(dt.strftime("%Y-%m-%d"))
+
+    sorted_desc = sorted(days_with_clicks, reverse=True)
+    today = datetime.now().strftime("%Y-%m-%d")
+    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+
+    # ✅ السلسلة الحالية (لازم تبدأ من النهارده أو إمبارح)
+    current_streak = 0
+    if sorted_desc[0] == today or sorted_desc[0] == yesterday:
+        current_streak = 1
+        expected = datetime.strptime(sorted_desc[0], "%Y-%m-%d")
+        for day in sorted_desc[1:]:
+            expected -= timedelta(days=1)
+            if day == expected.strftime("%Y-%m-%d"):
+                current_streak += 1
+            else:
+                break
+
+    # ✅ أطول سلسلة في التاريخ
+    longest_streak = 0
+    if sorted_desc:
+        current = 1
+        longest_streak = 1
+        all_days_asc = sorted(days_with_clicks)
+        for i in range(1, len(all_days_asc)):
+            prev = datetime.strptime(all_days_asc[i - 1], "%Y-%m-%d")
+            curr = datetime.strptime(all_days_asc[i], "%Y-%m-%d")
+            if (curr - prev).days == 1:
+                current += 1
+                longest_streak = max(longest_streak, current)
+            else:
+                current = 1
+
+    return {
+        "current": current_streak,
+        "longest": longest_streak,
+        "total_days": len(days_with_clicks),
+        "last_date": sorted_desc[0],
+    }

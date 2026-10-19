@@ -1,30 +1,37 @@
 import SettingsSection from './SettingsSection.jsx'
 import styles from './AboutSection.module.scss'
-import { useToast } from '../../../context/ToastContext.jsx'
+import { useToast } from '@/context/ToastContext.jsx'
+
 function AboutSection() {
+  // ✅ الـ hook في top-level (مش جوّه دالة)
+  const { showToast } = useToast()
+
   const handleShare = async () => {
     const shareData = {
       title: 'تطبيق ذِكر',
       text: 'تطبيق ذِكر - سبحة إلكترونية لمتابعة وإحصاء أذكارك اليومية 📿',
       url: window.location.origin,
     }
-    const { showTost } = useToast()
 
     if (navigator.share) {
       try {
         await navigator.share(shareData)
       } catch (err) {
-        // تم إلغاء المشاركة بواسطة المستخدم
+        // تم إلغاء المشاركة بواسطة المستخدم — تجاهل بصمت
       }
     } else {
-      // نسخ الرابط لو كان المتصفح لا يدعم Web Share
-      await navigator.clipboard?.writeText(window.location.origin)
-      showTost('تم نسخ رابط التطبيق بنجاح!')
+      try {
+        await navigator.clipboard?.writeText(window.location.origin)
+        showToast('تم نسخ رابط التطبيق بنجاح!')
+      } catch (err) {
+        console.error('فشل نسخ الرابط:', err)
+        showToast('تعذر نسخ الرابط، حاول مرة أخرى.')
+      }
     }
   }
 
   return (
-    <SettingsSection title="عن التطبيق">
+    <SettingsSection id="about" title="عن التطبيق">
       <div className={styles.aboutCard}>
         {/* رأس البطاقة: الشعار والمعلومات الأساسية */}
         <div className={styles.header}>
