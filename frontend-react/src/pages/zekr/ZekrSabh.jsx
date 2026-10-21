@@ -153,6 +153,8 @@ function ZekrSabh() {
     )
   }, [sabhMode, groups, urlGroupId, setSearchParams])
 
+  // const urlGroupId = searchParams.get('group')
+
   const handleGroupChange = useCallback(
     (newGroupId) => {
       setSearchParams(
@@ -166,7 +168,6 @@ function ZekrSabh() {
     },
     [setSearchParams]
   )
-
   // ===========================
   // Handlers
   // ===========================

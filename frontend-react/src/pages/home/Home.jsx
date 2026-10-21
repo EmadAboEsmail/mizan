@@ -16,27 +16,16 @@ const APPS = [
     accentColor: '#059669',
   },
   {
-    id: 'bubble-sort',
-    name: 'ترتيب الفقاعات',
-    category: 'خوارزميات / تعليمي',
-    description: 'محاكاة بصرية تفاعلية لشرح خطوات خوارزمية Bubble Sort خطوة بخطوة.',
-    path: '/bubble-sort',
-    icon: '🔢',
-    available: false,
-    accentColor: '#3b82f6',
-  },
-  {
-    id: 'selection-sort',
-    name: 'ترتيب الاختيار',
-    category: 'خوارزميات / تعليمي',
-    description: 'تصور بصري لمفهوم خوارزمية Selection Sort وكيفية إيجاد العنصر الأصغر.',
-    path: '/selection-sort',
-    icon: '📊',
-    available: false,
-    accentColor: '#8b5cf6',
+    id: 'budget',
+    name: 'الميزانية',
+    category: 'مالي / تتبع',
+    description: 'إدارة الدخل والمصروف مع تقارير مفصلة لتصنيفات نفقاتك الشهرية.',
+    path: '/budget',
+    icon: '💰',
+    available: true,
+    accentColor: '#0ea5e9',
   },
 ]
-
 const AVAILABLE_COUNT = APPS.filter((a) => a.available).length
 
 function Home() {

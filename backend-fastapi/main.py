@@ -16,9 +16,9 @@ from schemas import (
 )
 from dependencies import get_db
 from fastapi.middleware.cors import CORSMiddleware
-
+from routers import budget
 app = FastAPI()
-
+app.include_router(budget.router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[

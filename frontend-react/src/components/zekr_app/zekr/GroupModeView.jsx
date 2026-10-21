@@ -19,9 +19,9 @@ const ArrowLeftIcon = () => (
 
 function GroupModeView({
   groups = [],
-  onAddClick,
   selectedGroupId,
-  onGroupChenge,
+  onGroupChange,
+  onAddClick,
   onResetClick,
   onSetTarget,
 }) {
@@ -86,7 +86,7 @@ function GroupModeView({
 
   // تغيير المجموعة
   const handleGroupChange = (newGroupId) => {
-    onGroupChenge(newGroupId)
+    onGroupChange(newGroupId)
     setCurrentIndex(0)
     setLocalCount(0)
     setShowTransition(false)

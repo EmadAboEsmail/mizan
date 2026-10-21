@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, ForeignKey, BigInteger
+from sqlalchemy import Column, String, Integer, ForeignKey, BigInteger, Boolean, Float,Index
 from database import Base
 
 
@@ -53,3 +53,45 @@ class GroupItem(Base):
     zekr_id = Column(String, ForeignKey("adhkar.id"), nullable=False)
     position = Column(Integer, nullable=False)
     target = Column(Integer, nullable=True)
+
+# ===========================
+# Budget Tables
+# ===========================
+
+class BudgetCategory(Base):
+    __tablename__ = "budget_categories"
+
+    id = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    type = Column(String, nullable=False)  # "income" | "expense"
+    icon = Column(String, nullable=True)
+    color = Column(String, nullable=True)
+    sort_order = Column(Integer, default=0, nullable=False)
+    created_at = Column(BigInteger, nullable=False)
+
+    __table_args__ = (
+        Index("ix_budget_categories_type_sort", "type", "sort_order"),
+    )
+
+
+class BudgetTransaction(Base):
+    __tablename__ = "budget_transactions"
+
+    id = Column(String, primary_key=True)
+    amount = Column(Float, nullable=False)
+    type = Column(String, nullable=False)  # "income" | "expense"
+    category_id = Column(
+        String,
+        ForeignKey("budget_categories.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    date = Column(String, nullable=False)  # "YYYY-MM-DD"
+    details = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    created_at = Column(BigInteger, nullable=False)
+
+    __table_args__ = (
+        Index("ix_budget_transactions_date", "date"),
+        Index("ix_budget_transactions_category", "category_id"),
+        Index("ix_budget_transactions_type", "type"),
+    )

@@ -1,0 +1,548 @@
+@use '@/styles/variables' as *;
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+// ===========================
+// Top Bar
+// ===========================
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.monthInput {
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+  cursor: pointer;
+  font-family: inherit;
+
+  :global(body.dark) & {
+    background: #0f172a;
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #f8fafc;
+  }
+
+  &:focus {
+    outline: 2px solid #059669;
+    outline-offset: 2px;
+  }
+}
+
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.1rem;
+  background: #059669;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 10px rgba(5, 150, 105, 0.2);
+  touch-action: manipulation;
+
+  &:hover {
+    background: #047857;
+    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+// ===========================
+// Summary Cards
+// ===========================
+.summaryCards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.summaryCard {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.07);
+  }
+
+  &.income {
+    border-color: rgba(34, 197, 94, 0.2);
+    :global(body.dark) & {
+      border-color: rgba(74, 222, 128, 0.2);
+    }
+  }
+
+  &.expense {
+    border-color: rgba(239, 68, 68, 0.2);
+    :global(body.dark) & {
+      border-color: rgba(248, 113, 113, 0.2);
+    }
+  }
+}
+
+.summaryLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+}
+
+.summaryValue {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+
+  :global(body.dark) & {
+    color: #f8fafc;
+  }
+
+  .income & {
+    color: #16a34a;
+    :global(body.dark) & { color: #4ade80; }
+  }
+
+  .expense & {
+    color: #dc2626;
+    :global(body.dark) & { color: #f87171; }
+  }
+}
+
+// ===========================
+// Filters
+// ===========================
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.typeFilter {
+  display: flex;
+  gap: 0.3rem;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 3px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  button {
+    flex: 1;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    background: transparent;
+    border: none;
+    border-radius: 7px;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    touch-action: manipulation;
+
+    :global(body.dark) & {
+      color: #94a3b8;
+    }
+
+    &:hover:not(.filterActive) {
+      color: #0f172a;
+      :global(body.dark) & { color: #f8fafc; }
+    }
+
+    &.filterActive {
+      background: #fff;
+      color: #059669;
+      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+
+      :global(body.dark) & {
+        background: #1e293b;
+        color: #34d399;
+      }
+    }
+  }
+}
+
+.filterRow {
+  display: flex;
+  gap: 0.5rem;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+  }
+}
+
+.select {
+  flex: 0 0 auto;
+  min-width: 140px;
+  padding: 0.55rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+  color: #0f172a;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+
+  :global(body.dark) & {
+    background: #0f172a;
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #f8fafc;
+  }
+
+  &:focus {
+    outline: 2px solid #059669;
+    outline-offset: 2px;
+  }
+}
+
+.searchWrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  inset-inline-start: 0.75rem;
+  display: flex;
+  align-items: center;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.55rem 0.85rem 0.55rem 2.1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
+  color: #0f172a;
+  font-size: 0.85rem;
+  outline: none;
+  font-family: inherit;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #f8fafc;
+  }
+
+  &:focus {
+    border-color: #059669;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+  }
+
+  &::placeholder {
+    color: #94a3b8;
+  }
+}
+
+// ===========================
+// List
+// ===========================
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  transition: all 0.15s ease;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.05);
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(5, 150, 105, 0.2);
+
+    :global(body.dark) & {
+      background: rgba(255, 255, 255, 0.04);
+    }
+  }
+}
+
+.itemInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.itemTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.itemCategory {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  :global(body.dark) & {
+    color: #f1f5f9;
+  }
+}
+
+.itemAmount {
+  font-size: 0.95rem;
+  font-weight: 800;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.amountIncome {
+  color: #16a34a;
+  :global(body.dark) & { color: #4ade80; }
+}
+
+.amountExpense {
+  color: #dc2626;
+  :global(body.dark) & { color: #f87171; }
+}
+
+.itemBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.itemDesc {
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+}
+
+.itemDate {
+  color: #94a3b8;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.itemActions {
+  display: flex;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+
+.iconBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &.edit:hover {
+    background: rgba(5, 150, 105, 0.1);
+    color: #059669;
+    border-color: rgba(5, 150, 105, 0.2);
+  }
+
+  &.danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2);
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+}
+
+// ===========================
+// Empty
+// ===========================
+.empty {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px dashed rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.emptyIcon {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.emptyTitle {
+  margin: 0 0 0.75rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #64748b;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+}
+
+.emptyAddBtn {
+  padding: 0.6rem 1.2rem;
+  background: #059669;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #047857;
+  }
+}
+
+.resultCount {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin: 0.25rem 0 0;
+}
+.monthControls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.allBtn {
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  :global(body.dark) & {
+    background: #0f172a;
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
+  }
+
+  &:hover {
+    border-color: rgba(5, 150, 105, 0.4);
+    color: #059669;
+
+    :global(body.dark) & {
+      color: #34d399;
+    }
+  }
+
+  &.allActive {
+    background: rgba(5, 150, 105, 0.1);
+    border-color: #059669;
+    color: #059669;
+
+    :global(body.dark) & {
+      background: rgba(52, 211, 153, 0.12);
+      border-color: #34d399;
+      color: #34d399;
+    }
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.allMonthsNote {
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+}
+// أضف في نهاية الملف
+.itemDate {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums; // أرقام متساوية العرض
+
+  :global(body.dark) & {
+    color: #64748b;
+  }
+}

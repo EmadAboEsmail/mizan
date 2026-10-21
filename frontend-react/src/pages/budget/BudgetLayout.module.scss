@@ -1,0 +1,248 @@
+@use '@/styles/variables' as *;
+
+.budget {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.25rem 1rem 3rem;
+  background-color: #f8fafc;
+  color: #0f172a;
+  transition: background-color 0.3s ease, color 0.3s ease;
+
+  :global(body.dark) & {
+    background-color: #090d16;
+    color: #f8fafc;
+  }
+}
+
+.navHeader {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  color: #64748b;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
+  }
+
+  &:hover {
+    color: #059669;
+    border-color: rgba(5, 150, 105, 0.3);
+  }
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pageTitle {
+  margin: 0 0 1.25rem;
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: #0f172a;
+
+  :global(body.dark) & {
+    color: #f8fafc;
+  }
+}
+
+.tabs {
+  width: 100%;
+  display: flex;
+  gap: 0.4rem;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 14px;
+  padding: 4px;
+  margin-bottom: 1.5rem;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+
+  &:hover:not(.active) {
+    color: #0f172a;
+    :global(body.dark) & {
+      color: #f8fafc;
+    }
+  }
+
+  &.active {
+    background: #ffffff;
+    color: #059669;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+
+    :global(body.dark) & {
+      background: #1e293b;
+      color: #34d399;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.tabIcon {
+  font-size: 0.9rem;
+}
+
+.tabLabel {
+  white-space: nowrap;
+}
+
+.content {
+  width: 100%;
+  animation: fadeIn 0.3s ease;
+}
+
+// Loading
+.loadingScreen {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+.spinner {
+  width: 44px;
+  height: 44px;
+  border: 3.5px solid rgba(5, 150, 105, 0.15);
+  border-top-color: #059669;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loadingText {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0;
+}
+
+// Error
+.errorScreen {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.errorCard {
+  max-width: 420px;
+  background: rgba(239, 68, 68, 0.04);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+
+  :global(body.dark) & {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+}
+
+.errorIcon {
+  font-size: 2.5rem;
+}
+
+.errorTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ef4444;
+}
+
+.errorMessage {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.retryBtn {
+  margin-top: 0.5rem;
+  padding: 0.6rem 1.4rem;
+  border-radius: 10px;
+  background: #059669;
+  color: #fff;
+  border: none;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover {
+    background: #047857;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+

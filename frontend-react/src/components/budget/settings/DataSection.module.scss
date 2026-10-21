@@ -1,0 +1,375 @@
+@use '@/styles/variables' as *;
+
+.section {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  :global(body.dark) & {
+    background: #0f172a;
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+
+  :global(body.dark) & {
+    color: #f8fafc;
+  }
+}
+
+.backupGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.6rem;
+}
+
+.card {
+  background: rgba(5, 150, 105, 0.03);
+  border: 1px solid rgba(5, 150, 105, 0.15);
+  border-radius: 12px;
+  padding: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+
+  :global(body.dark) & {
+    background: rgba(52, 211, 153, 0.04);
+    border-color: rgba(52, 211, 153, 0.15);
+  }
+}
+
+.cardIcon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.cardContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.cardTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f172a;
+
+  :global(body.dark) & {
+    color: #f8fafc;
+  }
+}
+
+.cardDesc {
+  margin: 0;
+  font-size: 0.72rem;
+  color: #64748b;
+  line-height: 1.4;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+}
+
+.actionBtn {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: #059669;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: #047857;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.dangerZone {
+  padding: 1rem;
+  background: rgba(239, 68, 68, 0.04);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  :global(body.dark) & {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+}
+
+.dangerTitle {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #dc2626;
+
+  :global(body.dark) & {
+    color: #f87171;
+  }
+}
+
+.dangerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 0;
+  border-top: 1px solid rgba(239, 68, 68, 0.15);
+
+  &:first-of-type {
+    border-top: none;
+    padding-top: 0;
+  }
+}
+
+.dangerRowTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+  display: block;
+
+  :global(body.dark) & {
+    color: #f1f5f9;
+  }
+}
+
+.dangerRowDesc {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+  color: #64748b;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+}
+
+.dangerBtn {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: transparent;
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+
+  :global(body.dark) & {
+    color: #f87171;
+  }
+
+  &.dangerStrong {
+    background: #dc2626;
+    color: #fff;
+    border-color: #dc2626;
+
+    &:hover:not(:disabled) {
+      background: #b91c1c;
+    }
+  }
+
+  &:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+.groupLabel {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 0.25rem;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+}
+
+// CSV Modal
+.csvModal {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.csvField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.csvLabel {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #334155;
+
+  :global(body.dark) & {
+    color: #cbd5e1;
+  }
+}
+
+.fileInput {
+  padding: 0.6rem;
+  border: 1px dashed rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.02);
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: inherit;
+
+  :global(body.dark) & {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.03);
+    color: #cbd5e1;
+  }
+}
+
+.fileName {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #059669;
+
+  :global(body.dark) & {
+    color: #34d399;
+  }
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: #334155;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+    color: #cbd5e1;
+  }
+
+  small {
+    display: block;
+    font-size: 0.72rem;
+    color: #94a3b8;
+    margin-top: 0.15rem;
+  }
+}
+
+.checkbox {
+  margin-top: 0.2rem;
+  accent-color: #059669;
+  cursor: pointer;
+}
+
+.hint {
+  font-size: 0.75rem;
+  color: #64748b;
+  padding: 0.65rem 0.85rem;
+  background: rgba(5, 150, 105, 0.05);
+  border: 1px solid rgba(5, 150, 105, 0.15);
+  border-radius: 10px;
+  line-height: 1.6;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+    background: rgba(52, 211, 153, 0.06);
+    border-color: rgba(52, 211, 153, 0.15);
+  }
+
+  code {
+    display: inline-block;
+    margin-top: 0.25rem;
+    padding: 0.1rem 0.4rem;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    font-size: 0.72rem;
+    color: #0f172a;
+
+    :global(body.dark) & {
+      background: rgba(255, 255, 255, 0.06);
+      color: #f8fafc;
+    }
+  }
+}
+
+.modalButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.cancelBtn,
+.confirmBtn {
+  padding: 0.6rem 1.25rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.cancelBtn {
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #64748b;
+
+  :global(body.dark) & {
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+  }
+}
+
+.confirmBtn {
+  background: #059669;
+  color: #fff;
+  border: none;
+
+  &:hover:not(:disabled) {
+    background: #047857;
+  }
+}
