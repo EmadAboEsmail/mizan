@@ -15,6 +15,7 @@ import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import LimitsOverview from '@/components/budget/limits/LimitsOverview.jsx'
 import styles from './BudgetTransactions.module.scss'
 
+// import { useBudget } from '@/context/BudgetContext.jsx'
 const ROW_HEIGHT = 72
 
 // ===========================
@@ -172,8 +173,8 @@ const TransactionRow = memo(function TransactionRow({
             </span>
             <span
               className={`${styles.itemAmount} ${txn.type === 'income'
-                  ? styles.amountIncome
-                  : styles.amountExpense
+                ? styles.amountIncome
+                : styles.amountExpense
                 }`}
             >
               {txn.type === 'income' ? '+' : '−'}
@@ -287,6 +288,7 @@ function BudgetTransactions() {
     createTransaction,
     updateTransaction,
     deleteTransaction,
+    insights,
   } = useBudget()
 
   // ===========================
@@ -520,13 +522,39 @@ function BudgetTransactions() {
         <>
           <div className={styles.summaryCards}>
             <div className={`${styles.summaryCard} ${styles.income}`}>
-              <span className={styles.summaryLabel}>الدخل</span>
+              <span className={styles.summaryLabel}>
+                الدخل
+                {insights?.comparison?.income_change_percent !== undefined && (
+                  <span
+                    className={`${styles.changeBadge} ${insights.comparison.income_change_percent >= 0
+                      ? styles.up
+                      : styles.down
+                      }`}
+                  >
+                    {insights.comparison.income_change_percent >= 0 ? '↑' : '↓'}
+                    {Math.abs(insights.comparison.income_change_percent).toFixed(0)}%
+                  </span>
+                )}
+              </span>
               <span className={styles.summaryValue}>
                 {formatAmount(summary.total_income)}
               </span>
             </div>
             <div className={`${styles.summaryCard} ${styles.expense}`}>
-              <span className={styles.summaryLabel}>المصروف</span>
+              <span className={styles.summaryLabel}>
+                المصروف
+                {insights?.comparison?.expense_change_percent !== undefined && (
+                  <span
+                    className={`${styles.changeBadge} ${insights.comparison.expense_change_percent > 0
+                      ? styles.down
+                      : styles.up
+                      }`}
+                  >
+                    {insights.comparison.expense_change_percent >= 0 ? '↑' : '↓'}
+                    {Math.abs(insights.comparison.expense_change_percent).toFixed(0)}%
+                  </span>
+                )}
+              </span>
               <span className={styles.summaryValue}>
                 {formatAmount(summary.total_expense)}
               </span>
@@ -536,12 +564,9 @@ function BudgetTransactions() {
                 }`}
             >
               <span className={styles.summaryLabel}>الصافي</span>
-              <span className={styles.summaryValue}>
-                {formatAmount(summary.net)}
-              </span>
+              <span className={styles.summaryValue}>{formatAmount(summary.net)}</span>
             </div>
           </div>
-
           {currentMonth === null && (
             <p className={styles.allMonthsNote}>
               📊 إجمالي كل الفترات ({summary.transaction_count} معاملة)

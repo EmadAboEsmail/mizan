@@ -20,6 +20,8 @@ Endpoints:
   Import:
     POST   /api/budget/import
 """
+import calendar
+from datetime import datetime, timedelta
 from fastapi.responses import StreamingResponse
 import io
 import csv
@@ -28,7 +30,6 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
-from datetime import datetime
 from models import BudgetCategory, BudgetTransaction,BudgetLimit
 from schemas import (
     BudgetCategoryCreate,
@@ -44,10 +45,13 @@ from schemas import (
     BudgetLimitUpdate,    
     BudgetLimitItem,      
     BudgetLimitsResponse, 
+    BudgetInsightsResponse,
+    BudgetInsightTopDay,
+    BudgetInsightTopCategory,
+    BudgetInsightComparison,
 )
 from dependencies import get_db
 router = APIRouter(prefix="/api/budget", tags=["budget"])
-
 
 # ===========================
 # Helpers
@@ -1096,3 +1100,218 @@ def delete_limit(limit_id: str, db: Session = Depends(get_db)):
     db.delete(lim)
     db.commit()
     return {"ok": True}
+
+
+# ===========================
+# INSIGHTS HELPERS
+# ===========================
+
+def _pct_change(curr: float, prev: float) -> float:
+    """نسبة التغير % — إذا كان prev = 0 → 100% أو 0%"""
+    if prev == 0:
+        return 0.0 if curr == 0 else 100.0
+    return round(((curr - prev) / prev) * 100, 1)
+
+
+
+@router.get("/insights", response_model=BudgetInsightsResponse)
+def get_insights(
+    month: str = Query(..., pattern=r"^\d{4}-\d{2}$"),
+    compare_month: str | None = Query(None, pattern=r"^\d{4}-\d{2}$"),
+    db: Session = Depends(get_db),
+):
+    """
+    إحصائيات متقدمة للشهر.
+    
+    - `compare_month`: الشهر للمقارنة (YYYY-MM)
+    - لو مش محدد: يستخدم الشهر السابق تلقائيًا
+    """
+    year = int(month[:4])
+    mon = int(month[5:7])
+    days_in_month = calendar.monthrange(year, mon)[1]
+
+    # عدد الأيام المنقضية
+    today = datetime.now()
+    current_ym = (today.year, today.month)
+    target_ym = (year, mon)
+
+    if target_ym == current_ym:
+        days_elapsed = today.day
+    elif target_ym < current_ym:
+        days_elapsed = days_in_month
+    else:
+        days_elapsed = 0
+
+    # إجماليات الشهر
+    totals = (
+        db.query(
+            BudgetTransaction.type,
+            func.count(BudgetTransaction.id),
+            func.coalesce(func.sum(BudgetTransaction.amount), 0.0),
+        )
+        .filter(BudgetTransaction.date.like(f"{month}-%"))
+        .group_by(BudgetTransaction.type)
+        .all()
+    )
+
+    total_income = 0.0
+    total_expense = 0.0
+    txn_count = 0
+    for t, count, total in totals:
+        if t == "income":
+            total_income = float(total)
+        elif t == "expense":
+            total_expense = float(total)
+        txn_count += count
+
+    # متوسطات يومية
+    avg_daily_expense = (
+        round(total_expense / days_elapsed, 2) if days_elapsed > 0 else 0.0
+    )
+    avg_daily_income = (
+        round(total_income / days_elapsed, 2) if days_elapsed > 0 else 0.0
+    )
+
+    # أعلى يوم صرف
+    top_day_row = (
+        db.query(
+            BudgetTransaction.date,
+            func.sum(BudgetTransaction.amount),
+        )
+        .filter(
+            BudgetTransaction.date.like(f"{month}-%"),
+            BudgetTransaction.type == "expense",
+        )
+        .group_by(BudgetTransaction.date)
+        .order_by(func.sum(BudgetTransaction.amount).desc())
+        .first()
+    )
+    top_expense_day = None
+    if top_day_row:
+        top_expense_day = BudgetInsightTopDay(
+            date=top_day_row[0],
+            amount=round(float(top_day_row[1]), 2),
+        )
+
+    # أعلى تصنيف إنفاقاً
+    top_cat_row = (
+        db.query(
+            BudgetTransaction.category_id,
+            func.sum(BudgetTransaction.amount),
+        )
+        .filter(
+            BudgetTransaction.date.like(f"{month}-%"),
+            BudgetTransaction.type == "expense",
+        )
+        .group_by(BudgetTransaction.category_id)
+        .order_by(func.sum(BudgetTransaction.amount).desc())
+        .first()
+    )
+
+    top_expense_category = None
+    if top_cat_row and total_expense > 0:
+        cat = db.get(BudgetCategory, top_cat_row[0])
+        amount = round(float(top_cat_row[1]), 2)
+        top_expense_category = BudgetInsightTopCategory(
+            category_id=top_cat_row[0],
+            category_name=cat.name if cat else "غير محدد",
+            category_icon=cat.icon if cat else None,
+            category_color=cat.color if cat else None,
+            amount=amount,
+            percent=round((amount / total_expense) * 100, 1),
+        )
+
+    # نسبة التوفير
+    savings_rate = 0.0
+    if total_income > 0:
+        savings_rate = round(
+            ((total_income - total_expense) / total_income) * 100, 1
+        )
+
+    # متوسط آخر 7 أيام
+    last_7_days_avg = 0.0
+    if days_elapsed > 0:
+        if target_ym == current_ym:
+            end_date = today.strftime("%Y-%m-%d")
+            start_date = (today - timedelta(days=6)).strftime("%Y-%m-%d")
+        else:
+            start_day = max(1, days_in_month - 6)
+            start_date = f"{month}-{start_day:02d}"
+            end_date = f"{month}-{days_in_month:02d}"
+
+        last_7_total = (
+            db.query(func.coalesce(func.sum(BudgetTransaction.amount), 0))
+            .filter(
+                BudgetTransaction.date >= start_date,
+                BudgetTransaction.date <= end_date,
+                BudgetTransaction.date.like(f"{month}-%"),
+                BudgetTransaction.type == "expense",
+            )
+            .scalar()
+        ) or 0.0
+
+        last_7_days_avg = round(float(last_7_total) / 7, 2)
+
+    # ===========================
+    # المقارنة (مرنة)
+    # ===========================
+    if compare_month:
+        # الشهر المحدد من المستخدم
+        prev_year = int(compare_month[:4])
+        prev_mon = int(compare_month[5:7])
+        prev_month_str = compare_month
+    else:
+        # الشهر السابق (default)
+        prev_year = year
+        prev_mon = mon - 1
+        if prev_mon <= 0:
+            prev_mon = 12
+            prev_year -= 1
+        prev_month_str = f"{prev_year}-{prev_mon:02d}"
+
+    prev_totals = (
+        db.query(
+            BudgetTransaction.type,
+            func.coalesce(func.sum(BudgetTransaction.amount), 0.0),
+        )
+        .filter(BudgetTransaction.date.like(f"{prev_month_str}-%"))
+        .group_by(BudgetTransaction.type)
+        .all()
+    )
+
+    prev_income = 0.0
+    prev_expense = 0.0
+    for t, total in prev_totals:
+        if t == "income":
+            prev_income = float(total)
+        elif t == "expense":
+            prev_expense = float(total)
+
+    prev_net = prev_income - prev_expense
+    current_net = total_income - total_expense
+
+    comparison = None
+    if prev_income > 0 or prev_expense > 0:
+        comparison = BudgetInsightComparison(
+            prev_month=prev_month_str,
+            prev_income=round(prev_income, 2),
+            prev_expense=round(prev_expense, 2),
+            prev_net=round(prev_net, 2),
+            income_change_percent=_pct_change(total_income, prev_income),
+            expense_change_percent=_pct_change(total_expense, prev_expense),
+            net_change_percent=_pct_change(current_net, prev_net),
+        )
+
+    return BudgetInsightsResponse(
+        month=month,
+        days_elapsed=days_elapsed,
+        days_in_month=days_in_month,
+        avg_daily_expense=avg_daily_expense,
+        avg_daily_income=avg_daily_income,
+        top_expense_day=top_expense_day,
+        top_expense_category=top_expense_category,
+        transaction_count=txn_count,
+        savings_rate=savings_rate,
+        last_7_days_avg=last_7_days_avg,
+        comparison=comparison,
+    )

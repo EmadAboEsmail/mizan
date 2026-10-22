@@ -11,6 +11,7 @@ import {
   getTransactions,
   getSummary,
   getLimits,
+  getInsights,
   createOrUpdateLimit as apiCreateOrUpdateLimit,
   updateLimit as apiUpdateLimit,
   deleteLimit as apiDeleteLimit,
@@ -59,22 +60,32 @@ function recomputeLimitTotals(prev) {
 export function BudgetProvider({ children }) {
   const { showToast } = useToast()
 
+  // ===========================
+  // States
+  // ===========================
   const [categories, setCategories] = useState([])
   const [transactions, setTransactions] = useState([])
   const [summary, setSummary] = useState(null)
-  const [limits, setLimits] = useState(null) // ← جديد
+  const [limits, setLimits] = useState(null)
+  const [insights, setInsights] = useState(null)
   const [currentMonth, _setCurrentMonth] = useState(getCurrentMonth())
+  const [compareMonth, setCompareMonth] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
   const limitsRef = useRef(limits)
+
   useEffect(() => {
     limitsRef.current = limits
   }, [limits])
+
   const setCurrentMonth = useCallback((month) => {
     _setCurrentMonth(month === 'all' ? null : month)
   }, [])
 
-  // ✅ دالة مساعدة: تحويل transaction → response مع category data
+  // ===========================
+  // Helpers
+  // ===========================
   const enrichTxn = useCallback(
     (txn, cats = categories) => {
       const cat = cats.find((c) => c.id === txn.category_id)
@@ -88,7 +99,6 @@ export function BudgetProvider({ children }) {
     [categories]
   )
 
-  // ✅ تحديث summary محليًا (بدون reload)
   const adjustSummary = useCallback((delta) => {
     setSummary((prev) => {
       if (!prev) return prev
@@ -104,7 +114,7 @@ export function BudgetProvider({ children }) {
       }
     })
   }, [])
-  // ✅ يتحقق من تغيّر حالة الميزانية ويعرض toast مناسب
+
   const checkLimitChange = useCallback(
     (prevLimits, newLimits, categoryId, txnType) => {
       if (txnType !== 'expense') return
@@ -114,13 +124,11 @@ export function BudgetProvider({ children }) {
       const curr = newLimits.limits?.find((l) => l.category_id === categoryId)
       if (!prev || !curr) return
 
-      // 🚨 تجاوز الميزانية (من أي حالة لـ over)
       if (prev.status !== 'over' && curr.status === 'over') {
         showToast(`🚨 تجاوزت ميزانية "${curr.category_name}"!`)
         return
       }
 
-      // ⚠️ اقتراب من الحد (من safe لـ warning)
       if (prev.status === 'safe' && curr.status === 'warning') {
         showToast(
           `⚠️ اقتربت من ميزانية "${curr.category_name}" (${curr.percent.toFixed(0)}%)`
@@ -129,8 +137,28 @@ export function BudgetProvider({ children }) {
     },
     [showToast]
   )
+
+  // ✅ helper: إعادة تحميل insights فقط (بعد كل CRUD)
+  const refreshInsights = useCallback(
+    async (monthOverride, compareOverride) => {
+      const m = monthOverride !== undefined ? monthOverride : currentMonth
+      const c = compareOverride !== undefined ? compareOverride : compareMonth
+      if (!m) {
+        setInsights(null)
+        return
+      }
+      try {
+        const ins = await getInsights(m, c)
+        setInsights(ins)
+      } catch (err) {
+        console.error('فشل تحميل insights:', err)
+      }
+    },
+    [currentMonth, compareMonth]
+  )
+
   // ===========================
-  // تحميل البيانات
+  // Data Loaders
   // ===========================
   const loadCategories = useCallback(async () => {
     const data = await getCategories()
@@ -139,25 +167,29 @@ export function BudgetProvider({ children }) {
   }, [])
 
   const loadMonthData = useCallback(
-    async (month, cats = null) => {
+    async (month, cats = null, cmpMonth = null) => {
       const filters = { limit: 2000 }
       if (month) filters.month = month
 
-      const [txns, summ, lims] = await Promise.all([
+      const [txns, summ, lims, ins] = await Promise.all([
         getTransactions(filters),
         getSummary(month),
         month ? getLimits(month) : Promise.resolve(null),
+        month ? getInsights(month, cmpMonth) : Promise.resolve(null),
       ])
 
       const catList = cats || categories
       setTransactions(txns.map((t) => enrichTxn(t, catList)))
       setSummary(summ)
       setLimits(lims)
+      setInsights(ins)
     },
     [categories, enrichTxn]
   )
 
-  // تحميل أولي (categories + بيانات الشهر + limits)
+  // ===========================
+  // Initial Load (مرة واحدة فقط)
+  // ===========================
   useEffect(() => {
     let cancelled = false
     setLoading(true)
@@ -171,15 +203,18 @@ export function BudgetProvider({ children }) {
           const filters = { limit: 2000 }
           if (currentMonth) filters.month = currentMonth
 
-          const [txns, summ, lims] = await Promise.all([
+          const [txns, summ, lims, ins] = await Promise.all([
             getTransactions(filters),
             getSummary(currentMonth),
             currentMonth ? getLimits(currentMonth) : Promise.resolve(null),
+            currentMonth ? getInsights(currentMonth) : Promise.resolve(null),
           ])
           if (cancelled) return
+
           setTransactions(txns.map((t) => enrichTxn(t, cats)))
           setSummary(summ)
           setLimits(lims)
+          setInsights(ins)
           setLoading(false)
         } catch (err) {
           if (cancelled) return
@@ -193,18 +228,19 @@ export function BudgetProvider({ children }) {
       cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // مرة واحدة فقط
+  }, [])
 
-  // لما الشهر يتغير (بعد التحميل الأولي)
+  // ===========================
+  // ✅ Effect 1: تغيير الشهر → إعادة تحميل كل البيانات
+  // ===========================
   const isFirstMonthRef = useRef(true)
   useEffect(() => {
     if (isFirstMonthRef.current) {
       isFirstMonthRef.current = false
       return
     }
-    // فقط transactions + summary + limits
     setLoading(true)
-    loadMonthData(currentMonth)
+    loadMonthData(currentMonth, null, compareMonth)
       .catch((err) => {
         console.error(err)
         showToast('فشل تحميل بيانات الشهر')
@@ -213,21 +249,51 @@ export function BudgetProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentMonth])
 
+  // ===========================
+  // ✅ Effect 2: تغيير المقارنة → إعادة تحميل insights فقط
+  // ===========================
+  const isFirstCompareRef = useRef(true)
+  useEffect(() => {
+    if (isFirstCompareRef.current) {
+      isFirstCompareRef.current = false
+      return
+    }
+    if (!currentMonth) {
+      setInsights(null)
+      return
+    }
+    let cancelled = false
+    getInsights(currentMonth, compareMonth)
+      .then((ins) => {
+        if (!cancelled) setInsights(ins)
+      })
+      .catch((err) => {
+        if (!cancelled) console.error('فشل تحميل insights:', err)
+      })
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compareMonth])
+
+  // ===========================
+  // Reload (يدوي)
+  // ===========================
   const reload = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
       const cats = await loadCategories()
-      await loadMonthData(currentMonth, cats)
+      await loadMonthData(currentMonth, cats, compareMonth)
     } catch (err) {
       setError(err.message || 'فشل تحميل البيانات')
     } finally {
       setLoading(false)
     }
-  }, [currentMonth, loadCategories, loadMonthData])
+  }, [currentMonth, compareMonth, loadCategories, loadMonthData])
 
   // ===========================
-  // CRUD — Optimistic (Transactions)
+  // CRUD — Transactions (Optimistic)
   // ===========================
   const createTransaction = useCallback(
     async (data) => {
@@ -238,7 +304,7 @@ export function BudgetProvider({ children }) {
         created_at: Date.now(),
       })
 
-      // ✅ 1. Optimistic add
+      // 1. Optimistic add
       setTransactions((prev) => sortTxns([optimistic, ...prev]))
       adjustSummary({
         income: data.type === 'income' ? data.amount : 0,
@@ -249,13 +315,12 @@ export function BudgetProvider({ children }) {
       try {
         const saved = await apiCreateTxn(data)
         const enriched = enrichTxn(saved)
-        // ✅ نستبدل الـ temp بالـ real
         setTransactions((prev) =>
           prev.map((t) => (t.id === tempId ? enriched : t))
         )
         showToast('تمت إضافة المعاملة')
 
-        // ✅ نحدّث limits + التحقق من التحذير
+        // ✅ تحديث limits + insights
         if (currentMonth) {
           try {
             const prevLimits = limitsRef.current
@@ -265,11 +330,12 @@ export function BudgetProvider({ children }) {
           } catch (limitsErr) {
             console.error('فشل تحديث الميزانيات:', limitsErr)
           }
+          refreshInsights()
         }
 
         return enriched
       } catch (err) {
-        // ❌ rollback
+        // rollback
         setTransactions((prev) => prev.filter((t) => t.id !== tempId))
         adjustSummary({
           income: data.type === 'income' ? -data.amount : 0,
@@ -285,9 +351,11 @@ export function BudgetProvider({ children }) {
       adjustSummary,
       showToast,
       currentMonth,
-      checkLimitChange,  // ← جديد
+      checkLimitChange,
+      refreshInsights,
     ]
   )
+
   const updateTransaction = useCallback(
     async (id, data) => {
       const old = transactions.find((t) => t.id === id)
@@ -295,7 +363,6 @@ export function BudgetProvider({ children }) {
 
       const optimistic = enrichTxn({ ...old, ...data })
 
-      // ✅ 1. Optimistic update
       setTransactions((prev) =>
         sortTxns(prev.map((t) => (t.id === id ? optimistic : t)))
       )
@@ -317,7 +384,6 @@ export function BudgetProvider({ children }) {
         )
         showToast('تم تحديث المعاملة')
 
-        // ✅ نحدّث limits + التحقق من التحذير
         if (currentMonth) {
           try {
             const prevLimits = limitsRef.current
@@ -327,11 +393,11 @@ export function BudgetProvider({ children }) {
           } catch (limitsErr) {
             console.error('فشل تحديث الميزانيات:', limitsErr)
           }
+          refreshInsights()
         }
 
         return enriched
       } catch (err) {
-        // ❌ rollback
         setTransactions((prev) =>
           sortTxns(prev.map((t) => (t.id === id ? old : t)))
         )
@@ -354,15 +420,16 @@ export function BudgetProvider({ children }) {
       adjustSummary,
       showToast,
       currentMonth,
-      checkLimitChange,  // ← جديد
+      checkLimitChange,
+      refreshInsights,
     ]
   )
+
   const deleteTransaction = useCallback(
     async (id) => {
       const old = transactions.find((t) => t.id === id)
       if (!old) return
 
-      // ✅ 1. Optimistic delete
       setTransactions((prev) => prev.filter((t) => t.id !== id))
       adjustSummary({
         income: old.type === 'income' ? -old.amount : 0,
@@ -374,7 +441,6 @@ export function BudgetProvider({ children }) {
         await apiDeleteTxn(id)
         showToast('تم حذف المعاملة')
 
-        // ✅ نحدّث limits (بدون toast لأن الحالة بتتحسن)
         if (currentMonth) {
           try {
             const lims = await getLimits(currentMonth)
@@ -382,9 +448,9 @@ export function BudgetProvider({ children }) {
           } catch (limitsErr) {
             console.error('فشل تحديث الميزانيات:', limitsErr)
           }
+          refreshInsights()
         }
       } catch (err) {
-        // ❌ rollback
         setTransactions((prev) => sortTxns([...prev, old]))
         adjustSummary({
           income: old.type === 'income' ? old.amount : 0,
@@ -395,13 +461,10 @@ export function BudgetProvider({ children }) {
         throw err
       }
     },
-    [
-      transactions,
-      adjustSummary,
-      showToast,
-      currentMonth,
-    ]
-  )  // ===========================
+    [transactions, adjustSummary, showToast, currentMonth, refreshInsights]
+  )
+
+  // ===========================
   // CRUD — Categories
   // ===========================
   const createCategory = useCallback(
@@ -418,7 +481,6 @@ export function BudgetProvider({ children }) {
     async (id, data) => {
       const updated = await apiUpdateCat(id, data)
       setCategories((prev) => prev.map((c) => (c.id === id ? updated : c)))
-      // نحدّث الـ transactions المحلية كمان
       setTransactions((prev) =>
         prev.map((t) =>
           t.category_id === id
@@ -431,7 +493,6 @@ export function BudgetProvider({ children }) {
             : t
         )
       )
-      // نحدّث limits المحلية
       setLimits((prev) => {
         if (!prev) return prev
         return {
@@ -458,7 +519,6 @@ export function BudgetProvider({ children }) {
     async (id) => {
       await apiDeleteCat(id)
       setCategories((prev) => prev.filter((c) => c.id !== id))
-      // نشيل أي limit مرتبط بالتصنيف (CASCADE على الـ backend)
       setLimits((prev) => {
         if (!prev) return prev
         return recomputeLimitTotals({
@@ -476,19 +536,14 @@ export function BudgetProvider({ children }) {
   // ===========================
   const createOrUpdateLimit = useCallback(
     async (data) => {
-      // data: { category_id, month, amount }
       const result = await apiCreateOrUpdateLimit(data)
 
-      // هل كانت موجودة قبل؟
       const existed = limits?.limits?.some(
         (l) => l.category_id === data.category_id
       )
 
-      showToast(
-        existed ? 'تم تحديث الميزانية' : 'تمت إضافة الميزانية'
-      )
+      showToast(existed ? 'تم تحديث الميزانية' : 'تمت إضافة الميزانية')
 
-      // ✅ نعيد تحميل limits للشهر المختار
       if (currentMonth) {
         try {
           const lims = await getLimits(currentMonth)
@@ -496,11 +551,12 @@ export function BudgetProvider({ children }) {
         } catch (err) {
           console.error('فشل تحديث الميزانيات:', err)
         }
+        refreshInsights()
       }
 
       return result
     },
-    [currentMonth, limits, showToast]
+    [currentMonth, limits, showToast, refreshInsights]
   )
 
   const updateLimit = useCallback(
@@ -508,7 +564,6 @@ export function BudgetProvider({ children }) {
       const updated = await apiUpdateLimit(id, amount)
       showToast('تم تحديث الميزانية')
 
-      // ✅ تحديث محلي
       setLimits((prev) => {
         if (!prev) return prev
         const newLimits = prev.limits.map((l) =>
@@ -517,9 +572,11 @@ export function BudgetProvider({ children }) {
         return recomputeLimitTotals({ ...prev, limits: newLimits })
       })
 
+      refreshInsights()
+
       return updated
     },
-    [showToast]
+    [showToast, refreshInsights]
   )
 
   const deleteLimit = useCallback(
@@ -527,7 +584,6 @@ export function BudgetProvider({ children }) {
       await apiDeleteLimit(id)
       showToast('تم حذف الميزانية')
 
-      // ✅ إزالة محلية
       setLimits((prev) => {
         if (!prev) return prev
         return recomputeLimitTotals({
@@ -535,8 +591,10 @@ export function BudgetProvider({ children }) {
           limits: prev.limits.filter((l) => l.id !== id),
         })
       })
+
+      refreshInsights()
     },
-    [showToast]
+    [showToast, refreshInsights]
   )
 
   // ===========================
@@ -548,11 +606,14 @@ export function BudgetProvider({ children }) {
     transactions,
     summary,
     limits,
+    insights,
     currentMonth,
+    compareMonth,
     loading,
     error,
     // Setters
     setCurrentMonth,
+    setCompareMonth,
     // Reload
     reload,
     // Transactions CRUD

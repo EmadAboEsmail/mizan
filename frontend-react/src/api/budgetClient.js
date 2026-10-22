@@ -167,3 +167,11 @@ export function updateLimit(id, amount) {
 export function deleteLimit(id) {
   return apiRequest(`/api/budget/limits/${id}`, { method: 'DELETE' })
 }
+// ===========================
+// Insights (إحصائيات متقدمة)
+// ===========================
+export function getInsights(month, compareMonth = null) {
+  const params = new URLSearchParams({ month })
+  if (compareMonth) params.set('compare_month', compareMonth)
+  return apiRequest(`/api/budget/insights?${params.toString()}`)
+}

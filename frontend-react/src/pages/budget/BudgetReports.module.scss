@@ -457,3 +457,102 @@
   flex-direction: column;
   gap: 0.5rem;
 }
+// ===========================
+// Compare Bar
+// ===========================
+.compareBar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.07);
+  }
+}
+
+.compareLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #64748b;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+}
+
+.compareIcon {
+  font-size: 0.95rem;
+}
+
+.compareSelect {
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+  color: #0f172a;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+
+  :global(body.dark) & {
+    background: #0f172a;
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #f8fafc;
+  }
+
+  &:focus {
+    outline: 2px solid #059669;
+    outline-offset: 2px;
+  }
+}
+
+.compareMonthInput {
+  padding: 0.4rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+  color: #0f172a;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+
+  :global(body.dark) & {
+    background: #0f172a;
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #f8fafc;
+  }
+
+  &:focus {
+    outline: 2px solid #059669;
+    outline-offset: 2px;
+  }
+}
+
+.compareCurrent {
+  margin-inline-start: auto;
+  font-size: 0.78rem;
+  color: #64748b;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+
+  strong {
+    color: #059669;
+    font-weight: 800;
+
+    :global(body.dark) & {
+      color: #34d399;
+    }
+  }
+}

@@ -192,3 +192,43 @@ class BudgetLimitsResponse(BaseModel):
     total_spent: float
     total_remaining: float
     total_percent: float
+# ===========================
+# Budget Insights Schemas
+# ===========================
+
+class BudgetInsightTopDay(BaseModel):
+    date: str
+    amount: float
+
+
+class BudgetInsightTopCategory(BaseModel):
+    category_id: str
+    category_name: str
+    category_icon: Optional[str]
+    category_color: Optional[str]
+    amount: float
+    percent: float
+
+
+class BudgetInsightComparison(BaseModel):
+    prev_month: str
+    prev_income: float
+    prev_expense: float
+    prev_net: float
+    income_change_percent: float
+    expense_change_percent: float
+    net_change_percent: float
+
+
+class BudgetInsightsResponse(BaseModel):
+    month: str
+    days_elapsed: int
+    days_in_month: int
+    avg_daily_expense: float
+    avg_daily_income: float
+    top_expense_day: Optional[BudgetInsightTopDay]
+    top_expense_category: Optional[BudgetInsightTopCategory]
+    transaction_count: int
+    savings_rate: float
+    last_7_days_avg: float
+    comparison: Optional[BudgetInsightComparison]

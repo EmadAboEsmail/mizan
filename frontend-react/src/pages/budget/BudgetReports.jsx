@@ -5,31 +5,86 @@ import DonutChart from '@/components/budget/charts/DonutChart.jsx'
 import MonthlyBarChart from '@/components/budget/charts/MonthlyBarChart.jsx'
 import CategoryIcon from '@/components/budget/CategoryIcon.jsx'
 import LimitProgressCard from '@/components/budget/limits/LimitProgressCard.jsx'
+import InsightsGrid from '@/components/budget/insights/InsightsGrid.jsx'
 import styles from './BudgetReports.module.scss'
+
+// ===========================
+// Helpers (outside component)
+// ===========================
+const AR_MONTHS_FULL = [
+  'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+]
+
+function formatMonthLabel(ym) {
+  if (!ym) return ''
+  const [y, m] = ym.split('-')
+  const idx = parseInt(m, 10) - 1
+  return `${AR_MONTHS_FULL[idx] || m} ${y}`
+}
+
+function subtractYear(ym) {
+  const [y, m] = ym.split('-')
+  return `${parseInt(y, 10) - 1}-${m}`
+}
+
+function subtractMonth(ym, n) {
+  const [y, m] = ym.split('-').map(Number)
+  const date = new Date(y, m - 1 - n, 1)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+}
+
 const TREND_OPTIONS = [
   { id: 6, label: '6 أشهر' },
   { id: 12, label: '12 شهر' },
 ]
 
+// ===========================
+// Component
+// ===========================
 function BudgetReports() {
   const {
     summary,
     categories,
-    limits,          // ← جديد
+    limits,
+    insights,
     currentMonth,
+    compareMonth,
     setCurrentMonth,
+    setCompareMonth,   // ✅ تصحيح typo
     loading,
   } = useBudget()
+
+  const [compareMode, setCompareMode] = useState('prev')
+  const [customCompareMonth, setCustomCompareMonth] = useState('')
+
   const [trendMonths, setTrendMonths] = useState(6)
   const [trend, setTrend] = useState([])
   const [trendLoading, setTrendLoading] = useState(true)
 
-  // تحميل الـ trend — مرتبط بالشهر المختار
+  // ===========================
+  // Sync compareMode → compareMonth
+  // ===========================
+  useEffect(() => {
+    if (!currentMonth) return
+
+    if (compareMode === 'prev') {
+      setCompareMonth(null)
+    } else if (compareMode === 'prev_year') {
+      setCompareMonth(subtractYear(currentMonth))
+    } else if (compareMode === 'custom') {
+      setCompareMonth(customCompareMonth || null)
+    }
+  }, [compareMode, customCompareMonth, currentMonth, setCompareMonth])
+
+  // ===========================
+  // Load trend
+  // ===========================
   useEffect(() => {
     let cancelled = false
     setTrendLoading(true)
 
-    getMonthlyTrend(trendMonths, currentMonth) // ← currentMonth كـ endMonth
+    getMonthlyTrend(trendMonths, currentMonth)
       .then((data) => {
         if (!cancelled) {
           setTrend(data)
@@ -44,14 +99,16 @@ function BudgetReports() {
     return () => {
       cancelled = true
     }
-  }, [trendMonths, currentMonth]) // ← أضفنا currentMonth
-  // تصنيفات المصاريف بس
+  }, [trendMonths, currentMonth])
+
+  // ===========================
+  // Derived data
+  // ===========================
   const expenseCategories = useMemo(
     () => categories.filter((c) => c.type === 'expense'),
     [categories]
   )
 
-  // بيانات الـ donut (توزيع المصاريف)
   const donutData = useMemo(() => {
     if (!summary?.by_category?.length) return []
 
@@ -69,7 +126,6 @@ function BudgetReports() {
       .sort((a, b) => b.value - a.value)
   }, [summary, expenseCategories])
 
-  // أعلى 5 تصنيفات
   const topCategories = useMemo(() => {
     if (!summary?.by_category?.length) return []
     return summary.by_category
@@ -87,7 +143,6 @@ function BudgetReports() {
   const formatAmount = (n) =>
     Number(n || 0).toLocaleString('en', { maximumFractionDigits: 0 })
 
-  // ✅ تبديل بين شهر / كل الفترات
   const handleToggleMonthMode = useCallback(() => {
     if (currentMonth === null) {
       const d = new Date()
@@ -99,7 +154,9 @@ function BudgetReports() {
     }
   }, [currentMonth, setCurrentMonth])
 
-  // Empty state — بس لو مفيش أي بيانات خالص
+  // ===========================
+  // Empty (no summary at all)
+  // ===========================
   if (!summary) {
     return (
       <div className={styles.empty}>
@@ -114,9 +171,14 @@ function BudgetReports() {
 
   const hasData = summary.transaction_count > 0
 
+  // ===========================
+  // Render
+  // ===========================
   return (
     <div className={styles.container}>
-      {/* ✅ شريط اختيار الشهر/الفترة */}
+      {/* ===========================
+          شريط اختيار الشهر
+      =========================== */}
       <div className={styles.periodBar}>
         <div className={styles.monthControls}>
           <input
@@ -143,14 +205,53 @@ function BudgetReports() {
         <span className={styles.periodLabel}>
           {currentMonth === null
             ? 'كل الفترات'
-            : new Date(currentMonth + '-01').toLocaleDateString('ar-EG', {
-              month: 'long',
-              year: 'numeric',
-            })}
+            : formatMonthLabel(currentMonth)}
         </span>
       </div>
 
-      {/* Empty state للفترة المختارة */}
+      {/* ===========================
+          شريط اختيار فترة المقارنة
+      =========================== */}
+      {currentMonth && (
+        <div className={styles.compareBar}>
+          <label className={styles.compareLabel}>
+            <span className={styles.compareIcon}>🔄</span>
+            <span>قارن مع:</span>
+          </label>
+
+          <select
+            className={styles.compareSelect}
+            value={compareMode}
+            onChange={(e) => setCompareMode(e.target.value)}
+          >
+            <option value="prev">الشهر السابق</option>
+            <option value="prev_year">نفس الشهر السنة الماضية</option>
+            <option value="custom">شهر مخصص...</option>
+          </select>
+
+          {compareMode === 'custom' && (
+            <input
+              type="month"
+              className={styles.compareMonthInput}
+              value={customCompareMonth}
+              onChange={(e) => setCustomCompareMonth(e.target.value)}
+              max={subtractMonth(currentMonth, 1)}
+              aria-label="اختر شهر المقارنة"
+            />
+          )}
+
+          {insights?.comparison && (
+            <span className={styles.compareCurrent}>
+              📊 مقارنة مع{' '}
+              <strong>{formatMonthLabel(insights.comparison.prev_month)}</strong>
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* ===========================
+          Empty state للفترة
+      =========================== */}
       {!hasData ? (
         <div className={styles.empty}>
           <div className={styles.emptyIcon}>📊</div>
@@ -163,7 +264,9 @@ function BudgetReports() {
         </div>
       ) : (
         <>
-          {/* بطاقات ملخص سريعة */}
+          {/* ===========================
+              Summary Cards
+          =========================== */}
           <div className={styles.summaryCards}>
             <div className={`${styles.card} ${styles.income}`}>
               <span className={styles.cardLabel}>إجمالي الدخل</span>
@@ -189,18 +292,28 @@ function BudgetReports() {
             </div>
           </div>
 
-          {/* توزيع المصاريف */}
+          {/* ===========================
+              KPIs
+          =========================== */}
+          {insights && (
+            <InsightsGrid
+              insights={insights}
+              compareLabel={
+                insights.comparison
+                  ? formatMonthLabel(insights.comparison.prev_month)
+                  : null
+              }
+            />
+          )}
+
+          {/* ===========================
+              توزيع المصاريف (Donut)
+          =========================== */}
           <section className={styles.section}>
             <div className={styles.sectionHeader}>
-              <h3 className={styles.sectionTitle}>
-                الاتجاه الشهري
-                {currentMonth && trend.length > 0 && (
-                  <span className={styles.trendPeriod}>
-                    ({trend[0].month} → {trend[trend.length - 1].month})
-                  </span>
-                )}
-              </h3>              <span className={styles.sectionHint}>
-                {summary.transaction_count} معاملة
+              <h3 className={styles.sectionTitle}>توزيع المصاريف</h3>
+              <span className={styles.sectionHint}>
+                {donutData.length} تصنيف
               </span>
             </div>
 
@@ -217,7 +330,10 @@ function BudgetReports() {
               />
             )}
           </section>
-          {/* ✅ تقدم الميزانية */}
+
+          {/* ===========================
+              تقدم الميزانية
+          =========================== */}
           {limits && limits.limits.length > 0 && (
             <section className={styles.section}>
               <div className={styles.sectionHeader}>
@@ -231,14 +347,19 @@ function BudgetReports() {
                   <LimitProgressCard
                     key={limit.id}
                     limit={limit}
-                    category={categories.find((c) => c.id === limit.category_id)}
+                    category={categories.find(
+                      (c) => c.id === limit.category_id
+                    )}
                     compact
                   />
                 ))}
               </div>
             </section>
           )}
-          {/* أعلى 5 تصنيفات */}
+
+          {/* ===========================
+              أعلى التصنيفات
+          =========================== */}
           {topCategories.length > 0 && (
             <section className={styles.section}>
               <div className={styles.sectionHeader}>
@@ -252,9 +373,7 @@ function BudgetReports() {
                   const catObj = categories.find(
                     (c) => c.id === cat.category_id
                   )
-                  const pct = Math.round(
-                    (cat.total / maxCategoryValue) * 100
-                  )
+                  const pct = Math.round((cat.total / maxCategoryValue) * 100)
 
                   return (
                     <li key={cat.category_id} className={styles.topItem}>
@@ -269,8 +388,7 @@ function BudgetReports() {
                             className={styles.topBar}
                             style={{
                               width: `${pct}%`,
-                              backgroundColor:
-                                cat.category_color || '#059669',
+                              backgroundColor: cat.category_color || '#059669',
                             }}
                           />
                         </div>
@@ -287,10 +405,19 @@ function BudgetReports() {
         </>
       )}
 
-      {/* الرسم البياني الشهري — مستقل عن الشهر المختار (دائمًا يعرض آخر N شهر) */}
+      {/* ===========================
+          الاتجاه الشهري (Trend)
+      =========================== */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h3 className={styles.sectionTitle}>الاتجاه الشهري</h3>
+          <h3 className={styles.sectionTitle}>
+            الاتجاه الشهري
+            {currentMonth && trend.length > 0 && (
+              <span className={styles.trendPeriod}>
+                ({trend[0].month} → {trend[trend.length - 1].month})
+              </span>
+            )}
+          </h3>
           <div className={styles.trendTabs}>
             {TREND_OPTIONS.map((opt) => (
               <button
@@ -311,9 +438,8 @@ function BudgetReports() {
         ) : (
           <MonthlyBarChart
             data={trend}
-            highLightMonth={currentMonth}
+            highlightMonth={currentMonth}   // ✅ تصحيح highLightMonth
           />
-
         )}
       </section>
     </div>
