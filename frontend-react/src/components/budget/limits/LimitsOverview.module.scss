@@ -1,0 +1,189 @@
+@use '@/styles/variables' as *;
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1px solid;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+  flex-wrap: wrap;
+
+  &.safe {
+    background: rgba(34, 197, 94, 0.04);
+    border-color: rgba(34, 197, 94, 0.2);
+
+    :global(body.dark) & {
+      background: rgba(74, 222, 128, 0.06);
+      border-color: rgba(74, 222, 128, 0.25);
+    }
+  }
+
+  &.warning {
+    background: rgba(245, 158, 11, 0.04);
+    border-color: rgba(245, 158, 11, 0.3);
+
+    :global(body.dark) & {
+      background: rgba(251, 191, 36, 0.06);
+      border-color: rgba(251, 191, 36, 0.3);
+    }
+  }
+
+  &.over {
+    background: rgba(239, 68, 68, 0.04);
+    border-color: rgba(239, 68, 68, 0.35);
+
+    :global(body.dark) & {
+      background: rgba(248, 113, 113, 0.06);
+      border-color: rgba(248, 113, 113, 0.35);
+    }
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+
+    :global(body.dark) & {
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-shrink: 0;
+}
+
+.icon {
+  font-size: 1.4rem;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #0f172a;
+
+  :global(body.dark) & {
+    color: #f8fafc;
+  }
+}
+
+.status {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #64748b;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+
+  .safe & {
+    color: #16a34a;
+    :global(body.dark) & { color: #4ade80; }
+  }
+
+  .warning & {
+    color: #d97706;
+    :global(body.dark) & { color: #fbbf24; }
+  }
+
+  .over & {
+    color: #dc2626;
+    :global(body.dark) & { color: #f87171; }
+  }
+}
+
+.center {
+  flex: 1;
+  min-width: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 999px;
+  overflow: hidden;
+
+  :global(body.dark) & {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+
+  .safe & {
+    background: linear-gradient(90deg, #4ade80, #16a34a);
+  }
+  .warning & {
+    background: linear-gradient(90deg, #fbbf24, #f59e0b);
+  }
+  .over & {
+    background: linear-gradient(90deg, #f87171, #dc2626);
+  }
+}
+
+.percent {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #64748b;
+  text-align: end;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+}
+
+.right {
+  display: flex;
+  align-items: baseline;
+  gap: 0.15rem;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.spent {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #0f172a;
+
+  :global(body.dark) & {
+    color: #f8fafc;
+  }
+}
+
+.separator {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.limit {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #64748b;
+
+  :global(body.dark) & {
+    color: #94a3b8;
+  }
+}

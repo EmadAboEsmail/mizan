@@ -17,26 +17,62 @@
   gap: 0.75rem;
 }
 
+.monthControls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
 .monthInput {
   padding: 0.6rem 1rem;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: #fff;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-card);
   font-size: 0.92rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-primary);
   cursor: pointer;
   font-family: inherit;
 
-  :global(body.dark) & {
-    background: #0f172a;
-    border-color: rgba(255, 255, 255, 0.08);
-    color: #f8fafc;
+  &:focus {
+    outline: 2px solid var(--brand-primary);
+    outline-offset: 2px;
   }
 
-  &:focus {
-    outline: 2px solid #059669;
-    outline-offset: 2px;
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.allBtn {
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--transition-normal);
+  white-space: nowrap;
+  touch-action: manipulation;
+
+  &:hover {
+    border-color: var(--brand-border);
+    color: var(--brand-primary);
+  }
+
+  &.allActive {
+    background: var(--brand-bg-soft);
+    border-color: var(--brand-border-strong);
+    color: var(--brand-primary);
+  }
+
+  &:active {
+    transform: scale(0.97);
   }
 }
 
@@ -45,20 +81,20 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.6rem 1.1rem;
-  background: #059669;
+  background: var(--brand-primary);
   color: #fff;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 10px rgba(5, 150, 105, 0.2);
+  transition: all var(--transition-normal);
+  box-shadow: 0 2px 10px var(--brand-bg-medium);
   touch-action: manipulation;
 
   &:hover {
-    background: #047857;
-    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+    background: var(--brand-primary-dark);
+    box-shadow: 0 4px 14px var(--brand-bg-medium);
   }
 
   &:active {
@@ -80,63 +116,42 @@
 }
 
 .summaryCard {
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 14px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
   padding: 0.85rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
 
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.07);
-  }
-
   &.income {
-    border-color: rgba(34, 197, 94, 0.2);
-    :global(body.dark) & {
-      border-color: rgba(74, 222, 128, 0.2);
-    }
+    border-color: var(--success-border);
   }
 
   &.expense {
-    border-color: rgba(239, 68, 68, 0.2);
-    :global(body.dark) & {
-      border-color: rgba(248, 113, 113, 0.2);
-    }
+    border-color: var(--danger-border);
   }
 }
 
 .summaryLabel {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--text-muted);
   text-transform: uppercase;
-
-  :global(body.dark) & {
-    color: #94a3b8;
-  }
 }
 
 .summaryValue {
   font-size: 1.35rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-primary);
   letter-spacing: -0.5px;
 
-  :global(body.dark) & {
-    color: #f8fafc;
-  }
-
   .income & {
-    color: #16a34a;
-    :global(body.dark) & { color: #4ade80; }
+    color: var(--success);
   }
 
   .expense & {
-    color: #dc2626;
-    :global(body.dark) & { color: #f87171; }
+    color: var(--danger);
   }
 }
 
@@ -152,15 +167,10 @@
 .typeFilter {
   display: flex;
   gap: 0.3rem;
-  background: rgba(0, 0, 0, 0.03);
+  background: var(--bg-subtle);
   padding: 3px;
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.06);
-  }
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
 
   button {
     flex: 1;
@@ -170,29 +180,19 @@
     background: transparent;
     border: none;
     border-radius: 7px;
-    color: #64748b;
+    color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all var(--transition-fast);
     touch-action: manipulation;
 
-    :global(body.dark) & {
-      color: #94a3b8;
-    }
-
     &:hover:not(.filterActive) {
-      color: #0f172a;
-      :global(body.dark) & { color: #f8fafc; }
+      color: var(--text-primary);
     }
 
     &.filterActive {
-      background: #fff;
-      color: #059669;
+      background: var(--bg-card);
+      color: var(--brand-primary);
       box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
-
-      :global(body.dark) & {
-        background: #1e293b;
-        color: #34d399;
-      }
     }
   }
 }
@@ -210,23 +210,17 @@
   flex: 0 0 auto;
   min-width: 140px;
   padding: 0.55rem 0.85rem;
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: #fff;
-  color: #0f172a;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: var(--bg-card);
+  color: var(--text-primary);
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
 
-  :global(body.dark) & {
-    background: #0f172a;
-    border-color: rgba(255, 255, 255, 0.08);
-    color: #f8fafc;
-  }
-
   &:focus {
-    outline: 2px solid #059669;
+    outline: 2px solid var(--brand-primary);
     outline-offset: 2px;
   }
 }
@@ -243,47 +237,60 @@
   inset-inline-start: 0.75rem;
   display: flex;
   align-items: center;
-  color: #94a3b8;
+  color: var(--text-faint);
   pointer-events: none;
 }
 
 .searchInput {
   width: 100%;
   padding: 0.55rem 0.85rem 0.55rem 2.1rem;
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(0, 0, 0, 0.02);
-  color: #0f172a;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
   font-size: 0.85rem;
   outline: none;
   font-family: inherit;
 
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.08);
-    color: #f8fafc;
-  }
-
   &:focus {
-    border-color: #059669;
-    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+    border-color: var(--brand-border-strong);
+    box-shadow: 0 0 0 3px var(--brand-bg-medium);
   }
 
   &::placeholder {
-    color: #94a3b8;
+    color: var(--text-faint);
   }
 }
 
 // ===========================
 // List
 // ===========================
-.list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
+.listContainer {
+  width: 100%;
+}
+
+.virtualList {
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--bg-subtle);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 4px;
+
+    &:hover {
+      background: var(--text-faint);
+    }
+  }
+}
+
+.virtualRowInner {
+  padding: 4px 0;
 }
 
 .item {
@@ -291,23 +298,14 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.7rem 0.85rem;
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
-  transition: all 0.15s ease;
-
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.02);
-    border-color: rgba(255, 255, 255, 0.05);
-  }
+  transition: all var(--transition-fast);
 
   &:hover {
-    background: rgba(0, 0, 0, 0.03);
-    border-color: rgba(5, 150, 105, 0.2);
-
-    :global(body.dark) & {
-      background: rgba(255, 255, 255, 0.04);
-    }
+    background: var(--bg-subtle-hover);
+    border-color: var(--brand-border);
   }
 }
 
@@ -329,14 +327,10 @@
 .itemCategory {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-
-  :global(body.dark) & {
-    color: #f1f5f9;
-  }
 }
 
 .itemAmount {
@@ -347,13 +341,11 @@
 }
 
 .amountIncome {
-  color: #16a34a;
-  :global(body.dark) & { color: #4ade80; }
+  color: var(--success);
 }
 
 .amountExpense {
-  color: #dc2626;
-  :global(body.dark) & { color: #f87171; }
+  color: var(--danger);
 }
 
 .itemBottom {
@@ -365,20 +357,17 @@
 }
 
 .itemDesc {
-  color: #64748b;
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-
-  :global(body.dark) & {
-    color: #94a3b8;
-  }
 }
 
 .itemDate {
-  color: #94a3b8;
+  color: var(--text-faint);
   white-space: nowrap;
   flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .itemActions {
@@ -393,23 +382,23 @@
   border-radius: 7px;
   background: transparent;
   border: 1px solid transparent;
-  color: #94a3b8;
+  color: var(--text-faint);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast);
 
   &.edit:hover {
-    background: rgba(5, 150, 105, 0.1);
-    color: #059669;
-    border-color: rgba(5, 150, 105, 0.2);
+    background: var(--brand-bg-soft);
+    color: var(--brand-primary);
+    border-color: var(--brand-border);
   }
 
   &.danger:hover {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    border-color: rgba(239, 68, 68, 0.2);
+    background: var(--danger-bg-soft);
+    color: var(--danger);
+    border-color: var(--danger-border);
   }
 
   &:active {
@@ -423,14 +412,9 @@
 .empty {
   text-align: center;
   padding: 2.5rem 1rem;
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px dashed rgba(0, 0, 0, 0.08);
-  border-radius: 16px;
-
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.02);
-    border-color: rgba(255, 255, 255, 0.08);
-  }
+  background: var(--bg-subtle);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-lg);
 }
 
 .emptyIcon {
@@ -442,107 +426,145 @@
   margin: 0 0 0.75rem;
   font-size: 0.92rem;
   font-weight: 600;
-  color: #64748b;
-
-  :global(body.dark) & {
-    color: #94a3b8;
-  }
+  color: var(--text-muted);
 }
 
 .emptyAddBtn {
   padding: 0.6rem 1.2rem;
-  background: #059669;
+  background: var(--brand-primary);
   color: #fff;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-normal);
 
   &:hover {
-    background: #047857;
+    background: var(--brand-primary-dark);
   }
 }
 
 .resultCount {
   text-align: center;
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--text-faint);
   margin: 0.25rem 0 0;
-}
-.monthControls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.allBtn {
-  padding: 0.6rem 1rem;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: #fff;
-  color: #64748b;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-
-  :global(body.dark) & {
-    background: #0f172a;
-    border-color: rgba(255, 255, 255, 0.08);
-    color: #94a3b8;
-  }
-
-  &:hover {
-    border-color: rgba(5, 150, 105, 0.4);
-    color: #059669;
-
-    :global(body.dark) & {
-      color: #34d399;
-    }
-  }
-
-  &.allActive {
-    background: rgba(5, 150, 105, 0.1);
-    border-color: #059669;
-    color: #059669;
-
-    :global(body.dark) & {
-      background: rgba(52, 211, 153, 0.12);
-      border-color: #34d399;
-      color: #34d399;
-    }
-  }
-
-  &:active {
-    transform: scale(0.97);
-  }
 }
 
 .allMonthsNote {
   text-align: center;
   font-size: 0.82rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--text-muted);
   margin: 0;
+}
+// ===========================
+// Expandable Rows
+// ===========================
+.itemWrapper {
+  width: 100%;
+}
+
+.item {
+  // نمط الصف الأساسي (موجود بالفعل — لا تغيّر)
+  // ... 
+}
+
+// لما الصف قابل للضغط
+.itemClickable {
+  cursor: pointer;
+}
+
+// الحالة الموسعة
+.itemExpanded {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-color: transparent;
+  background: rgba(5, 150, 105, 0.06);
+  border-color: rgba(5, 150, 105, 0.25);
+
+  :global(body.dark) & {
+    background: rgba(52, 211, 153, 0.08);
+    border-color: rgba(52, 211, 153, 0.3);
+  }
+}
+
+// chevron
+.chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    color 0.2s ease;
+  flex-shrink: 0;
+  margin-inline-start: 0.25rem;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+  color: #059669;
+
+  :global(body.dark) & {
+    color: #34d399;
+  }
+}
+
+// المحتوى الموسع
+.expandedContent {
+  padding: 0.85rem 1rem;
+  background: rgba(5, 150, 105, 0.06);
+  border: 1px solid rgba(5, 150, 105, 0.25);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  animation: expandIn 0.2s ease-out;
+
+  :global(body.dark) & {
+    background: rgba(52, 211, 153, 0.08);
+    border-color: rgba(52, 211, 153, 0.3);
+  }
+}
+
+@keyframes expandIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.detailRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.detailLabel {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 
   :global(body.dark) & {
     color: #94a3b8;
   }
 }
-// أضف في نهاية الملف
-.itemDate {
-  font-size: 0.72rem;
-  color: #94a3b8;
-  white-space: nowrap;
-  flex-shrink: 0;
-  font-variant-numeric: tabular-nums; // أرقام متساوية العرض
+
+.detailValue {
+  font-size: 0.85rem;
+  color: #1e293b;
+  line-height: 1.55;
+  word-break: break-word;
 
   :global(body.dark) & {
-    color: #64748b;
+    color: #f1f5f9;
   }
 }

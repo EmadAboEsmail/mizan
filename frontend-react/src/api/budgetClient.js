@@ -1,5 +1,8 @@
-const API_URL = 'http://localhost:8000'
-
+// ✅ نفس نمط client.js — relative paths + env
+const API_URL =
+  localStorage.getItem('api-url') ||
+  import.meta.env.VITE_API_URL ||
+  ''
 async function apiRequest(path, options = {}) {
   const res = await fetch(`${API_URL}${path}`, {
     headers: { 'Content-Type': 'application/json' },
@@ -75,17 +78,19 @@ export function deleteTransaction(id) {
 }
 
 // ===========================
-// Summary
+// Summary & Trend
 // ===========================
 export function getSummary(month = null) {
   const qs = month ? `?month=${month}` : ''
   return apiRequest(`/api/budget/summary${qs}`)
 }
+
 export function getMonthlyTrend(months = 6, endMonth = null) {
   const params = new URLSearchParams({ months })
   if (endMonth) params.set('end_month', endMonth)
   return apiRequest(`/api/budget/monthly-trend?${params.toString()}`)
 }
+
 // ===========================
 // Backup / Restore / Delete
 // ===========================
@@ -106,6 +111,7 @@ export function deleteAllBudgetData(keepCategories = false) {
     { method: 'DELETE' }
   )
 }
+
 // ===========================
 // CSV Export / Import
 // ===========================
@@ -135,4 +141,29 @@ export async function importBudgetCsv(file, clearExisting = false) {
   }
 
   return res.json()
+}
+// ===========================
+// Monthly Limits (الميزانية الشهرية)
+// ===========================
+export function getLimits(month) {
+  return apiRequest(`/api/budget/limits?month=${month}`)
+}
+
+export function createOrUpdateLimit(data) {
+  // data: { category_id, month, amount }
+  return apiRequest('/api/budget/limits', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export function updateLimit(id, amount) {
+  return apiRequest(`/api/budget/limits/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ amount }),
+  })
+}
+
+export function deleteLimit(id) {
+  return apiRequest(`/api/budget/limits/${id}`, { method: 'DELETE' })
 }

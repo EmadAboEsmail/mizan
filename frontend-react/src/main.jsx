@@ -7,7 +7,7 @@ import { ZekrDataProvider } from './context/ZekrDataContext.jsx'
 import { BudgetProvider } from './context/BudgetContext.jsx'
 import App from './App.jsx'
 import './styles/main.scss'
-
+const Router = import.meta.env.VITE_TARGET === 'android' ? HashRouter : BrowserRouter
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ThemeProvider>

@@ -1,11 +1,38 @@
 <!doctype html>
-<html lang="ar" dir="ltr">
+<html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
- <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />   
-    <title>تطبيقاتي   </title>
-  </head> 
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"
+    />
+
+    <!-- PWA Meta -->
+    <meta name="theme-color" content="#059669" />
+    <meta
+      name="description"
+      content="مساحتي الرقمية — تطبيقات عربية: ذِكر للسبحة، والميزانية لإدارة المال"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="مساحتي" />
+    <meta name="mobile-web-app-capable" content="yes" />
+  <!-- VitePWA بيضيف ده تلقائيًا، لكن لو مش ظاهر: -->
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <!-- ... -->
+    <!-- Apple Icons -->
+    <link
+      rel="apple-touch-icon"
+      href="/icons/apple-touch-icon.png"
+      sizes="180x180"
+    />
+
+    <title>مساحتي الرقمية</title>
+  </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, ForeignKey, BigInteger, Boolean, Float,Index
+from sqlalchemy import Column, String, Integer, ForeignKey, BigInteger, Boolean, Float,Index, UniqueConstraint
 from database import Base
 
 
@@ -94,4 +94,29 @@ class BudgetTransaction(Base):
         Index("ix_budget_transactions_date", "date"),
         Index("ix_budget_transactions_category", "category_id"),
         Index("ix_budget_transactions_type", "type"),
+    )
+# ===========================
+# Budget Limits (الميزانية الشهرية)
+# ===========================
+
+class BudgetLimit(Base):
+    __tablename__ = "budget_limits"
+
+    id = Column(String, primary_key=True)
+    category_id = Column(
+        String,
+        ForeignKey("budget_categories.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    month = Column(String, nullable=False)  # "YYYY-MM"
+    amount = Column(Float, nullable=False)
+    created_at = Column(BigInteger, nullable=False)
+    updated_at = Column(BigInteger, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "category_id", "month",
+            name="uq_budget_limit_cat_month",
+        ),
+        Index("ix_budget_limits_month", "month"),
     )

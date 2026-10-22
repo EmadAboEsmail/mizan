@@ -1,49 +1,107 @@
 import {
   useState,
+  useEffect,
   useMemo,
   useCallback,
   useDeferredValue,
   memo,
+  useRef,
 } from 'react'
+import { VariableSizeList as VirtualList } from 'react-window'
 import { useBudget } from '@/context/BudgetContext'
 import CategoryIcon from '@/components/budget/CategoryIcon.jsx'
 import TransactionFormModal from '@/components/budget/TransactionFormModal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
+import LimitsOverview from '@/components/budget/limits/LimitsOverview.jsx'
 import styles from './BudgetTransactions.module.scss'
+
+const ROW_HEIGHT = 72
 
 // ===========================
 // Icons
 // ===========================
 const DeleteIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <polyline points="3 6 5 6 21 6" />
     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
   </svg>
 )
 
 const EditIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
   </svg>
 )
 
 const PlusIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <line x1="12" y1="5" x2="12" y2="19" />
     <line x1="5" y1="12" x2="19" y2="12" />
   </svg>
 )
 
 const SearchIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <circle cx="11" cy="11" r="8" />
     <line x1="21" y1="21" x2="16.65" y2="16.65" />
   </svg>
 )
 
+const ChevronIcon = () => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+)
+
 // ===========================
-// ✅ Formatters سريعة (بدون toLocaleDateString البطيء)
+// Formatters (سريعة، بدون toLocaleString)
 // ===========================
 const AR_MONTHS = [
   'ينا', 'فبر', 'مار', 'أبر', 'ماي', 'يون',
@@ -52,7 +110,6 @@ const AR_MONTHS = [
 
 function formatAmount(n) {
   const num = Number(n || 0)
-  // بدون toLocaleString — نستخدم toFixed + تنسيق يدوي
   const fixed = num.toFixed(2)
   const [intPart, decPart] = fixed.split('.')
   const withCommas = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
@@ -61,97 +118,159 @@ function formatAmount(n) {
 
 function formatDate(s) {
   if (!s) return '—'
-  // s = "YYYY-MM-DD"
   const parts = s.split('-')
   if (parts.length !== 3) return s
   const y = parts[0]
   const m = parseInt(parts[1], 10) - 1
   const d = parseInt(parts[2], 10)
-  const monthName = AR_MONTHS[m] || parts[1]
-  return `${d} ${monthName} ${y}`
+  return `${d} ${AR_MONTHS[m] || parts[1]} ${y}`
 }
 
 // ===========================
-// TransactionRow — memoized
+// TransactionRow (memoized)
 // ===========================
 const TransactionRow = memo(function TransactionRow({
   txn,
   category,
   onEdit,
   onDelete,
+  isExpanded = false,
+  onToggle,
 }) {
-  return (
-    <li className={styles.item}>
-      <CategoryIcon category={category} size={40} />
+  const hasMore = !!(txn.details || txn.description)
+  const showExpanded = isExpanded && hasMore
 
-      <div className={styles.itemInfo}>
-        <div className={styles.itemTop}>
-          <span className={styles.itemCategory}>
-            {category?.name || 'غير محدد'}
-          </span>
+  const handleRowClick = () => {
+    if (hasMore && onToggle) onToggle()
+  }
+
+  const handleKeyDown = (e) => {
+    if (!hasMore) return
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      handleRowClick()
+    }
+  }
+
+  return (
+    <div className={styles.itemWrapper}>
+      <div
+        className={`${styles.item} ${showExpanded ? styles.itemExpanded : ''} ${hasMore ? styles.itemClickable : ''
+          }`}
+        onClick={handleRowClick}
+        onKeyDown={handleKeyDown}
+        role={hasMore ? 'button' : undefined}
+        tabIndex={hasMore ? 0 : undefined}
+        aria-expanded={hasMore ? showExpanded : undefined}
+      >
+        <CategoryIcon category={category} size={40} />
+
+        <div className={styles.itemInfo}>
+          <div className={styles.itemTop}>
+            <span className={styles.itemCategory}>
+              {category?.name || 'غير محدد'}
+            </span>
+            <span
+              className={`${styles.itemAmount} ${txn.type === 'income'
+                  ? styles.amountIncome
+                  : styles.amountExpense
+                }`}
+            >
+              {txn.type === 'income' ? '+' : '−'}
+              {formatAmount(txn.amount)}
+            </span>
+          </div>
+          <div className={styles.itemBottom}>
+            <span className={styles.itemDesc}>
+              {txn.description || txn.details || '—'}
+            </span>
+            <span className={styles.itemDate}>{formatDate(txn.date)}</span>
+          </div>
+        </div>
+
+        <div
+          className={styles.itemActions}
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            className={`${styles.iconBtn} ${styles.edit}`}
+            onClick={() => onEdit(txn)}
+            title="تعديل"
+            aria-label="تعديل"
+          >
+            <EditIcon />
+          </button>
+          <button
+            type="button"
+            className={`${styles.iconBtn} ${styles.danger}`}
+            onClick={() => onDelete(txn)}
+            title="حذف"
+            aria-label="حذف"
+          >
+            <DeleteIcon />
+          </button>
+        </div>
+
+        {hasMore && (
           <span
-            className={`${styles.itemAmount} ${txn.type === 'income'
-                ? styles.amountIncome
-                : styles.amountExpense
+            className={`${styles.chevron} ${showExpanded ? styles.chevronOpen : ''
               }`}
           >
-            {txn.type === 'income' ? '+' : '−'}
-            {formatAmount(txn.amount)}
+            <ChevronIcon />
           </span>
-        </div>
-        <div className={styles.itemBottom}>
-          <span className={styles.itemDesc}>
-            {txn.description || txn.details || '—'}
-          </span>
-          <span className={styles.itemDate}>{formatDate(txn.date)}</span>
-        </div>
+        )}
       </div>
 
-      <div className={styles.itemActions}>
-        <button
-          type="button"
-          className={`${styles.iconBtn} ${styles.edit}`}
-          onClick={() => onEdit(txn)}
-          title="تعديل"
-          aria-label="تعديل"
-        >
-          <EditIcon />
-        </button>
-        <button
-          type="button"
-          className={`${styles.iconBtn} ${styles.danger}`}
-          onClick={() => onDelete(txn)}
-          title="حذف"
-          aria-label="حذف"
-        >
-          <DeleteIcon />
-        </button>
-      </div>
-    </li>
+      {showExpanded && (
+        <div className={styles.expandedContent}>
+          {txn.details && (
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>📝 تفاصيل قصيرة</span>
+              <span className={styles.detailValue}>{txn.details}</span>
+            </div>
+          )}
+          {txn.description && (
+            <div className={styles.detailRow}>
+              <span className={styles.detailLabel}>📄 وصف</span>
+              <span className={styles.detailValue}>{txn.description}</span>
+            </div>
+          )}
+          <div className={styles.detailRow}>
+            <span className={styles.detailLabel}>📅 التاريخ</span>
+            <span className={styles.detailValue}>{formatDate(txn.date)}</span>
+          </div>
+        </div>
+      )}
+    </div>
   )
 })
 
 // ===========================
-// ✅ TransactionList — memoized (نمنع re-render لما الـ modals تتغير)
+// Virtual Row (لكل صف في react-window)
 // ===========================
-const TransactionList = memo(function TransactionList({
-  txns,
-  catMap,
-  onEdit,
-  onDelete,
+const VirtualTransactionRow = memo(function VirtualTransactionRow({
+  index,
+  style,
+  data,
 }) {
+  const { txns, catMap, onEdit, onDelete, expandedId, onToggle } = data
+  const txn = txns[index]
+
   return (
-    <ul className={styles.list}>
-      {txns.map((txn) => (
+    <div style={style}>
+      <div className={styles.virtualRowInner}>
         <TransactionRow
-          key={txn.id}
           txn={txn}
           category={catMap[txn.category_id]}
           onEdit={onEdit}
           onDelete={onDelete}
+          isExpanded={expandedId === txn.id}
+          onToggle={() => onToggle(txn.id)}
         />
-      ))}
-    </ul>
+      </div>
+    </div>
   )
 })
 
@@ -170,7 +289,9 @@ function BudgetTransactions() {
     deleteTransaction,
   } = useBudget()
 
+  // ===========================
   // UI state
+  // ===========================
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTxn, setEditingTxn] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
@@ -180,23 +301,48 @@ function BudgetTransactions() {
   const [filterType, setFilterType] = useState('all')
   const [filterCategory, setFilterCategory] = useState('')
   const [search, setSearch] = useState('')
-
   const deferredSearch = useDeferredValue(search)
 
+  // Expandable rows
+  const [expandedId, setExpandedId] = useState(null)
+
+  // Virtual list refs
+  const listRef = useRef(null)
+  const listContainerRef = useRef(null)
+  const [listWidth, setListWidth] = useState(0)
+
+  // ===========================
+  // Measure container width (ResizeObserver)
+  // ===========================
+  useEffect(() => {
+    const el = listContainerRef.current
+    if (!el) return
+    const update = () => setListWidth(el.clientWidth)
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  // ===========================
   // catMap — stable reference
+  // ===========================
   const catMap = useMemo(
     () => Object.fromEntries(categories.map((c) => [c.id, c])),
     [categories]
   )
 
-  // filteredTxns — memoized
+  // ===========================
+  // Filtered + sorted transactions
+  // ===========================
   const filteredTxns = useMemo(() => {
     const filtered = transactions.filter((t) => {
       if (filterType !== 'all' && t.type !== filterType) return false
       if (filterCategory && t.category_id !== filterCategory) return false
       if (deferredSearch.trim()) {
         const q = deferredSearch.trim().toLowerCase()
-        const haystack = `${t.details || ''} ${t.description || ''}`.toLowerCase()
+        const haystack = `${t.details || ''} ${t.description || ''
+          }`.toLowerCase()
         if (!haystack.includes(q)) return false
       }
       return true
@@ -209,7 +355,7 @@ function BudgetTransactions() {
   }, [transactions, filterType, filterCategory, deferredSearch])
 
   // ===========================
-  // ✅ Handlers — كلهم useCallback (المفتاح للسرعة)
+  // Handlers
   // ===========================
   const handleOpenAdd = useCallback(() => {
     setEditingTxn(null)
@@ -269,12 +415,72 @@ function BudgetTransactions() {
     }
   }, [currentMonth, setCurrentMonth])
 
+  // ✅ Toggle expanded row (BEFORE virtualData!)
+  const handleToggleExpanded = useCallback((id) => {
+    setExpandedId((prev) => (prev === id ? null : id))
+  }, [])
+
+  // ✅ Compute height per row (BEFORE VirtualList!)
+  const getItemSize = useCallback(
+    (index) => {
+      const txn = filteredTxns[index]
+      if (!txn) return ROW_HEIGHT
+      if (expandedId !== txn.id) return ROW_HEIGHT
+
+      let extra = 70 // padding + date row + buffer
+      if (txn.details) extra += 40
+      if (txn.description) extra += 65
+      return ROW_HEIGHT + extra
+    },
+    [filteredTxns, expandedId]
+  )
+
+  // ✅ Virtual list data object (stable reference)
+  const virtualData = useMemo(
+    () => ({
+      txns: filteredTxns,
+      catMap,
+      onEdit: handleOpenEdit,
+      onDelete: handleDeleteClick,
+      expandedId,
+      onToggle: handleToggleExpanded,
+    }),
+    [
+      filteredTxns,
+      catMap,
+      handleOpenEdit,
+      handleDeleteClick,
+      expandedId,
+      handleToggleExpanded,
+    ]
+  )
+
+  // ✅ Computed list height
+  const listHeight = Math.min(
+    600,
+    Math.max(ROW_HEIGHT * 2, filteredTxns.length * ROW_HEIGHT)
+  )
+
+  // ✅ Reset virtual list after expand/collapse
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.resetAfterIndex(0, true)
+    }
+  }, [expandedId, filteredTxns.length])
+
+  // ✅ Auto-close expanded row if deleted/filtered out
+  useEffect(() => {
+    if (!expandedId) return
+    const stillExists = filteredTxns.some((t) => t.id === expandedId)
+    if (!stillExists) setExpandedId(null)
+  }, [filteredTxns, expandedId])
+
   // ===========================
   // Render
   // ===========================
   return (
     <div className={styles.container}>
-      {/* Top bar */}
+      {/* شريط علوي */}
       <div className={styles.topBar}>
         <div className={styles.monthControls}>
           <input
@@ -290,7 +496,9 @@ function BudgetTransactions() {
             className={`${styles.allBtn} ${currentMonth === null ? styles.allActive : ''
               }`}
             onClick={handleToggleMonthMode}
-            title={currentMonth === null ? 'العودة للشهر الحالي' : 'عرض كل الفترات'}
+            title={
+              currentMonth === null ? 'العودة للشهر الحالي' : 'عرض كل الفترات'
+            }
           >
             {currentMonth === null ? '📅 شهر' : '🗓️ الكل'}
           </button>
@@ -307,7 +515,7 @@ function BudgetTransactions() {
         </button>
       </div>
 
-      {/* Summary cards */}
+      {/* ملخص */}
       {summary && (
         <>
           <div className={styles.summaryCards}>
@@ -342,7 +550,10 @@ function BudgetTransactions() {
         </>
       )}
 
-      {/* Filters */}
+      {/* ✅ ملخص الميزانية */}
+      <LimitsOverview />
+
+      {/* فلاتر */}
       <div className={styles.filters}>
         <div className={styles.typeFilter}>
           <button
@@ -399,7 +610,7 @@ function BudgetTransactions() {
         </div>
       </div>
 
-      {/* ✅ قائمة معاملات memoized */}
+      {/* ✅ قائمة معاملات — Virtual Scrolling */}
       {filteredTxns.length === 0 ? (
         <div className={styles.empty}>
           <div className={styles.emptyIcon}>📭</div>
@@ -421,12 +632,22 @@ function BudgetTransactions() {
           )}
         </div>
       ) : (
-        <TransactionList
-          txns={filteredTxns}
-          catMap={catMap}
-          onEdit={handleOpenEdit}
-          onDelete={handleDeleteClick}
-        />
+        <div ref={listContainerRef} className={styles.listContainer}>
+          {listWidth > 0 && (
+            <VirtualList
+              ref={listRef}
+              height={listHeight}
+              itemCount={filteredTxns.length}
+              itemSize={getItemSize}
+              width={listWidth}
+              itemData={virtualData}
+              overscanCount={5}
+              className={styles.virtualList}
+            >
+              {VirtualTransactionRow}
+            </VirtualList>
+          )}
+        </div>
       )}
 
       {/* عدد النتائج */}

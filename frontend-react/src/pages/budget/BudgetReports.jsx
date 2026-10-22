@@ -4,8 +4,8 @@ import { getMonthlyTrend } from '@/api/budgetClient.js'
 import DonutChart from '@/components/budget/charts/DonutChart.jsx'
 import MonthlyBarChart from '@/components/budget/charts/MonthlyBarChart.jsx'
 import CategoryIcon from '@/components/budget/CategoryIcon.jsx'
+import LimitProgressCard from '@/components/budget/limits/LimitProgressCard.jsx'
 import styles from './BudgetReports.module.scss'
-
 const TREND_OPTIONS = [
   { id: 6, label: '6 أشهر' },
   { id: 12, label: '12 شهر' },
@@ -15,11 +15,11 @@ function BudgetReports() {
   const {
     summary,
     categories,
+    limits,          // ← جديد
     currentMonth,
     setCurrentMonth,
     loading,
   } = useBudget()
-
   const [trendMonths, setTrendMonths] = useState(6)
   const [trend, setTrend] = useState([])
   const [trendLoading, setTrendLoading] = useState(true)
@@ -217,7 +217,27 @@ function BudgetReports() {
               />
             )}
           </section>
-
+          {/* ✅ تقدم الميزانية */}
+          {limits && limits.limits.length > 0 && (
+            <section className={styles.section}>
+              <div className={styles.sectionHeader}>
+                <h3 className={styles.sectionTitle}>تقدم الميزانية</h3>
+                <span className={styles.sectionHint}>
+                  {limits.limits.length} تصنيف
+                </span>
+              </div>
+              <div className={styles.limitsList}>
+                {limits.limits.map((limit) => (
+                  <LimitProgressCard
+                    key={limit.id}
+                    limit={limit}
+                    category={categories.find((c) => c.id === limit.category_id)}
+                    compact
+                  />
+                ))}
+              </div>
+            </section>
+          )}
           {/* أعلى 5 تصنيفات */}
           {topCategories.length > 0 && (
             <section className={styles.section}>

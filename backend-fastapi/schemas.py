@@ -158,3 +158,37 @@ class BudgetImportResult(BaseModel):
     imported: int
     skipped: int
     errors: list[str] = []
+# ===========================
+# Budget Limits Schemas
+# ===========================
+
+class BudgetLimitCreate(BaseModel):
+    category_id: str
+    month: str = Field(..., pattern=r"^\d{4}-\d{2}$")
+    amount: float = Field(..., gt=0)
+
+
+class BudgetLimitUpdate(BaseModel):
+    amount: float = Field(..., gt=0)
+
+
+class BudgetLimitItem(BaseModel):
+    id: str
+    category_id: str
+    category_name: str
+    category_icon: Optional[str]
+    category_color: Optional[str]
+    amount: float
+    spent: float
+    remaining: float
+    percent: float
+    status: str  # "safe" | "warning" | "over"
+
+
+class BudgetLimitsResponse(BaseModel):
+    month: str
+    limits: list[BudgetLimitItem]
+    total_limit: float
+    total_spent: float
+    total_remaining: float
+    total_percent: float

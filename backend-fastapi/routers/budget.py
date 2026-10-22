@@ -29,7 +29,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
 from datetime import datetime
-from models import BudgetCategory, BudgetTransaction
+from models import BudgetCategory, BudgetTransaction,BudgetLimit
 from schemas import (
     BudgetCategoryCreate,
     BudgetCategoryUpdate,
@@ -40,9 +40,12 @@ from schemas import (
     BudgetSummaryResponse,
     BudgetSummaryCategory,
     BudgetImportResult,
+    BudgetLimitCreate,    
+    BudgetLimitUpdate,    
+    BudgetLimitItem,      
+    BudgetLimitsResponse, 
 )
 from dependencies import get_db
-
 router = APIRouter(prefix="/api/budget", tags=["budget"])
 
 
@@ -866,3 +869,230 @@ async def import_budget_csv(
         "skipped": skipped,
         "errors": errors[:20],
     }
+# ===========================
+# MONTHLY LIMITS (الميزانية الشهرية)
+# ===========================
+
+def _limit_status(percent: float) -> str:
+    """حالة الميزانية حسب نسبة الاستهلاك"""
+    if percent >= 100:
+        return "over"
+    if percent >= 75:
+        return "warning"
+    return "safe"
+
+
+@router.get("/limits", response_model=BudgetLimitsResponse)
+def list_limits(
+    month: str = Query(..., pattern=r"^\d{4}-\d{2}$"),
+    db: Session = Depends(get_db),
+):
+    """قائمة الميزانيات الشهرية + التقدم لكل تصنيف"""
+    limits = (
+        db.query(BudgetLimit)
+        .filter(BudgetLimit.month == month)
+        .all()
+    )
+
+    # جلب التصنيفات دفعة واحدة
+    cat_ids = [l.category_id for l in limits]
+    cats = (
+        db.query(BudgetCategory)
+        .filter(BudgetCategory.id.in_(cat_ids))
+        .all()
+        if cat_ids else []
+    )
+    cat_map = {c.id: c for c in cats}
+
+    # حساب المصروف لكل تصنيف في الشهر
+    spent_rows = (
+        db.query(
+            BudgetTransaction.category_id,
+            func.coalesce(func.sum(BudgetTransaction.amount), 0),
+        )
+        .filter(
+            BudgetTransaction.date.like(f"{month}-%"),
+            BudgetTransaction.type == "expense",
+        )
+        .group_by(BudgetTransaction.category_id)
+        .all()
+    )
+    spent_map = {cid: float(total) for cid, total in spent_rows}
+
+    items: list[BudgetLimitItem] = []
+    total_limit = 0.0
+    total_spent = 0.0
+
+    for lim in limits:
+        cat = cat_map.get(lim.category_id)
+        spent = round(spent_map.get(lim.category_id, 0.0), 2)
+        remaining = round(lim.amount - spent, 2)
+        percent = (
+            round((spent / lim.amount) * 100, 1)
+            if lim.amount > 0 else 0
+        )
+
+        items.append(
+            BudgetLimitItem(
+                id=lim.id,
+                category_id=lim.category_id,
+                category_name=cat.name if cat else "غير محدد",
+                category_icon=cat.icon if cat else None,
+                category_color=cat.color if cat else None,
+                amount=round(lim.amount, 2),
+                spent=spent,
+                remaining=remaining,
+                percent=percent,
+                status=_limit_status(percent),
+            )
+        )
+
+        total_limit += lim.amount
+        total_spent += spent
+
+    total_remaining = total_limit - total_spent
+    total_percent = (
+        round((total_spent / total_limit) * 100, 1)
+        if total_limit > 0 else 0
+    )
+
+    return BudgetLimitsResponse(
+        month=month,
+        limits=items,
+        total_limit=round(total_limit, 2),
+        total_spent=round(total_spent, 2),
+        total_remaining=round(total_remaining, 2),
+        total_percent=total_percent,
+    )
+
+
+@router.post("/limits", response_model=BudgetLimitItem)
+def create_or_update_limit(
+    data: BudgetLimitCreate,
+    db: Session = Depends(get_db),
+):
+    """إنشاء أو تحديث ميزانية (UPSERT)"""
+    cat = db.get(BudgetCategory, data.category_id)
+    if not cat:
+        raise HTTPException(404, "التصنيف غير موجود")
+    if cat.type != "expense":
+        raise HTTPException(400, "الميزانية للتصنيفات المصروفات فقط")
+
+    existing = (
+        db.query(BudgetLimit)
+        .filter(
+            BudgetLimit.category_id == data.category_id,
+            BudgetLimit.month == data.month,
+        )
+        .first()
+    )
+
+    now = _now_ms()
+
+    if existing:
+        existing.amount = round(data.amount, 2)
+        existing.updated_at = now
+        db.commit()
+        db.refresh(existing)
+        lim = existing
+    else:
+        lim = BudgetLimit(
+            id=f"lim_{uuid.uuid4().hex[:12]}",
+            category_id=data.category_id,
+            month=data.month,
+            amount=round(data.amount, 2),
+            created_at=now,
+            updated_at=now,
+        )
+        db.add(lim)
+        db.commit()
+        db.refresh(lim)
+
+    # حساب المصروف
+    spent = (
+        db.query(func.coalesce(func.sum(BudgetTransaction.amount), 0))
+        .filter(
+            BudgetTransaction.category_id == lim.category_id,
+            BudgetTransaction.date.like(f"{lim.month}-%"),
+            BudgetTransaction.type == "expense",
+        )
+        .scalar()
+    ) or 0.0
+    spent = float(spent)
+
+    percent = (
+        round((spent / lim.amount) * 100, 1)
+        if lim.amount > 0 else 0
+    )
+
+    return BudgetLimitItem(
+        id=lim.id,
+        category_id=lim.category_id,
+        category_name=cat.name,
+        category_icon=cat.icon,
+        category_color=cat.color,
+        amount=round(lim.amount, 2),
+        spent=round(spent, 2),
+        remaining=round(lim.amount - spent, 2),
+        percent=percent,
+        status=_limit_status(percent),
+    )
+
+
+@router.put("/limits/{limit_id}", response_model=BudgetLimitItem)
+def update_limit(
+    limit_id: str,
+    data: BudgetLimitUpdate,
+    db: Session = Depends(get_db),
+):
+    """تعديل مبلغ ميزانية موجودة"""
+    lim = db.get(BudgetLimit, limit_id)
+    if not lim:
+        raise HTTPException(404, "الميزانية غير موجودة")
+
+    lim.amount = round(data.amount, 2)
+    lim.updated_at = _now_ms()
+    db.commit()
+    db.refresh(lim)
+
+    cat = db.get(BudgetCategory, lim.category_id)
+
+    spent = (
+        db.query(func.coalesce(func.sum(BudgetTransaction.amount), 0))
+        .filter(
+            BudgetTransaction.category_id == lim.category_id,
+            BudgetTransaction.date.like(f"{lim.month}-%"),
+            BudgetTransaction.type == "expense",
+        )
+        .scalar()
+    ) or 0.0
+    spent = float(spent)
+
+    percent = (
+        round((spent / lim.amount) * 100, 1)
+        if lim.amount > 0 else 0
+    )
+
+    return BudgetLimitItem(
+        id=lim.id,
+        category_id=lim.category_id,
+        category_name=cat.name if cat else "غير محدد",
+        category_icon=cat.icon if cat else None,
+        category_color=cat.color if cat else None,
+        amount=round(lim.amount, 2),
+        spent=round(spent, 2),
+        remaining=round(lim.amount - spent, 2),
+        percent=percent,
+        status=_limit_status(percent),
+    )
+
+
+@router.delete("/limits/{limit_id}")
+def delete_limit(limit_id: str, db: Session = Depends(get_db)):
+    """حذف ميزانية"""
+    lim = db.get(BudgetLimit, limit_id)
+    if not lim:
+        raise HTTPException(404, "الميزانية غير موجودة")
+    db.delete(lim)
+    db.commit()
+    return {"ok": True}

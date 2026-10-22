@@ -452,3 +452,8 @@
   0%, 100% { opacity: 0.5; }
   50% { opacity: 1; }
 }
+.limitsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

@@ -18,8 +18,6 @@ env/
 .venv/
 .Python
 *.egg-info/
-dist/
-build/
 
 # ===========================
 # Database
@@ -36,6 +34,11 @@ build/
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
+
+# ⚠️ استثناء: .env.example يتعمل commit
+!.env.example
 
 # ===========================
 # Build output
@@ -44,6 +47,7 @@ dist/
 build/
 .vite/
 .next/
+dev-dist/
 
 # ===========================
 # Editor / OS
