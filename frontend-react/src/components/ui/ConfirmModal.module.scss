@@ -1,79 +1,86 @@
-@use '@/styles/variables' as *;
+@use '@/styles/tokens' as *;
 
 .message {
   text-align: center;
-  color: $text-display-light;
-  font-size: 1rem;
-  line-height: 1.6;
-
-  :global(body.dark) & {
-    color: $text-display-dark;
-  }
+  color: var(--text-secondary);
+  font-size: $font-base;
+  line-height: $leading-relaxed;
+  margin: 0 0 $space-2;
+  padding: $space-3 0;
 }
 
 .buttons {
   display: flex;
-  gap: 8px;
-  margin-top: 8px;
+  flex-direction: column-reverse;
+  gap: $space-2;
+  margin-top: $space-3;
+
+  @media (min-width: $bp-sm) {
+    flex-direction: row;
+  }
 }
 
 .cancel,
 .confirm {
   flex: 1;
-  padding: 10px;
-  font-size: 1rem;
-  font-family: $font-main;
-  border-radius: $border-radius;
+  min-height: $touch-target;
+  padding: $space-3 $space-4;
+  font-size: $font-base;
+  font-weight: $weight-semibold;
+  border-radius: $radius-md;
   cursor: pointer;
-  transition: transform $transition, opacity $transition;
+  transition: all $transition-base;
+  touch-action: manipulation;
 
-  &:active {
-    transform: scale(0.95);
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
 .cancel {
-  background-color: transparent;
-  border: 1px solid $border-light;
-  color: $text-display-light;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
 
-  :global(body.dark) & {
-    border-color: $border-dark;
-    color: $text-display-dark;
-  }
-
-  &:hover {
-    background-color: $bg-btn-hover-light;
-
-    :global(body.dark) & {
-      background-color: $bg-btn-hover-dark;
-    }
+  &:hover:not(:disabled) {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
   }
 }
 
 .confirm {
-  background-color: $text-light;
-  border: 1px solid $text-light;
-  color: white;
+  background: var(--brand);
+  border: 1px solid var(--brand);
+  color: var(--text-on-brand);
+  box-shadow: $shadow-brand;
 
-  :global(body.dark) & {
-    background-color: $text-dark;
-    border-color: $text-dark;
-    color: #111;
+  body.dark & {
+    box-shadow: none;
   }
 
-  &:hover {
-    opacity: 0.9;
+  &:hover:not(:disabled) {
+    background: var(--brand-dark);
+    border-color: var(--brand-dark);
+    box-shadow: $shadow-brand-hover;
   }
 }
 
+// ─── Danger Variant ───
 .danger {
-  background-color: #d32f2f;
-  border-color: #d32f2f;
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
 
-  :global(body.dark) & {
-    background-color: #d32f2f;
-    border-color: #d32f2f;
-    color: white;
+  &:hover:not(:disabled) {
+    background: var(--danger-dark);
+    border-color: var(--danger-dark);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
   }
 }

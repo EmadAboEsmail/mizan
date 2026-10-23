@@ -143,10 +143,10 @@ function BudgetLimitsSection() {
           <div className={styles.totalProgressTrack}>
             <div
               className={`${styles.totalProgressFill} ${limits.total_percent >= 100
-                  ? styles.over
-                  : limits.total_percent >= 75
-                    ? styles.warning
-                    : ''
+                ? styles.over
+                : limits.total_percent >= 75
+                  ? styles.warning
+                  : ''
                 }`}
               style={{ width: `${Math.min(limits.total_percent, 100)}%` }}
             />

@@ -1,339 +1,336 @@
-@use '@/styles/variables' as *;
+@use '@/styles/tokens' as *;
 
 .container {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: $space-5;
   width: 100%;
 }
 
-// قائمة العمليات العادية
-.optionsList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.9rem 1.1rem;
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  border-radius: 14px;
-  transition: all 0.2s ease;
-
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.02);
-    border-color: rgba(255, 255, 255, 0.05);
-  }
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.03);
-    :global(body.dark) & {
-      background: rgba(255, 255, 255, 0.04);
-    }
-  }
-}
-
-.rowInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.titleLine {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.icon {
-  font-size: 1.1rem;
-}
-
-.title {
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: #1e293b;
-
-  :global(body.dark) & {
-    color: #f1f5f9;
-  }
-}
-
-.desc {
-  font-size: 0.78rem;
-  color: #64748b;
-  margin: 0;
-  line-height: 1.4;
-
-  :global(body.dark) & {
-    color: #94a3b8;
-  }
-}
-
-// زر الإجراء العادي
-.actionBtn {
-  padding: 0.45rem 1rem;
-  font-size: 0.82rem;
-  font-weight: 700;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  background: transparent;
-  color: #475569;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  touch-action: manipulation;
-
-  :global(body.dark) & {
-    border-color: rgba(255, 255, 255, 0.12);
-    color: #cbd5e1;
-  }
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.05);
-    color: #0f172a;
-
-    :global(body.dark) & {
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
-    }
-  }
-
-  &:active {
-    transform: scale(0.96);
-  }
-}
-
-// ===================================
-// منطقة الخطر (Danger Zone)
-// ===================================
-.dangerZone {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1.1rem 1.25rem;
-  border-radius: 16px;
-  background: rgba(239, 68, 68, 0.04);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-
-  :global(body.dark) & {
-    background: rgba(239, 68, 68, 0.08);
-    border-color: rgba(239, 68, 68, 0.3);
-  }
-}
-
-.dangerHeader {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  flex: 1;
-  min-width: 220px;
-}
-
-.dangerIcon {
-  font-size: 1.4rem;
-  line-height: 1;
-}
-
-.dangerInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.dangerTitle {
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: #ef4444;
-
-  :global(body.dark) & {
-    color: #f87171;
-  }
-}
-
-.dangerDesc {
-  font-size: 0.8rem;
-  color: #64748b;
-  margin: 0;
-  line-height: 1.4;
-
-  :global(body.dark) & {
-    color: #94a3b8;
-  }
-}
-
-.dangerBtn {
-  padding: 0.55rem 1.2rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  border-radius: 10px;
-  border: none;
-  background: #ef4444;
-  color: #fff;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 10px rgba(239, 68, 68, 0.25);
-  touch-action: manipulation;
-
-  &:hover {
-    background: #dc2626;
-    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
-  }
-
-  &:active {
-    transform: scale(0.96);
-  }
-}
-// عنوان الأقسام الفرعية
+// ═══════════════════════════════════════
+// Section Title
+// ═══════════════════════════════════════
 .subSectionTitle {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #64748b;
-  margin: 0.5rem 0 0.25rem;
-
-  :global(body.dark) & {
-    color: #94a3b8;
-  }
+  font-size: $font-sm;
+  font-weight: $weight-bold;
+  color: var(--text-muted);
+  margin: 0 0 $space-2;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-// قسم النسخ الاحتياطي
+// ═══════════════════════════════════════
+// Backup Section
+// ═══════════════════════════════════════
 .backupSection {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: $space-3;
 }
 
 .backupGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  grid-template-columns: 1fr;
+  gap: $space-3;
 
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
+  @media (min-width: $bp-md) {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 .backupCard {
-  background: rgba(5, 150, 105, 0.03);
-  border: 1px solid rgba(5, 150, 105, 0.15);
-  border-radius: 14px;
-  padding: 1rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: $radius-md;
+  padding: $space-4;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 0.85rem;
+  gap: $space-3;
+  transition: all $transition-base;
 
-  :global(body.dark) & {
-    background: rgba(52, 211, 153, 0.03);
-    border-color: rgba(52, 211, 153, 0.15);
+  &:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-strong);
   }
 }
 
 .backupHeader {
   display: flex;
   align-items: flex-start;
-  gap: 0.6rem;
+  gap: $space-2;
 }
 
 .backupIcon {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .backupTitle {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #0f172a;
+  font-size: $font-sm;
+  font-weight: $weight-bold;
+  color: var(--text-primary);
   display: block;
-  margin-bottom: 0.2rem;
-
-  :global(body.dark) & {
-    color: #f8fafc;
-  }
+  margin-bottom: 2px;
+  line-height: 1.3;
 }
 
 .backupDesc {
-  font-size: 0.75rem;
-  color: #64748b;
+  font-size: $font-xs;
+  color: var(--text-muted);
   margin: 0;
   line-height: 1.4;
-
-  :global(body.dark) & {
-    color: #94a3b8;
-  }
 }
 
 .exportBtn,
 .importBtn {
   width: 100%;
-  padding: 0.5rem 0.85rem;
-  font-size: 0.82rem;
-  font-weight: 700;
-  border-radius: 8px;
+  min-height: 40px;
+  padding: $space-2 $space-4;
+  font-size: $font-sm;
+  font-weight: $weight-bold;
+  border-radius: $radius-sm;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all $transition-base;
   touch-action: manipulation;
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
 }
 
 .exportBtn {
-  background: #059669;
-  color: #fff;
+  background: var(--brand);
+  color: var(--text-on-brand);
   border: none;
-  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+  box-shadow: $shadow-brand;
 
-  &:hover {
-    background: #047857;
+  body.dark & {
+    box-shadow: none;
+  }
+
+  &:hover:not(:disabled) {
+    background: var(--brand-dark);
+    box-shadow: $shadow-brand-hover;
   }
 }
 
 .importBtn {
   background: transparent;
-  color: #059669;
-  border: 1px solid #059669;
+  color: var(--brand);
+  border: 1.5px solid var(--brand-border);
 
-  :global(body.dark) & {
-    color: #34d399;
-    border-color: #34d399;
-  }
-
-  &:hover {
-    background: rgba(5, 150, 105, 0.08);
+  &:hover:not(:disabled) {
+    background: var(--brand-bg);
+    border-color: var(--brand);
   }
 }
 
-// رسائل الحالة بعد الاستيراد
+// ═══════════════════════════════════════
+// Status Message
+// ═══════════════════════════════════════
 .statusMessage {
-  padding: 0.65rem 0.9rem;
-  border-radius: 10px;
-  font-size: 0.82rem;
-  font-weight: 600;
+  padding: $space-3 $space-4;
+  border-radius: $radius-md;
+  font-size: $font-sm;
+  font-weight: $weight-semibold;
   text-align: center;
+  line-height: 1.4;
   animation: fadeIn 0.25s ease;
 }
 
 .statusSuccess {
-  background: rgba(5, 150, 105, 0.1);
-  color: #059669;
-  border: 1px solid rgba(5, 150, 105, 0.2);
-
-  :global(body.dark) & {
-    background: rgba(52, 211, 153, 0.12);
-    color: #34d399;
-    border-color: rgba(52, 211, 153, 0.25);
-  }
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success-border);
 }
 
 .statusError {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+// ═══════════════════════════════════════
+// Reset Options List
+// ═══════════════════════════════════════
+.optionsList {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-3;
+  padding: $space-3 $space-4;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: $radius-md;
+  transition: all $transition-fast;
+
+  &:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-default);
+  }
+}
+
+.rowInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.titleLine {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+}
+
+.icon {
+  font-size: $font-base;
+  line-height: 1;
+}
+
+.title {
+  font-size: $font-sm;
+  font-weight: $weight-bold;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.desc {
+  font-size: $font-xs;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+// ═══════════════════════════════════════
+// Action Button
+// ═══════════════════════════════════════
+.actionBtn {
+  min-height: 36px;
+  padding: 6px $space-4;
+  font-size: $font-xs;
+  font-weight: $weight-bold;
+  border-radius: $radius-sm;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all $transition-fast;
+  flex-shrink: 0;
+  touch-action: manipulation;
+
+  &:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+}
+
+// ═══════════════════════════════════════
+// Danger Zone
+// ═══════════════════════════════════════
+.dangerZone {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  padding: $space-4;
+  border-radius: $radius-lg;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+}
+
+.dangerHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-2;
+}
+
+.dangerIcon {
+  font-size: 1.4rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.dangerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dangerTitle {
+  font-size: $font-sm;
+  font-weight: $weight-extrabold;
+  color: var(--danger);
+  line-height: 1.3;
+}
+
+.dangerDesc {
+  font-size: $font-xs;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.dangerBtn {
+  min-height: 40px;
+  padding: $space-2 $space-5;
+  font-size: $font-sm;
+  font-weight: $weight-bold;
+  border-radius: $radius-md;
+  border: none;
+  background: var(--danger);
+  color: #ffffff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all $transition-base;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+  touch-action: manipulation;
+  align-self: flex-start;
+
+  &:hover {
+    background: var(--danger-dark);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--danger);
+    outline-offset: 2px;
+  }
 }

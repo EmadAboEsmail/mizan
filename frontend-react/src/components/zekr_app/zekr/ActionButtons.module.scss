@@ -1,155 +1,161 @@
-@use '@/styles/variables' as *;
+@use '@/styles/tokens' as *;
 
 .buttons {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
-  gap: $gap;
+  gap: $space-5;
+  width: 100%;
 }
 
+// ─── Reset Button ───
 .reset {
-  width: min(20vw, 60px);
-  aspect-ratio: 1;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  background-color: $bg-btn-light;
-  color: $text-light;
-  border: 1px solid $border-light;
-  font-size: 1rem;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  border: 1.5px solid var(--border-default);
+  font-size: $font-lg;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $transition-base;
+  box-shadow: $shadow-sm;
   touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform $transition, background-color $transition;
+  flex-shrink: 0;
 
-  :global(body.dark) & {
-    background-color: $bg-btn-dark;
-    border-color: $border-dark;
-    color: $text-dark;
+  body.dark & {
+    box-shadow: $shadow-dark-sm;
   }
 
-  &:hover {
-    background-color: $bg-btn-hover-light;
-
-    :global(body.dark) & {
-      background-color: $bg-btn-hover-dark;
-    }
+  &:hover:not(:disabled) {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
   }
 
-  &:active {
-    transform: scale(0.9);
+  &:active:not(:disabled) {
+    transform: scale(0.92);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 }
 
+// ─── Main Tally Button ───
 .click {
-  /* المتغيرات */
-  --ring-color: #{$text-light};
-  --ring-bg: #ddd;
+  --ring-color: var(--brand);
+  --ring-bg: var(--border-default);
+  --progress: 0%;
 
-  width: min(60vw, 220px);
-  aspect-ratio: 1;
+  width: 220px;
+  height: 220px;
   border-radius: 50%;
   border: none;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: $text-light;
-  font-size: 1.5rem;
+  color: var(--text-primary);
+  font-size: $font-lg;
+  font-weight: $weight-bold;
   cursor: pointer;
   touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 
+  // Progress ring
   background: conic-gradient(
     var(--ring-color) var(--progress),
     var(--ring-bg) var(--progress)
   );
+  box-shadow:
+    $shadow-lg,
+    inset 0 2px 4px rgba(255, 255, 255, 0.1);
 
-  :global(body.dark) & {
-    --ring-color: #{$text-dark};
-    --ring-bg: #444;
-    color: $text-dark;
+  body.dark & {
+    box-shadow:
+      $shadow-dark-lg,
+      inset 0 2px 4px rgba(255, 255, 255, 0.05);
   }
 
+  // Inner circle
   &::before {
     content: '';
     position: absolute;
-    inset: 9px;
-    background: $bg-btn-light;
+    inset: 8px;
+    background: var(--bg-elevated);
     border-radius: 50%;
     z-index: 0;
-    transition: background-color $transition;
-
-    :global(body.dark) & {
-      background: $bg-btn-dark;
-    }
+    transition: background $transition-base;
   }
 
   &:hover::before {
-    background: $bg-btn-hover-light;
-
-    :global(body.dark) & {
-      background: $bg-btn-hover-dark;
-    }
+    background: var(--bg-hover);
   }
 
   > * {
     position: relative;
     z-index: 1;
-    padding: 1rem;
+    padding: $space-5;
     text-align: center;
     line-height: 1.4;
     word-break: break-word;
+    max-width: 90%;
+  }
+
+  @media (max-width: 380px) {
+    width: 180px;
+    height: 180px;
+    font-size: $font-base;
   }
 }
 
-/* حالة اكتمال الهدف */
+// ─── Complete State ───
 .complete {
-  --ring-color: #4caf50;
-  --ring-bg: #4caf50;
+  --ring-color: var(--success);
+  --ring-bg: var(--success);
 
-  :global(body.dark) & {
-    --ring-color: #66bb6a;
-    --ring-bg: #66bb6a;
+  &::before {
+    box-shadow: inset 0 0 30px var(--success-bg);
   }
 }
 
-/* حركة النبض عند النقر */
+// ─── Click Animation ───
 .clicked {
-  animation: pulse 0.15s ease;
+  animation: pulse 0.18s ease;
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(0.92); }
+  0%   { transform: scale(1); }
+  50%  { transform: scale(0.93); }
   100% { transform: scale(1); }
 }
 
-// ===================================
-// زر التسبيح عندما يكون في وضع التركيز
-// ===================================
+// ─── Focus Mode Button ───
 .floatingRightBtn {
   position: fixed;
-  bottom: max(30px, env(safe-area-inset-bottom));
-  right: max(24px, env(safe-area-inset-right));
-  left: auto;
-  
-  width: 86px;
-  height: 86px;
-  font-size: 1.15rem;
-  font-weight: bold;
-  z-index: 10000;
-  
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), 0 0 0 2px rgba(255, 255, 255, 0.2);
+  bottom: max($space-6, env(safe-area-inset-bottom));
+  right: max($space-5, env(safe-area-inset-right));
+  width: 80px;
+  height: 80px;
+  font-size: $font-sm;
+  z-index: $z-focus-mode;
+  box-shadow:
+    $shadow-xl,
+    0 0 0 3px var(--bg-elevated);
 
-  // جعل إطار التقدم أرفع ليتناسب مع الحجم الصغير
   &::before {
     inset: 5px;
   }
 
   > * {
-    padding: 0;
+    padding: $space-2;
   }
 
-  // الضغط اليدوي المستمر (بدون كسر أنيميشن clicked)
   &:active {
     transform: scale(0.92);
   }

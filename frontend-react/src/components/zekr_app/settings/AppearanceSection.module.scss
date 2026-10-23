@@ -1,84 +1,95 @@
-@use '@/styles/variables' as *;
+@use '@/styles/tokens' as *;
 
 .container {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: $space-4;
   width: 100%;
 }
 
 .hint {
-  font-size: 0.85rem;
-  color: #64748b;
+  font-size: $font-sm;
+  color: var(--text-muted);
   margin: 0;
-
-  :global(body.dark) & {
-    color: #94a3b8;
-  }
+  line-height: $leading-relaxed;
 }
 
-// شبكة البطاقتين
+// ═══════════════════════════════════════
+// Grid (Light + Dark cards)
+// ═══════════════════════════════════════
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: $space-3;
+
+  @media (max-width: 380px) {
+    grid-template-columns: 1fr;
+  }
 }
 
-// تصميم بطاقة المعاينة
+// ═══════════════════════════════════════
+// Card
+// ═══════════════════════════════════════
 .card {
   position: relative;
   background: transparent;
-  border: 2px solid rgba(0, 0, 0, 0.08);
-  border-radius: 16px;
-  padding: 0.75rem;
+  border: 2px solid var(--border-default);
+  border-radius: $radius-lg;
+  padding: $space-3;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: $space-3;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  text-align: right;
+  transition: all $transition-base;
+  text-align: start;
   touch-action: manipulation;
 
-  :global(body.dark) & {
-    border-color: rgba(255, 255, 255, 0.08);
-  }
-
   &:hover {
-    border-color: rgba(5, 150, 105, 0.4);
+    border-color: var(--brand-border);
     transform: translateY(-2px);
+    box-shadow: $shadow-md;
+
+    body.dark & {
+      box-shadow: $shadow-dark-md;
+    }
   }
 
-  // البطاقة النشطة المختارة
   &.active {
-    border-color: #059669;
-    background: rgba(5, 150, 105, 0.03);
-    box-shadow: 0 4px 16px rgba(5, 150, 105, 0.15);
+    border-color: var(--brand);
+    background: var(--brand-bg);
+    box-shadow: 0 0 0 3px var(--brand-bg);
 
-    :global(body.dark) & {
-      border-color: #34d399;
-      background: rgba(52, 211, 153, 0.04);
-      box-shadow: 0 4px 16px rgba(52, 211, 153, 0.15);
+    .checkBadge {
+      opacity: 1;
+      transform: scale(1);
     }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
   }
 }
 
-// محاكاة واجهة التطبيق داخل البطاقة (Mini Preview)
+// ═══════════════════════════════════════
+// Preview (Mini UI)
+// ═══════════════════════════════════════
 .preview {
   height: 80px;
-  border-radius: 10px;
-  padding: 8px;
+  border-radius: $radius-md;
+  padding: $space-2;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border-subtle);
 }
 
 .previewHeader {
   width: 40%;
   height: 6px;
-  border-radius: 3px;
+  border-radius: $radius-full;
 }
 
 .previewCircle {
@@ -91,75 +102,74 @@
 .previewBar {
   width: 60%;
   height: 6px;
-  border-radius: 3px;
+  border-radius: $radius-full;
 }
 
-// ألوان المعاينة الفاتحة
+// Light preview
 .lightCard .preview {
   background: #f8fafc;
+
   .previewHeader { background: #cbd5e1; }
-  .previewCircle { border-color: #059669; background: #ffffff; }
+  .previewCircle { border-color: #10b981; background: #ffffff; }
   .previewBar { background: #e2e8f0; }
 }
 
-// ألوان المعاينة الداكنة
+// Dark preview
 .darkCard .preview {
   background: #0f172a;
   border-color: rgba(255, 255, 255, 0.08);
+
   .previewHeader { background: #334155; }
   .previewCircle { border-color: #34d399; background: #1e293b; }
-  .previewBar { background: #1e293b; }
+  .previewBar { background: #334155; }
 }
 
-// تذييل البطاقة (الأيقونة والاسم وشارة الصح)
+// ═══════════════════════════════════════
+// Card Footer
+// ═══════════════════════════════════════
 .cardFooter {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 0.25rem;
+  padding: 0 $space-1;
 }
 
 .cardLabel {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: #1e293b;
+  gap: $space-1;
+  font-size: $font-sm;
+  font-weight: $weight-bold;
+  color: var(--text-primary);
 
-  :global(body.dark) & {
-    color: #f1f5f9;
+  .active & {
+    color: var(--brand);
   }
 }
 
 .icon {
   display: flex;
   align-items: center;
-  color: #059669;
+  color: var(--text-muted);
 
-  :global(body.dark) & {
-    color: #34d399;
+  .active & {
+    color: var(--brand);
   }
 }
 
+// ═══════════════════════════════════════
+// Check Badge
+// ═══════════════════════════════════════
 .checkBadge {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: #059669;
-  color: #fff;
+  background: var(--brand);
+  color: var(--text-on-brand);
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: scaleIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-
-  :global(body.dark) & {
-    background: #34d399;
-    color: #0f172a;
-  }
-}
-
-@keyframes scaleIn {
-  from { transform: scale(0); }
-  to { transform: scale(1); }
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all $transition-base;
 }

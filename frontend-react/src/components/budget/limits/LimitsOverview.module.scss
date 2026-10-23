@@ -1,189 +1,234 @@
-@use '@/styles/variables' as *;
+@use '@/styles/tokens' as *;
 
+// ═══════════════════════════════════════
+// Card
+// ═══════════════════════════════════════
 .card {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.85rem 1rem;
-  border-radius: 14px;
+  gap: $space-3;
+  padding: $space-3 $space-4;
+  border-radius: $radius-lg;
   border: 1px solid;
   text-decoration: none;
-  transition: all 0.2s ease;
+  color: inherit;
+  transition: all $transition-base;
   touch-action: manipulation;
   flex-wrap: wrap;
+  min-height: 60px;
+  box-shadow: $shadow-sm;
 
+  body.dark & {
+    box-shadow: $shadow-dark-sm;
+  }
+
+  // ─── Status Variants ───
   &.safe {
-    background: rgba(34, 197, 94, 0.04);
-    border-color: rgba(34, 197, 94, 0.2);
-
-    :global(body.dark) & {
-      background: rgba(74, 222, 128, 0.06);
-      border-color: rgba(74, 222, 128, 0.25);
-    }
+    background: var(--success-bg);
+    border-color: var(--success-border);
   }
 
   &.warning {
-    background: rgba(245, 158, 11, 0.04);
-    border-color: rgba(245, 158, 11, 0.3);
-
-    :global(body.dark) & {
-      background: rgba(251, 191, 36, 0.06);
-      border-color: rgba(251, 191, 36, 0.3);
-    }
+    background: var(--warning-bg);
+    border-color: var(--warning-border);
   }
 
   &.over {
-    background: rgba(239, 68, 68, 0.04);
-    border-color: rgba(239, 68, 68, 0.35);
-
-    :global(body.dark) & {
-      background: rgba(248, 113, 113, 0.06);
-      border-color: rgba(248, 113, 113, 0.35);
-    }
+    background: var(--danger-bg);
+    border-color: var(--danger-border);
   }
 
   &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
 
-    :global(body.dark) & {
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    body.dark & {
+      box-shadow: $shadow-dark-md;
     }
   }
 
   &:active {
     transform: scale(0.99);
   }
+
+  &:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
 }
 
+// ═══════════════════════════════════════
+// Left Section
+// ═══════════════════════════════════════
 .left {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: $space-2;
   flex-shrink: 0;
 }
 
 .icon {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: $radius-md;
+  background: var(--bg-elevated);
+
+  body.dark & {
+    background: var(--bg-subtle);
+  }
 }
 
 .info {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 2px;
+  min-width: 0;
 }
 
 .label {
-  font-size: 0.78rem;
-  font-weight: 800;
-  color: #0f172a;
-
-  :global(body.dark) & {
-    color: #f8fafc;
-  }
+  font-size: $font-sm;
+  font-weight: $weight-extrabold;
+  color: var(--text-primary);
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .status {
   font-size: 0.68rem;
-  font-weight: 600;
-  color: #64748b;
-
-  :global(body.dark) & {
-    color: #94a3b8;
-  }
+  font-weight: $weight-semibold;
+  color: var(--text-muted);
+  line-height: 1.2;
 
   .safe & {
-    color: #16a34a;
-    :global(body.dark) & { color: #4ade80; }
+    color: var(--success);
   }
 
   .warning & {
-    color: #d97706;
-    :global(body.dark) & { color: #fbbf24; }
+    color: var(--warning);
   }
 
   .over & {
-    color: #dc2626;
-    :global(body.dark) & { color: #f87171; }
+    color: var(--danger);
   }
 }
 
+// ═══════════════════════════════════════
+// Center (Progress)
+// ═══════════════════════════════════════
 .center {
   flex: 1;
-  min-width: 80px;
+  min-width: 100px;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 4px;
 }
 
 .progressTrack {
   width: 100%;
   height: 6px;
-  background: rgba(0, 0, 0, 0.06);
-  border-radius: 999px;
+  background: var(--bg-elevated);
+  border-radius: $radius-full;
   overflow: hidden;
 
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.08);
+  body.dark & {
+    background: var(--bg-subtle);
   }
 }
 
 .progressFill {
   height: 100%;
-  border-radius: 999px;
-  transition: width 0.4s ease;
+  border-radius: $radius-full;
+  transition: width 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
 
   .safe & {
-    background: linear-gradient(90deg, #4ade80, #16a34a);
+    background: linear-gradient(90deg, var(--success) 0%, #16a34a 100%);
   }
+
   .warning & {
-    background: linear-gradient(90deg, #fbbf24, #f59e0b);
+    background: linear-gradient(90deg, var(--warning) 0%, #d97706 100%);
   }
+
   .over & {
-    background: linear-gradient(90deg, #f87171, #dc2626);
+    background: linear-gradient(90deg, var(--danger) 0%, var(--danger-dark) 100%);
   }
 }
 
 .percent {
   font-size: 0.68rem;
-  font-weight: 700;
-  color: #64748b;
+  font-weight: $weight-extrabold;
+  color: var(--text-muted);
   text-align: end;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
 
-  :global(body.dark) & {
-    color: #94a3b8;
+  .safe & {
+    color: var(--success);
+  }
+
+  .warning & {
+    color: var(--warning);
+  }
+
+  .over & {
+    color: var(--danger);
   }
 }
 
+// ═══════════════════════════════════════
+// Right (Numbers)
+// ═══════════════════════════════════════
 .right {
   display: flex;
   align-items: baseline;
-  gap: 0.15rem;
+  gap: 4px;
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
 
 .spent {
-  font-size: 0.88rem;
-  font-weight: 800;
-  color: #0f172a;
-
-  :global(body.dark) & {
-    color: #f8fafc;
-  }
+  font-size: $font-sm;
+  font-weight: $weight-extrabold;
+  color: var(--text-primary);
+  line-height: 1.2;
 }
 
 .separator {
-  font-size: 0.75rem;
-  color: #94a3b8;
+  font-size: $font-xs;
+  color: var(--text-faint);
 }
 
 .limit {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #64748b;
+  font-size: $font-xs;
+  font-weight: $weight-bold;
+  color: var(--text-muted);
+  line-height: 1.2;
+}
 
-  :global(body.dark) & {
-    color: #94a3b8;
+// ═══════════════════════════════════════
+// Responsive
+// ═══════════════════════════════════════
+@media (max-width: $bp-sm) {
+  .card {
+    padding: $space-2 $space-3;
+    gap: $space-2;
+  }
+
+  .icon {
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
+  }
+
+  .label {
+    font-size: $font-xs;
+  }
+
+  .spent {
+    font-size: $font-xs;
   }
 }

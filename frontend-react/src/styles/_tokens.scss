@@ -1,0 +1,10 @@
+// ===========================
+// Design Tokens
+// ===========================
+// يجمع كل الـ Sass variables في مكان واحد
+// استخدام: @use '@/styles/tokens' as *;
+
+@forward './spacing';
+@forward './typography';
+@forward './shadows';
+@forward './colors';

@@ -1,60 +1,97 @@
-@use '@/styles/variables' as *;
+@use '@/styles/tokens' as *;
 
 .toastContainer {
   position: fixed;
-  top: 20px; /* أو ممكن تحطها تحت لو تحب */
+  top: max($space-4, env(safe-area-inset-top));
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  z-index: 9999;
+  gap: $space-2;
+  z-index: $z-toast;
   pointer-events: none;
+  width: calc(100% - #{$space-8});
+  max-width: 400px;
+
+  @media (min-width: $bp-md) {
+    top: $space-6;
+  }
 }
 
 .toast {
-  padding: 12px 24px;
-  border-radius: $border-radius;
-  background-color: $bg-container-light;
-  color: $text-display-light;
-  font-family: $font-main;
-  font-size: 0.95rem;
-  font-weight: bold;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border-right: 4px solid transparent;
-  animation: slideDown 0.3s ease forwards;
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-3 $space-4;
+  border-radius: $radius-md;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: $font-sm;
+  font-weight: $weight-semibold;
+  box-shadow: $shadow-lg;
+  border: 1px solid var(--border-default);
+  border-inline-start: 4px solid var(--info);
+  animation: slideDown 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
   pointer-events: auto;
 
-  :global(body.dark) & {
-    background-color: $bg-container-dark;
-    color: $text-display-dark;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  body.dark & {
+    box-shadow: $shadow-dark-lg;
   }
 }
 
-/* ألوان الإشعارات */
+// ─── Variants ───
 .success {
-  border-right-color: #4caf50;
+  border-inline-start-color: var(--success);
+
+  .icon {
+    color: var(--success);
+  }
 }
 
 .error {
-  border-right-color: #d32f2f;
+  border-inline-start-color: var(--danger);
+
+  .icon {
+    color: var(--danger);
+  }
 }
 
 .info {
-  border-right-color: $text-light;
-  :global(body.dark) & {
-    border-right-color: $text-dark;
+  border-inline-start-color: var(--info);
+
+  .icon {
+    color: var(--info);
   }
 }
 
+.warning {
+  border-inline-start-color: var(--warning);
+
+  .icon {
+    color: var(--warning);
+  }
+}
+
+.icon {
+  font-size: $font-lg;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.message {
+  flex: 1;
+  line-height: $leading-snug;
+}
+
+// ─── Animation ───
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-20px) scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }

@@ -1,39 +1,45 @@
-@use '@/styles/variables' as *;
+@use '@/styles/tokens' as *;
 
 .toggle {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(0, 0, 0, 0.03);
-  color: #475569;
+  width: 44px;
+  height: 44px;
+  border-radius: $radius-md;
+  border: 1px solid var(--border-default);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all $transition-base;
+  box-shadow: $shadow-sm;
   touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
 
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
-    color: #f59e0b; // لون ذهبي مبهج للشمس في الوضع الداكن
+  body.dark & {
+    box-shadow: $shadow-dark-sm;
+    color: #fbbf24;
   }
 
   &:hover {
-    background: rgba(0, 0, 0, 0.06);
-    border-color: rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
+    background: var(--bg-hover);
+    border-color: var(--border-strong);
+    color: var(--brand);
+    transform: translateY(-1px);
+    box-shadow: $shadow-base;
 
-    :global(body.dark) & {
-      background: rgba(255, 255, 255, 0.09);
-      border-color: rgba(255, 255, 255, 0.2);
+    body.dark & {
+      box-shadow: $shadow-dark-base;
+      color: #fcd34d;
     }
   }
 
   &:active {
-    transform: scale(0.92);
+    transform: scale(0.94);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
   }
 }
 
@@ -41,22 +47,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: popRotate 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: popRotate 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .icon {
   width: 20px;
   height: 20px;
+  stroke-width: 2.2;
 }
 
-// حركة ناعمة ومبهجة عند التبديل
+// ─── Animation ───
 @keyframes popRotate {
   from {
     opacity: 0;
-    transform: rotate(-70deg) scale(0.6);
+    transform: rotate(-90deg) scale(0.5);
   }
   to {
     opacity: 1;
-    transform: rotate(0) scale(1);
+    transform: rotate(0deg) scale(1);
   }
 }

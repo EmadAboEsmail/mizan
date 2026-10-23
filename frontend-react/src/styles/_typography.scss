@@ -1,0 +1,104 @@
+// ===========================
+// Typography System
+// ===========================
+
+$font-arabic: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
+$font-heading: 'Rubik', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+$font-mono: 'SF Mono', 'Monaco', 'Consolas', monospace;
+
+// ─── Type Scale (8 sizes) ───
+$font-xs: 0.75rem;      // 12px — captions, labels
+$font-sm: 0.875rem;     // 14px — body small
+$font-base: 1rem;       // 16px — body (mobile zoom safe)
+$font-lg: 1.125rem;     // 18px — subtitles
+$font-xl: 1.25rem;      // 20px — section titles
+$font-2xl: 1.5rem;      // 24px — page titles
+$font-3xl: 1.875rem;    // 30px — hero
+$font-4xl: 2.5rem;      // 40px — display
+
+// ─── Weights ───
+$weight-regular: 400;
+$weight-medium: 500;
+$weight-semibold: 600;
+$weight-bold: 700;
+$weight-extrabold: 800;
+
+// ─── Line Heights ───
+$leading-tight: 1.25;
+$leading-snug: 1.4;
+$leading-normal: 1.6;
+$leading-relaxed: 1.75;
+
+// ─── Letter Spacing ───
+$tracking-tight: -0.02em;
+$tracking-normal: 0;
+$tracking-wide: 0.02em;
+
+// ─── Global Rules ───
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: $font-arabic;
+  font-size: $font-base;
+  line-height: $leading-normal;
+  font-weight: $weight-regular;
+  font-feature-settings: 'ss01', 'ss02';
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font-heading;
+  font-weight: $weight-bold;
+  line-height: $leading-tight;
+  letter-spacing: $tracking-tight;
+  margin: 0;
+}
+
+h1 { font-size: $font-3xl; font-weight: $weight-extrabold; }
+h2 { font-size: $font-2xl; font-weight: $weight-extrabold; }
+h3 { font-size: $font-xl; font-weight: $weight-bold; }
+h4 { font-size: $font-lg; font-weight: $weight-semibold; }
+h5 { font-size: $font-base; font-weight: $weight-semibold; }
+h6 { font-size: $font-sm; font-weight: $weight-semibold; }
+
+p {
+  margin: 0;
+  line-height: $leading-relaxed;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+code, pre {
+  font-family: $font-mono;
+  font-size: 0.9em;
+}
+
+// ─── Utilities ───
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+.text-xs { font-size: $font-xs; }
+.text-sm { font-size: $font-sm; }
+.text-base { font-size: $font-base; }
+.text-lg { font-size: $font-lg; }
+.text-xl { font-size: $font-xl; }
+.text-2xl { font-size: $font-2xl; }
+
+.font-medium { font-weight: $weight-medium; }
+.font-semibold { font-weight: $weight-semibold; }
+.font-bold { font-weight: $weight-bold; }
+.font-extrabold { font-weight: $weight-extrabold; }
+
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+.text-faint { color: var(--text-faint); }

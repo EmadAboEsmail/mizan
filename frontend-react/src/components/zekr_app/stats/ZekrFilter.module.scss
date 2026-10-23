@@ -1,55 +1,48 @@
-@use '@/styles/variables' as *;
+@use '@/styles/tokens' as *;
 
 .filterContainer {
   position: relative;
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: $space-2;
 }
 
-// 🆕 حقل البحث
+// ═══════════════════════════════════════
+// Search Input
+// ═══════════════════════════════════════
 .searchInput {
   width: 100%;
-  padding: 0.55rem 0.85rem;
-  font-size: 0.85rem;
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(0, 0, 0, 0.02);
-  color: #0f172a;
+  min-height: 40px;
+  padding: $space-2 $space-3;
+  font-size: $font-sm;
+  border-radius: $radius-md;
+  border: 1px solid var(--border-default);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
   outline: none;
   font-family: inherit;
-  transition: all 0.2s ease;
-
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.08);
-    color: #f8fafc;
-  }
+  transition: all $transition-base;
 
   &::placeholder {
-    color: #94a3b8;
+    color: var(--text-faint);
   }
 
   &:focus {
-    border-color: #059669;
-    background: #fff;
-    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
-
-    :global(body.dark) & {
-      background: #1e293b;
-      border-color: #34d399;
-      box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
-    }
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-bg);
   }
 }
 
+// ═══════════════════════════════════════
+// Chips Scroll Area
+// ═══════════════════════════════════════
 .scrollArea {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: $space-2;
   overflow-x: auto;
-  padding: 0.15rem 0.1rem 0.5rem;
+  padding: $space-1 $space-1 $space-2;
   scrollbar-width: none;
   -ms-overflow-style: none;
 
@@ -58,57 +51,61 @@
   }
 }
 
+// ═══════════════════════════════════════
+// Chip
+// ═══════════════════════════════════════
 .chip {
   flex-shrink: 0;
-  padding: 0.45rem 1rem;
-  font-size: 0.85rem;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(0, 0, 0, 0.03);
-  color: #475569;
+  min-height: 36px;
+  padding: $space-2 $space-4;
+  font-size: $font-sm;
+  font-weight: $weight-semibold;
+  border-radius: $radius-full;
+  border: 1px solid var(--border-default);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.2s ease;
+  transition: all $transition-base;
   touch-action: manipulation;
-
-  // 🆕 truncation للـ text الطويل
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
 
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.08);
-    color: #cbd5e1;
-  }
-
-  &:hover {
-    border-color: rgba(5, 150, 105, 0.4);
-    color: #059669;
+  &:hover:not(.active) {
+    border-color: var(--brand-border);
+    color: var(--brand);
+    background: var(--bg-hover);
   }
 
   &.active {
-    background: #059669;
-    color: #fff;
-    border-color: #059669;
-    box-shadow: 0 2px 10px rgba(5, 150, 105, 0.25);
+    background: var(--brand);
+    color: var(--text-on-brand);
+    border-color: var(--brand);
+    box-shadow: $shadow-brand;
 
-    :global(body.dark) & {
-      background: #059669;
-      color: #fff;
+    body.dark & {
+      box-shadow: none;
     }
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
   }
 }
 
-// 🆕 رسالة "لا توجد نتائج"
+// ═══════════════════════════════════════
+// No Results
+// ═══════════════════════════════════════
 .noResults {
-  padding: 0.45rem 0.85rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #94a3b8;
+  padding: $space-2 $space-3;
+  font-size: $font-sm;
+  font-weight: $weight-semibold;
+  color: var(--text-faint);
   white-space: nowrap;
-
-  :global(body.dark) & {
-    color: #64748b;
-  }
 }

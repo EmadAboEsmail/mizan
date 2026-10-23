@@ -1,9 +1,12 @@
-@use 'variables' as *;
+@use './typography' as t;
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html,
@@ -12,23 +15,24 @@ body,
   direction: rtl;
   text-align: right;
   min-height: 100vh;
+  min-height: 100dvh;  // ✅ للـ mobile (dynamic viewport)
   width: 100%;
 }
 
 body {
-  font-family: $font-main;
-  background-color: $bg-page-light;
-  color: $text-display-light;
-  transition: background-color $transition, color $transition;
-
-  /* إعدادات ملء الشاشة (الأندرويد) */
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-body.dark {
-  background-color: $bg-page-dark;
-  color: $text-display-dark;
+  margin: 0;
+  font-family: t.$font-arabic;
+  font-size: 1rem;
+  line-height: 1.6;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
 }
 
 a {
@@ -38,4 +42,60 @@ a {
 
 button {
   font-family: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: inherit;
+}
+
+// ─── Form elements inherit font
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: 1rem;  // ✅ 16px يمنع zoom على iOS
+}
+
+// ─── Better scrollbars
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+
+  &:hover {
+    background: var(--text-faint);
+  }
+}
+
+// ─── Selection
+::selection {
+  background: var(--brand-bg-strong);
+  color: var(--text-primary);
+}
+
+// ─── Focus visible
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+// ─── Reduced motion
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

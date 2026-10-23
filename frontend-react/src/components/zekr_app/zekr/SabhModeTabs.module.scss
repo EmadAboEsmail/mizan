@@ -1,20 +1,15 @@
-@use '@/styles/variables' as *;
+@use '@/styles/tokens' as *;
 
 .tabsWrapper {
   width: 100%;
   max-width: 320px;
   margin: 0 auto;
   display: flex;
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--bg-subtle);
   padding: 4px;
-  border-radius: 14px;
+  border-radius: $radius-lg;
   gap: 4px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.06);
-  }
+  border: 1px solid var(--border-subtle);
 }
 
 .tab {
@@ -22,51 +17,46 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
-  padding: 0.55rem 0.75rem;
-  font-size: 0.88rem;
-  font-weight: 700;
+  gap: $space-2;
+  min-height: 40px;
+  padding: $space-2 $space-3;
+  font-size: $font-sm;
+  font-weight: $weight-bold;
   border: none;
   background: transparent;
-  color: #64748b;
-  border-radius: 10px;
+  color: var(--text-muted);
+  border-radius: $radius-md;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all $transition-base;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 
-  :global(body.dark) & {
-    color: #94a3b8;
-  }
-
   &:hover:not(.active) {
-    color: #1e293b;
-
-    :global(body.dark) & {
-      color: #f1f5f9;
-    }
+    color: var(--text-primary);
+    background: var(--bg-hover);
   }
 
-  // التاب المختار
   &.active {
-    background: #ffffff;
-    color: #059669; // أخضر زمردي
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    background: var(--bg-elevated);
+    color: var(--brand);
+    box-shadow: $shadow-sm;
 
-    :global(body.dark) & {
-      background: #1e293b;
-      color: #34d399;
-      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.35);
+    body.dark & {
+      box-shadow: $shadow-dark-sm;
     }
 
     .icon {
-      color: #059669;
-      :global(body.dark) & { color: #34d399; }
+      color: var(--brand);
     }
   }
 
   &:active {
     transform: scale(0.96);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
   }
 }
 
@@ -74,5 +64,5 @@
   display: flex;
   align-items: center;
   color: inherit;
-  transition: color 0.2s ease;
+  transition: color $transition-fast;
 }

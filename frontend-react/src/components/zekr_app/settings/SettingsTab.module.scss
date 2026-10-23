@@ -1,84 +1,85 @@
-@use '@/styles/variables' as *;
+@use '@/styles/tokens' as *;
 
 .settingsContainer {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: $space-5;
   width: 100%;
-  max-width: 680px;
+  max-width: $container-max;
   margin: 0 auto;
-  padding: 0.5rem 0 2rem;
+  padding: $space-2 0 $space-8;
   animation: fadeIn 0.3s ease-out;
 }
 
+// ═══════════════════════════════════════
+// Page Header
+// ═══════════════════════════════════════
 .pageHeader {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.5rem 0.25rem;
+  gap: $space-3;
+  padding: $space-2 $space-1;
 }
 
 .headerIconWrapper {
   width: 48px;
   height: 48px;
-  border-radius: 14px;
-  background: rgba(5, 150, 105, 0.1);
-  color: #059669;
+  border-radius: $radius-lg;
+  background: var(--brand-bg);
+  color: var(--brand);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-
-  :global(body.dark) & {
-    background: rgba(52, 211, 153, 0.12);
-    color: #34d399;
-  }
 }
 
 .headerTextGroup {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 4px;
+  min-width: 0;
 }
 
 .pageTitle {
   margin: 0;
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: #0f172a;
-  letter-spacing: -0.3px;
+  font-size: $font-2xl;
+  font-weight: $weight-extrabold;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+  line-height: 1.2;
 
-  :global(body.dark) & {
-    color: #f8fafc;
+  @media (min-width: $bp-md) {
+    font-size: $font-3xl;
   }
 }
 
 .pageSubtitle {
   margin: 0;
-  font-size: 0.85rem;
-  color: #64748b;
-  line-height: 1.4;
-
-  :global(body.dark) & {
-    color: #94a3b8;
-  }
+  font-size: $font-sm;
+  color: var(--text-muted);
+  line-height: $leading-relaxed;
 }
 
+// ═══════════════════════════════════════
+// Sections List
+// ═══════════════════════════════════════
 .sectionsList {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: $space-4;
   width: 100%;
 }
 
+// ═══════════════════════════════════════
+// Animation
+// ═══════════════════════════════════════
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
-

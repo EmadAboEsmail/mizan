@@ -1,171 +1,175 @@
-@use '@/styles/variables' as *;
+@use '@/styles/tokens' as *;
 
+// ═══════════════════════════════════════
+// Card
+// ═══════════════════════════════════════
 .aboutCard {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 18px;
-  padding: 1.25rem;
-
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.02);
-    border-color: rgba(255, 255, 255, 0.06);
-  }
+  gap: $space-5;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: $radius-lg;
+  padding: $space-5;
 }
 
-// الرأس
+// ═══════════════════════════════════════
+// Header
+// ═══════════════════════════════════════
 .header {
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
+  gap: $space-4;
 }
 
 .logoBadge {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(5, 150, 105, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
-  border: 1px solid rgba(5, 150, 105, 0.2);
+  width: 56px;
+  height: 56px;
+  border-radius: $radius-lg;
+  background: linear-gradient(
+    135deg,
+    var(--brand-bg) 0%,
+    rgba(16, 185, 129, 0.05) 100%
+  );
+  border: 1px solid var(--brand-border);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.7rem;
+  font-size: 1.8rem;
   flex-shrink: 0;
-
-  :global(body.dark) & {
-    background: linear-gradient(135deg, rgba(52, 211, 153, 0.2) 0%, rgba(5, 150, 105, 0.05) 100%);
-    border-color: rgba(52, 211, 153, 0.3);
-  }
 }
 
 .appMeta {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: $space-1;
+  min-width: 0;
 }
 
 .titleRow {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: $space-2;
+  flex-wrap: wrap;
 }
 
 .appName {
   margin: 0;
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: #0f172a;
-
-  :global(body.dark) & {
-    color: #f8fafc;
-  }
+  font-size: $font-xl;
+  font-weight: $weight-extrabold;
+  color: var(--text-primary);
+  line-height: 1.2;
 }
 
 .versionBadge {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #059669;
-  background: rgba(5, 150, 105, 0.1);
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-
-  :global(body.dark) & {
-    color: #34d399;
-    background: rgba(52, 211, 153, 0.12);
-  }
+  font-size: 0.7rem;
+  font-weight: $weight-bold;
+  color: var(--brand);
+  background: var(--brand-bg);
+  padding: 2px 8px;
+  border-radius: $radius-full;
+  line-height: 1.3;
 }
 
 .appDesc {
   margin: 0;
-  font-size: 0.85rem;
-  line-height: 1.5;
-  color: #64748b;
-
-  :global(body.dark) & {
-    color: #94a3b8;
-  }
+  font-size: $font-sm;
+  line-height: $leading-relaxed;
+  color: var(--text-muted);
 }
 
-// مميزات التطبيق
+// ═══════════════════════════════════════
+// Features
+// ═══════════════════════════════════════
 .features {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: $space-2;
 }
 
 .featureItem {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #475569;
-  background: rgba(0, 0, 0, 0.03);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
+  gap: 6px;
+  font-size: $font-xs;
+  font-weight: $weight-semibold;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  padding: 6px 12px;
+  border-radius: $radius-full;
+  line-height: 1.3;
 
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.06);
-    color: #cbd5e1;
+  body.dark & {
+    background: var(--bg-base);
   }
 }
 
 .featureIcon {
-  font-size: 0.85rem;
+  font-size: $font-sm;
+  line-height: 1;
 }
 
-// زر المشاركة
+// ═══════════════════════════════════════
+// Share Button
+// ═══════════════════════════════════════
 .actions {
   display: flex;
 }
 
 .shareBtn {
   width: 100%;
+  min-height: $touch-target;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: #059669;
-  color: #fff;
+  gap: $space-2;
+  padding: $space-3 $space-4;
+  background: var(--brand);
+  color: var(--text-on-brand);
   border: none;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 700;
+  border-radius: $radius-md;
+  font-size: $font-sm;
+  font-weight: $weight-bold;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all $transition-base;
   touch-action: manipulation;
+  box-shadow: $shadow-brand;
+
+  body.dark & {
+    box-shadow: none;
+  }
 
   &:hover {
-    background: #047857;
-    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);
+    background: var(--brand-dark);
+    box-shadow: $shadow-brand-hover;
   }
 
   &:active {
     transform: scale(0.98);
   }
+
+  &:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
 }
 
 .shareIcon {
-  font-size: 1.1rem;
+  font-size: $font-base;
+  line-height: 1;
 }
 
-// الخاتمة
+// ═══════════════════════════════════════
+// Footer Note
+// ═══════════════════════════════════════
 .footerNote {
   text-align: center;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #94a3b8;
-  border-top: 1px dashed rgba(0, 0, 0, 0.08);
-  padding-top: 0.9rem;
-  margin-top: 0.2rem;
-
-  :global(body.dark) & {
-    border-color: rgba(255, 255, 255, 0.08);
-    color: #64748b;
-  }
+  font-size: $font-xs;
+  font-weight: $weight-semibold;
+  color: var(--text-faint);
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: $space-3;
+  margin-top: $space-1;
+  line-height: 1.5;
 }

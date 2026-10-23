@@ -1,83 +1,81 @@
+@use '@/styles/tokens' as *;
+
+// ═══════════════════════════════════════
+// Sticky Nav
+// ═══════════════════════════════════════
 .nav {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: $z-sticky;
   display: flex;
-  gap: 0.4rem;
-  padding: 0.75rem 0.5rem;
-  margin: 0 -0.5rem 0.5rem;
-  background: rgba(248, 250, 252, 0.92);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  gap: $space-1;
+  padding: $space-3 $space-2;
+  margin: 0 (-$space-2) $space-2;
+  background: color-mix(in srgb, var(--bg-base) 92%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   overflow-x: auto;
   scrollbar-width: none;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid var(--border-subtle);
 
   &::-webkit-scrollbar {
     display: none;
   }
 
-  :global(body.dark) & {
-    background: rgba(9, 13, 22, 0.92);
-    border-bottom-color: rgba(255, 255, 255, 0.05);
+  @supports not (backdrop-filter: blur(12px)) {
+    background: var(--bg-base);
   }
 }
 
+// ═══════════════════════════════════════
+// Chip
+// ═══════════════════════════════════════
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.45rem 0.85rem;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  background: rgba(0, 0, 0, 0.02);
-  color: #64748b;
-  font-size: 0.82rem;
-  font-weight: 600;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: $radius-full;
+  border: 1px solid var(--border-default);
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  font-size: $font-xs;
+  font-weight: $weight-semibold;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  transition: all $transition-base;
   touch-action: manipulation;
 
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.06);
-    color: #94a3b8;
-  }
-
   &:hover {
-    border-color: rgba(5, 150, 105, 0.3);
-    color: #059669;
-
-    :global(body.dark) & {
-      color: #34d399;
-    }
+    border-color: var(--brand-border);
+    color: var(--brand);
+    background: var(--bg-hover);
   }
 
   &.active {
-    background: rgba(5, 150, 105, 0.1);
-    border-color: rgba(5, 150, 105, 0.3);
-    color: #059669;
-
-    :global(body.dark) & {
-      background: rgba(52, 211, 153, 0.12);
-      border-color: rgba(52, 211, 153, 0.3);
-      color: #34d399;
-    }
+    background: var(--brand-bg);
+    border-color: var(--brand);
+    color: var(--brand);
+    font-weight: $weight-bold;
   }
 
   &:active {
-    transform: scale(0.97);
+    transform: scale(0.96);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
   }
 }
 
 .chipIcon {
-  font-size: 0.9rem;
+  font-size: $font-sm;
   line-height: 1;
 }
 
 .chipLabel {
   line-height: 1;
 }
-

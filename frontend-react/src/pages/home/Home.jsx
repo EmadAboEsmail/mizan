@@ -44,8 +44,9 @@ function Home() {
           <span>منصة التطبيقات والأدوات</span>
         </div>
 
-        <h1 className={styles.title}>مساحتي الرقمية</h1>
-        <p className={styles.subtitle}>
+        <h1 className={styles.title} style={{ fontFamily: 'Rubik, sans-serif' }}>
+          مساحتي الرقمية
+        </h1>        <p className={styles.subtitle}>
           مجموعة من الأدوات التفاعلية والتطبيقات المفيدة المصنوعة بشغف وتجربة مستخدم
           مدروسة.
         </p>

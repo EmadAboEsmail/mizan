@@ -1,68 +1,108 @@
-@use '@/styles/variables' as *;
+@use '@/styles/tokens' as *;
 
 .overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: var(--bg-overlay);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
-  align-items: center;
+  align-items: flex-end;  // ✅ الموبايل: من تحت
   justify-content: center;
-  z-index: 1000;
-  padding: $padding;
-  animation: fadeIn 0.2s ease;
+  z-index: $z-modal;
+  padding: 0;
+  animation: overlayIn 0.2s ease-out;
 
-  // ✅ منع تمرير الصفحة خلف المودال (احتياطي بجانب الـ hook)
-  // overscroll-behavior: contain;
+  @media (min-width: $bp-md) {
+    align-items: center;   // ✅ الديسكتوب: من النص
+    padding: $space-4;
+  }
 }
 
 .modal {
-  background-color: $bg-container-light;
-  border: 1px solid $border-light;
-  border-radius: $border-radius;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  padding: $padding;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: $radius-2xl $radius-2xl 0 0;
+  box-shadow: $shadow-xl;
+  padding: $space-5;
+  padding-bottom: max($space-5, env(safe-area-inset-bottom));
   width: 100%;
-  max-width: 400px;
-  animation: scaleIn 0.2s ease;
+  max-width: 480px;
   max-height: 90vh;
+  max-height: 90dvh;
   overflow-y: auto;
+  position: relative;
+  animation: sheetUp 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
 
-  :global(body.dark) & {
-    background-color: $bg-container-dark;
-    border-color: $border-dark;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  // Drag handle (visual indicator)
+  &::before {
+    content: '';
+    position: absolute;
+    top: $space-2;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 4px;
+    background: var(--border-strong);
+    border-radius: $radius-full;
+  }
+
+  @media (min-width: $bp-md) {
+    border-radius: $radius-2xl;
+    padding: $space-6;
+    max-height: 85vh;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  body.dark & {
+    box-shadow: $shadow-dark-xl;
   }
 }
 
 .title {
-  font-size: 1.2rem;
-  margin-bottom: 16px;
+  font-size: $font-xl;
+  font-weight: $weight-bold;
+  color: var(--text-primary);
+  margin-bottom: $space-5;
   text-align: center;
-  color: $text-light;
-
-  :global(body.dark) & {
-    color: $text-dark;
-  }
+  padding-top: $space-2;
 }
 
 .body {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $space-4;
 }
 
-@keyframes fadeIn {
+// ─── Animations ───
+@keyframes overlayIn {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 
-@keyframes scaleIn {
+@keyframes sheetUp {
   from {
-    transform: scale(0.9);
     opacity: 0;
+    transform: translateY(20px) scale(0.98);
   }
   to {
-    transform: scale(1);
     opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (min-width: $bp-md) {
+  @keyframes sheetUp {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 }

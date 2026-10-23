@@ -1,37 +1,66 @@
-@use '@/styles/variables' as *;
+@use '@/styles/tokens' as *;
 
+// ═══════════════════════════════════════
+// Card
+// ═══════════════════════════════════════
 .card {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  padding: 1rem 1.15rem;
-  border-radius: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  background: rgba(0, 0, 0, 0.02);
-  transition: all 0.2s ease;
+  gap: $space-2;
+  padding: $space-4;
+  border-radius: $radius-lg;
+  border: 1px solid var(--border-default);
+  background: var(--bg-elevated);
+  transition: all $transition-base;
+  box-shadow: $shadow-sm;
 
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.07);
+  body.dark & {
+    box-shadow: $shadow-dark-sm;
   }
 
+  // ─── Positive Change ───
   &.up {
-    background: rgba(34, 197, 94, 0.06);
-    border-color: rgba(34, 197, 94, 0.25);
+    background: linear-gradient(
+      135deg,
+      var(--success-bg) 0%,
+      transparent 80%
+    );
+    border-color: var(--success-border);
 
-    :global(body.dark) & {
-      background: rgba(74, 222, 128, 0.08);
-      border-color: rgba(74, 222, 128, 0.25);
+    .label {
+      color: var(--success);
+    }
+
+    .value {
+      color: var(--success);
+    }
+
+    .arrow {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--success);
     }
   }
 
+  // ─── Negative Change ───
   &.down {
-    background: rgba(239, 68, 68, 0.05);
-    border-color: rgba(239, 68, 68, 0.2);
+    background: linear-gradient(
+      135deg,
+      var(--danger-bg) 0%,
+      transparent 80%
+    );
+    border-color: var(--danger-border);
 
-    :global(body.dark) & {
-      background: rgba(248, 113, 113, 0.08);
-      border-color: rgba(248, 113, 113, 0.25);
+    .label {
+      color: var(--danger);
+    }
+
+    .value {
+      color: var(--danger);
+    }
+
+    .arrow {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
     }
   }
 
@@ -45,101 +74,72 @@
   }
 }
 
+// ═══════════════════════════════════════
+// Label
+// ═══════════════════════════════════════
 .label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #64748b;
-
-  :global(body.dark) & {
-    color: #94a3b8;
-  }
-
-  .up & {
-    color: #16a34a;
-    :global(body.dark) & { color: #4ade80; }
-  }
-
-  .down & {
-    color: #dc2626;
-    :global(body.dark) & { color: #f87171; }
-  }
+  font-size: $font-xs;
+  font-weight: $weight-bold;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.3;
 }
 
+// ═══════════════════════════════════════
+// Body (Arrow + Value)
+// ═══════════════════════════════════════
 .body {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: $space-2;
 }
 
 .arrow {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-
-  .up & {
-    background: rgba(34, 197, 94, 0.15);
-    color: #16a34a;
-    :global(body.dark) & {
-      background: rgba(74, 222, 128, 0.15);
-      color: #4ade80;
-    }
-  }
-
-  .down & {
-    background: rgba(239, 68, 68, 0.15);
-    color: #dc2626;
-    :global(body.dark) & {
-      background: rgba(248, 113, 113, 0.15);
-      color: #f87171;
-    }
-  }
+  flex-shrink: 0;
 }
 
 .value {
-  font-size: 1.6rem;
-  font-weight: 900;
-  letter-spacing: -0.5px;
+  font-size: $font-2xl;
+  font-weight: $weight-extrabold;
+  letter-spacing: -0.03em;
   line-height: 1;
-
-  .up & { color: #16a34a; :global(body.dark) & { color: #4ade80; } }
-  .down & { color: #dc2626; :global(body.dark) & { color: #f87171; } }
-  .flat & {
-    color: #64748b;
-    :global(body.dark) & { color: #94a3b8; }
-  }
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
 }
 
+// ═══════════════════════════════════════
+// Footer
+// ═══════════════════════════════════════
 .footer {
-  font-size: 0.72rem;
-  color: #94a3b8;
-  margin-top: 0.15rem;
-
-  :global(body.dark) & {
-    color: #64748b;
-  }
+  font-size: $font-xs;
+  color: var(--text-faint);
+  margin-top: $space-1;
+  line-height: 1.4;
 
   strong {
-    font-weight: 700;
-    color: #64748b;
-    :global(body.dark) & { color: #94a3b8; }
+    font-weight: $weight-bold;
+    color: var(--text-muted);
   }
 }
 
+// ═══════════════════════════════════════
+// Skeleton
+// ═══════════════════════════════════════
 .skeletonLine {
   height: 60px;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.04);
-  animation: pulse 1.4s infinite ease-in-out;
-
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.04);
-  }
+  border-radius: $radius-md;
+  background: var(--bg-subtle);
+  animation: pulse 1.4s ease-in-out infinite;
 }
 
 @keyframes pulse {
   0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
+  50%      { opacity: 1; }
 }

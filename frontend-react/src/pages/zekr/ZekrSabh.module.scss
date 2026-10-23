@@ -1,11 +1,14 @@
-@use '@/styles/variables' as *;
+@use '@/styles/tokens' as *;
 
+// ═══════════════════════════════════════
+// Views
+// ═══════════════════════════════════════
 .sabhView {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: $space-5;
 }
 
 .normalModeContainer {
@@ -13,95 +16,122 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: $space-5;
 }
 
-// زر وضع التركيز
+// ═══════════════════════════════════════
+// Focus Button
+// ═══════════════════════════════════════
 .focusBtn {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.6rem 1.2rem;
-  border-radius: 999px;
-  background: rgba(5, 150, 105, 0.08);
-  border: 1px solid rgba(5, 150, 105, 0.25);
-  color: #059669;
-  font-size: 0.88rem;
-  font-weight: 700;
+  gap: $space-2;
+  min-height: 44px;
+  padding: $space-2 $space-5;
+  border-radius: $radius-full;
+  background: var(--brand-bg);
+  border: 1px solid var(--brand-border);
+  color: var(--brand);
+  font-size: $font-sm;
+  font-weight: $weight-bold;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all $transition-base;
   touch-action: manipulation;
 
-  :global(body.dark) & {
-    background: rgba(52, 211, 153, 0.1);
-    border-color: rgba(52, 211, 153, 0.3);
-    color: #34d399;
-  }
-
   &:hover {
-    background: #059669;
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);
+    background: var(--brand);
+    color: var(--text-on-brand);
+    box-shadow: $shadow-brand;
+    transform: translateY(-1px);
 
-    :global(body.dark) & {
-      background: #34d399;
-      color: #0f172a;
+    body.dark & {
+      box-shadow: none;
     }
   }
 
   &:active {
     transform: scale(0.96);
   }
+
+  &:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
 }
 
-// الحالة الفارغة
+// ═══════════════════════════════════════
+// Keyboard Hint
+// ═══════════════════════════════════════
+.kbdHint {
+  display: inline-block;
+  margin-inline-start: $space-2;
+  padding: 2px 6px;
+  font-size: 0.7rem;
+  font-weight: $weight-bold;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  min-width: 20px;
+  text-align: center;
+
+  body.dark & {
+    background: var(--bg-subtle);
+  }
+}
+
+// ═══════════════════════════════════════
+// Empty State
+// ═══════════════════════════════════════
 .emptyContainer {
   text-align: center;
-  padding: 3rem 1.5rem;
+  padding: $space-10 $space-4;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: $space-4;
+  max-width: $container-narrow;
+  margin: 0 auto;
 }
 
 .empty {
-  font-size: 1rem;
-  color: #94a3b8;
+  font-size: $font-base;
+  color: var(--text-muted);
   margin: 0;
+  line-height: $leading-relaxed;
 }
 
 .addFirstBtn {
-  padding: 0.65rem 1.25rem;
-  background: #059669;
-  color: #fff;
+  min-height: $touch-target;
+  padding: $space-3 $space-6;
+  background: var(--brand);
+  color: var(--text-on-brand);
   border: none;
-  border-radius: 10px;
-  font-size: 0.88rem;
-  font-weight: 700;
+  border-radius: $radius-md;
+  font-size: $font-sm;
+  font-weight: $weight-bold;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all $transition-base;
+  touch-action: manipulation;
+  box-shadow: $shadow-brand;
+
+  body.dark & {
+    box-shadow: none;
+  }
 
   &:hover {
-    background: #047857;
+    background: var(--brand-dark);
+    box-shadow: $shadow-brand-hover;
   }
-}
-// kbd hint صغير على زر focus
-.kbdHint {
-  display: inline-block;
-  margin-inline-start: 0.5rem;
-  padding: 0.1rem 0.4rem;
-  font-size: 0.68rem;
-  font-weight: 700;
-  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
-  background: rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 4px;
-  color: #475569;
-  line-height: 1.2;
 
-  :global(body.dark) & {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.12);
-    color: #cbd5e1;
+  &:active {
+    transform: scale(0.97);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
   }
 }

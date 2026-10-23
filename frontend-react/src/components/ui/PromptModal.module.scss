@@ -1,91 +1,95 @@
-@use '@/styles/variables' as *;
+@use '@/styles/tokens' as *;
 
 .input {
   width: 100%;
-  padding: 12px;
-  font-size: 1rem;
-  font-family: $font-main;
-  background-color: $bg-display-light;
-  border: 1px solid $border-light;
-  border-radius: $border-radius;
-  color: $text-display-light;
+  min-height: $touch-target;
+  padding: $space-3 $space-4;
+  font-size: $font-lg;
+  font-weight: $weight-semibold;
+  background: var(--bg-subtle);
+  border: 1.5px solid var(--border-default);
+  border-radius: $radius-md;
+  color: var(--text-primary);
   text-align: center;
   outline: none;
-  transition: border-color $transition;
+  transition: all $transition-base;
+  font-family: inherit;
 
-  :global(body.dark) & {
-    background-color: $bg-display-dark;
-    border-color: $border-dark;
-    color: $text-display-dark;
+  &::placeholder {
+    color: var(--text-faint);
+    font-weight: $weight-regular;
   }
 
   &:focus {
-    border-color: $text-light;
-
-    :global(body.dark) & {
-      border-color: $text-dark;
-    }
+    border-color: var(--brand);
+    background: var(--bg-elevated);
+    box-shadow: 0 0 0 3px var(--brand-bg);
   }
 }
 
 .error {
-  font-size: 0.9rem;
-  color: #d32f2f;
+  font-size: $font-sm;
+  font-weight: $weight-semibold;
+  color: var(--danger);
   text-align: center;
+  padding: $space-2 $space-3;
+  background: var(--danger-bg);
+  border-radius: $radius-sm;
+  margin-top: $space-2;
 }
 
 .buttons {
   display: flex;
-  gap: 8px;
-  margin-top: 8px;
+  flex-direction: column-reverse;
+  gap: $space-2;
+  margin-top: $space-4;
+
+  @media (min-width: $bp-sm) {
+    flex-direction: row;
+  }
 }
 
 .cancel,
 .confirm {
   flex: 1;
-  padding: 10px;
-  font-size: 1rem;
-  font-family: $font-main;
-  border-radius: $border-radius;
+  min-height: $touch-target;
+  padding: $space-3 $space-4;
+  font-size: $font-base;
+  font-weight: $weight-semibold;
+  border-radius: $radius-md;
   cursor: pointer;
-  transition: transform $transition, background-color $transition;
+  transition: all $transition-base;
+  touch-action: manipulation;
 
-  &:active {
-    transform: scale(0.95);
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
 .cancel {
-  background-color: transparent;
-  border: 1px solid $border-light;
-  color: $text-display-light;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
 
-  :global(body.dark) & {
-    border-color: $border-dark;
-    color: $text-display-dark;
-  }
-
-  &:hover {
-    background-color: $bg-btn-hover-light;
-
-    :global(body.dark) & {
-      background-color: $bg-btn-hover-dark;
-    }
+  &:hover:not(:disabled) {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
   }
 }
 
 .confirm {
-  background-color: $text-light;
-  border: 1px solid $text-light;
-  color: white;
+  background: var(--brand);
+  border: 1px solid var(--brand);
+  color: var(--text-on-brand);
 
-  :global(body.dark) & {
-    background-color: $text-dark;
-    border-color: $text-dark;
-    color: #111;
-  }
-
-  &:hover {
-    opacity: 0.9;
+  &:hover:not(:disabled) {
+    background: var(--brand-dark);
+    border-color: var(--brand-dark);
   }
 }

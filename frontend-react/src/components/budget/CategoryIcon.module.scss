@@ -1,12 +1,14 @@
-@use '@/styles/variables' as *;
+@use '@/styles/tokens' as *;
 
 .wrapper {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: $radius-md;
   border: 1px solid transparent;
   flex-shrink: 0;
   line-height: 1;
   user-select: none;
+  transition: transform $transition-base;
+  font-weight: $weight-semibold;
 }

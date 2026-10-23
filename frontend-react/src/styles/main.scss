@@ -1,2 +1,13 @@
-@use './css-vars';
-@use 'global';
+// Foundation
+@use './colors';
+@use './typography';
+@use './spacing';
+@use './shadows';
+
+// Legacy (مؤقتاً)
+
+// Mixins
+@use './mixins';
+
+// Global
+@use './global';

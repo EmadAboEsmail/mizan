@@ -1,69 +1,97 @@
-@use '@/styles/variables' as *;
+@use '@/styles/tokens' as *;
 
 .stats {
-  display: inline-flex;
-  align-items: center;
-  flex-wrap: wrap;
+  display: flex;
+  align-items: stretch;
   justify-content: center;
-  gap: 1.25rem;
-  padding: 0.55rem 1.25rem;
-  margin-bottom: 1rem;
-  background: rgba(5, 150, 105, 0.06);
-  border: 1px solid rgba(5, 150, 105, 0.15);
-  border-radius: 999px;
-  font-size: 0.85rem;
+  flex-wrap: wrap;
+  gap: $space-1;
+  padding: $space-2;
+  margin: 0 auto $space-4;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: $radius-full;
+  box-shadow: $shadow-sm;
   animation: fadeIn 0.4s ease-out 0.2s both;
+  width: fit-content;
+  max-width: 100%;
 
-  :global(body.dark) & {
-    background: rgba(52, 211, 153, 0.08);
-    border-color: rgba(52, 211, 153, 0.2);
+  body.dark & {
+    box-shadow: $shadow-dark-sm;
   }
 
-  @media (max-width: 480px) {
-    gap: 0.85rem;
-    padding: 0.5rem 0.9rem;
-    font-size: 0.8rem;
+  @media (max-width: $bp-sm) {
+    gap: 0;
+    padding: $space-1;
   }
 }
 
+// ═══════════════════════════════════════
+// Individual Stat
+// ═══════════════════════════════════════
 .stat {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  color: #64748b;
+  gap: 6px;
+  padding: $space-2 $space-3;
+  border-radius: $radius-full;
+  transition: background $transition-fast;
+  position: relative;
 
-  :global(body.dark) & {
-    color: #94a3b8;
+  // Divider between stats
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    inset-inline-end: 0;
+    top: 30%;
+    bottom: 30%;
+    width: 1px;
+    background: var(--border-default);
+  }
+
+  @media (max-width: $bp-sm) {
+    padding: $space-2 $space-2;
+    gap: 4px;
   }
 }
 
 .icon {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .value {
-  font-weight: 800;
-  color: #0f172a;
+  font-weight: $weight-extrabold;
+  color: var(--text-primary);
+  font-size: $font-sm;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
 
-  :global(body.dark) & {
-    color: #f8fafc;
+  @media (max-width: $bp-sm) {
+    font-size: $font-xs;
   }
 }
 
 .label {
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: $font-xs;
+  font-weight: $weight-medium;
+  color: var(--text-muted);
+  line-height: 1;
+  white-space: nowrap;
 
-  @media (max-width: 480px) {
-    font-size: 0.72rem;
+  @media (max-width: $bp-sm) {
+    font-size: 0.7rem;
   }
 }
 
+// ═══════════════════════════════════════
+// Animation
+// ═══════════════════════════════════════
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(-6px);
   }
   to {
     opacity: 1;
