@@ -11,6 +11,22 @@ function todayISO() {
   return `${y}-${m}-${day}`
 }
 
+function yesterdayISO() {
+  const d = new Date()
+  d.setDate(d.getDate() - 1)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+function formatDateLabel(iso) {
+  if (iso === todayISO()) return 'اليوم'
+  if (iso === yesterdayISO()) return 'أمس'
+  const [y, m, d] = iso.split('-')
+  return `${d}/${m}`
+}
+
 function TransactionFormModal({
   isOpen,
   onClose,
@@ -26,8 +42,9 @@ function TransactionFormModal({
   const [description, setDescription] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showExtras, setShowExtras] = useState(false)
+  const [showDatePicker, setShowDatePicker] = useState(false)
 
-  // إعادة تعبئة الحقول عند الفتح
   useEffect(() => {
     if (!isOpen) return
     if (initial) {
@@ -37,6 +54,7 @@ function TransactionFormModal({
       setDate(initial.date || todayISO())
       setDetails(initial.details || '')
       setDescription(initial.description || '')
+      setShowExtras(!!(initial.details || initial.description))
     } else {
       setType('expense')
       setAmount('')
@@ -44,15 +62,15 @@ function TransactionFormModal({
       setDate(todayISO())
       setDetails('')
       setDescription('')
+      setShowExtras(false)
     }
+    setShowDatePicker(false)
     setError('')
     setIsSubmitting(false)
   }, [isOpen, initial])
 
-  // التصنيفات المفلترة حسب النوع
   const filteredCategories = categories.filter((c) => c.type === type)
 
-  // لو النوع اتغير والتصنيف الحالي مش متوافق، نختار الأول
   useEffect(() => {
     if (!isOpen) return
     if (filteredCategories.length === 0) return
@@ -103,6 +121,9 @@ function TransactionFormModal({
     }
   }
 
+  const isToday = date === todayISO()
+  const isYesterday = date === yesterdayISO()
+
   return (
     <Modal
       isOpen={isOpen}
@@ -110,57 +131,67 @@ function TransactionFormModal({
       title={initial ? 'تعديل المعاملة' : 'إضافة معاملة'}
     >
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
-        {/* نوع المعاملة */}
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>النوع</label>
-          <div className={styles.typeToggle}>
-            <button
-              type="button"
-              className={`${styles.typeBtn} ${type === 'expense' ? styles.typeActiveExpense : ''
-                }`}
-              onClick={() => setType('expense')}
-            >
-              💸 مصروف
-            </button>
-            <button
-              type="button"
-              className={`${styles.typeBtn} ${type === 'income' ? styles.typeActiveIncome : ''
-                }`}
-              onClick={() => setType('income')}
-            >
-              💰 دخل
-            </button>
+        {/* ─── 1. Segmented Toggle ─── */}
+        <div
+          className={styles.segmented}
+          role="tablist"
+          aria-label="نوع المعاملة"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={type === 'expense'}
+            className={`${styles.segment} ${type === 'expense' ? styles.segmentExpense : ''
+              }`}
+            onClick={() => setType('expense')}
+          >
+            <span className={styles.segmentIcon}>💸</span>
+            <span>مصروف</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={type === 'income'}
+            className={`${styles.segment} ${type === 'income' ? styles.segmentIncome : ''
+              }`}
+            onClick={() => setType('income')}
+          >
+            <span className={styles.segmentIcon}>💰</span>
+            <span>دخل</span>
+          </button>
+        </div>
+
+        {/* ─── 2. Hero Amount ─── */}
+        <div className={styles.amountSection}>
+          <label htmlFor="txn-amount" className={styles.amountLabel}>
+            المبلغ
+          </label>
+          <div className={styles.amountWrapper}>
+            <input
+              id="txn-amount"
+              type="text"
+              inputMode="decimal"
+              className={styles.amountInput}
+              value={amount}
+              onChange={(e) => {
+                setAmount(e.target.value)
+                if (error) setError('')
+              }}
+              placeholder="0"
+              autoFocus
+            />
+            <span className={styles.amountCurrency}>ج.م</span>
           </div>
         </div>
 
-        {/* المبلغ */}
-        <div className={styles.fieldGroup}>
-          <label htmlFor="txn-amount" className={styles.label}>
-            المبلغ <span className={styles.required}>*</span>
-          </label>
-          <input
-            id="txn-amount"
-            type="text"
-            inputMode="decimal"
-            className={styles.input}
-            value={amount}
-            onChange={(e) => {
-              setAmount(e.target.value)
-              if (error) setError('')
-            }}
-            placeholder="0.00"
-            autoFocus
-          />
-        </div>
-
-        {/* التصنيف */}
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>
-            التصنيف <span className={styles.required}>*</span>
-          </label>
+        {/* ─── 3. Category ─── */}
+        <div className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <label className={styles.sectionLabel}>التصنيف</label>
+          </div>
           {filteredCategories.length === 0 ? (
             <div className={styles.emptyCategories}>
-              لا توجد تصنيفات لهذا النوع. أضف تصنيفاً من الإعدادات أولاً.
+              لا توجد تصنيفات لهذا النوع
             </div>
           ) : (
             <div className={styles.categoryGrid}>
@@ -177,8 +208,9 @@ function TransactionFormModal({
                       if (error) setError('')
                     }}
                   >
-                    <CategoryIcon category={cat} size={28} />
+                    <CategoryIcon category={cat} size={20} />
                     <span className={styles.catName}>{cat.name}</span>
+                    {isSelected && <span className={styles.catCheck}>✓</span>}
                   </button>
                 )
               })}
@@ -186,61 +218,102 @@ function TransactionFormModal({
           )}
         </div>
 
-        {/* التاريخ */}
-        <div className={styles.fieldGroup}>
-          <label htmlFor="txn-date" className={styles.label}>
-            التاريخ <span className={styles.required}>*</span>
-          </label>
-          <input
-            id="txn-date"
-            type="date"
-            className={styles.input}
-            value={date}
-            onChange={(e) => {
-              setDate(e.target.value)
-              if (error) setError('')
-            }}
-          />
-        </div>
-
-        {/* details */}
-        <div className={styles.fieldGroup}>
-          <div className={styles.labelRow}>
-            <label htmlFor="txn-details" className={styles.label}>
-              تفاصيل قصيرة
-            </label>
-            <span className={styles.optional}>اختياري</span>
+        {/* ─── 4. Date Quick Actions ─── */}
+        <div className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <label className={styles.sectionLabel}>التاريخ</label>
           </div>
-          <input
-            id="txn-details"
-            type="text"
-            className={styles.input}
-            value={details}
-            onChange={(e) => setDetails(e.target.value)}
-            placeholder="مثال: house, boys..."
-            maxLength={200}
-          />
-        </div>
-
-        {/* description */}
-        <div className={styles.fieldGroup}>
-          <div className={styles.labelRow}>
-            <label htmlFor="txn-desc" className={styles.label}>
-              وصف
-            </label>
-            <span className={styles.optional}>اختياري</span>
+          <div className={styles.dateQuickActions}>
+            <button
+              type="button"
+              className={`${styles.dateChip} ${isToday ? styles.dateChipActive : ''
+                }`}
+              onClick={() => setDate(todayISO())}
+            >
+              اليوم
+            </button>
+            <button
+              type="button"
+              className={`${styles.dateChip} ${isYesterday ? styles.dateChipActive : ''
+                }`}
+              onClick={() => setDate(yesterdayISO())}
+            >
+              أمس
+            </button>
+            <button
+              type="button"
+              className={`${styles.dateChip} ${!isToday && !isYesterday ? styles.dateChipActive : ''
+                }`}
+              onClick={() => setShowDatePicker(!showDatePicker)}
+            >
+              {!isToday && !isYesterday ? formatDateLabel(date) : '📅 تاريخ آخر'}
+            </button>
           </div>
-          <textarea
-            id="txn-desc"
-            className={styles.textarea}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="تفاصيل أكثر عن المعاملة..."
-            rows={2}
-            maxLength={500}
-          />
+          {showDatePicker && (
+            <input
+              type="date"
+              className={styles.dateInput}
+              value={date}
+              onChange={(e) => {
+                setDate(e.target.value)
+                setShowDatePicker(false)
+                if (error) setError('')
+              }}
+              autoFocus
+            />
+          )}
         </div>
 
+        {/* ─── 5. Extras (Collapsible) ─── */}
+        <div className={styles.extras}>
+          <button
+            type="button"
+            className={styles.extrasToggle}
+            onClick={() => setShowExtras(!showExtras)}
+            aria-expanded={showExtras}
+          >
+            <span className={styles.extrasChevron}>
+              {showExtras ? '▼' : '◀'}
+            </span>
+            <span>تفاصيل إضافية (اختياري)</span>
+          </button>
+
+          {showExtras && (
+            <div className={styles.extrasContent}>
+              <div className={styles.fieldGroup}>
+                <label htmlFor="txn-details" className={styles.fieldLabel}>
+                  تفاصيل قصيرة
+                </label>
+                <input
+                  id="txn-details"
+                  type="text"
+                  className={styles.input}
+                  value={details}
+                  onChange={(e) => setDetails(e.target.value)}
+                  placeholder="مثال: house, boys..."
+                  maxLength={200}
+                />
+              </div>
+
+              <div className={styles.fieldGroup}>
+                <label htmlFor="txn-desc" className={styles.fieldLabel}>
+                  وصف
+                </label>
+                <textarea
+                  id="txn-desc"
+                  className={styles.textarea}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="تفاصيل أكثر عن المعاملة..."
+                  rows={2}
+                  maxLength={500}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ─── Error ─── */}
         {error && (
           <div className={styles.error} role="alert">
             <span>⚠️</span>
@@ -248,7 +321,8 @@ function TransactionFormModal({
           </div>
         )}
 
-        <div className={styles.buttons}>
+        {/* ─── Sticky Footer ─── */}
+        <div className={styles.footer}>
           <button
             type="button"
             className={styles.cancel}
@@ -262,7 +336,11 @@ function TransactionFormModal({
             className={styles.confirm}
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'جاري الحفظ...' : initial ? 'حفظ التعديلات' : 'إضافة'}
+            {isSubmitting
+              ? 'جاري الحفظ...'
+              : initial
+                ? 'حفظ التعديلات'
+                : 'إضافة'}
           </button>
         </div>
       </form>

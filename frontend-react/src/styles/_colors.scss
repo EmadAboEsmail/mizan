@@ -42,7 +42,7 @@ $blue-500:  #3b82f6;
 // ═══════════════════════════════════════
 :root {
   // ─── Brand ───
-  --brand: #{$emerald-500};
+  --brand: #{$red-500};
   --brand-dark: #{$emerald-600};
   --brand-darker: #{$emerald-700};
   --brand-light: #{$emerald-400};
@@ -83,7 +83,21 @@ $blue-500:  #3b82f6;
   --text-disabled: #{$slate-300};
   --text-inverse: #ffffff;
   --text-on-brand: #ffffff;
+// ─── Semantic Dark (gradient ends) ───
+--success-dark: #16a34a;
+--warning-dark: #d97706;
 
+// ─── Streak (flame) ───
+--streak: #f97316;
+--streak-light: #fb923c;
+--streak-dark: #ea580c;
+--streak-bg: rgba(249, 115, 22, 0.08);
+--streak-border: rgba(249, 115, 22, 0.3);
+
+// ─── Gold (achievements/records) ───
+--gold-dark: #92400e;
+--gold-light: #fcd34d;
+--gold-bg: rgba(251, 191, 36, 0.2);
   // ─── Borders ───
   --border-subtle: #{$slate-100};
   --border-default: #{$slate-200};
@@ -140,7 +154,21 @@ body.dark {
   --text-disabled: #{$slate-600};
   --text-inverse: #{$slate-900};
   --text-on-brand: #{$slate-900};
+// ─── Semantic Dark (gradient ends — نفسها في dark) ───
+--success-dark: #22c55e;
+--warning-dark: #f59e0b;
 
+// ─── Streak (brighter in dark) ───
+--streak: #fb923c;
+--streak-light: #fdba74;
+--streak-dark: #f97316;
+--streak-bg: rgba(251, 146, 60, 0.12);
+--streak-border: rgba(251, 146, 60, 0.3);
+
+// ─── Gold (brighter in dark) ───
+--gold-dark: #fcd34d;
+--gold-light: #fde68a;
+--gold-bg: rgba(251, 191, 36, 0.15);
   // ─── Borders ───
   --border-subtle: rgba(255, 255, 255, 0.04);
   --border-default: rgba(255, 255, 255, 0.08);

@@ -9,8 +9,11 @@ import SabhModeTabs from '@/components/zekr_app/zekr/SabhModeTabs.jsx'
 import GroupModeView from '@/components/zekr_app/zekr/GroupModeView.jsx'
 import PromptModal from '@/components/ui/PromptModal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
-import FocusMode from '@/components/zekr_app/zekr/FocusMode.jsx'
+import FocusMode, {
+  attemptFullscreen,
+} from '@/components/zekr_app/zekr/FocusMode.jsx'
 import styles from './ZekrSabh.module.scss'
+
 function ZekrSabh() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -109,7 +112,6 @@ function ZekrSabh() {
         next.set('zekr', newId)
         return next
       })
-      // push (not replace) → back button cycles through selections
     },
     [setCurrentZekrId, setSearchParams]
   )
@@ -130,7 +132,7 @@ function ZekrSabh() {
           }
           return next
         },
-        { replace: true } // mode toggle مش navigation
+        { replace: true }
       )
     },
     [setSearchParams]
@@ -153,8 +155,6 @@ function ZekrSabh() {
     )
   }, [sabhMode, groups, urlGroupId, setSearchParams])
 
-  // const urlGroupId = searchParams.get('group')
-
   const handleGroupChange = useCallback(
     (newGroupId) => {
       setSearchParams(
@@ -168,6 +168,7 @@ function ZekrSabh() {
     },
     [setSearchParams]
   )
+
   // ===========================
   // Handlers
   // ===========================
@@ -212,26 +213,71 @@ function ZekrSabh() {
     }
   }
 
-  // Space shortcut
+  const handleEnterFocusMode = useCallback(async () => {
+    console.log('[Focus] Button clicked')
+    try {
+      const result = await attemptFullscreen()
+      console.log('[Focus] Fullscreen result:', result)
+    } catch (err) {
+      console.error('[Focus] Fullscreen error:', err)
+    } finally {
+      console.log('[Focus] Setting isFocusMode = true')
+      setIsFocusMode(true)
+    }
+  }, [])  // ===========================
+  // Keyboard shortcuts
+  // ===========================
   useEffect(() => {
     const handleKeyDown = (e) => {
       const isInputActive = ['INPUT', 'TEXTAREA'].includes(
         document.activeElement?.tagName
       )
-      if (
-        e.code === 'Space' &&
-        sabhMode === 'normal' &&
-        !isTargetModalOpen &&
-        !isResetModalOpen &&
-        !isInputActive
-      ) {
+      if (isInputActive) return
+      if (isTargetModalOpen || isResetModalOpen) return
+
+      // Space: تسبيح
+      if (e.code === 'Space' && sabhMode === 'normal' && !isFocusMode) {
         e.preventDefault()
         handleNormalClick()
+        return
+      }
+
+      // F: وضع التركيز
+      if (
+        (e.key === 'f' || e.key === 'F') &&
+        sabhMode === 'normal' &&
+        !isFocusMode &&
+        currentZekr
+      ) {
+        e.preventDefault()
+        handleEnterFocusMode()
+        return
+      }
+
+      // R: تصفير
+      if (
+        (e.key === 'r' || e.key === 'R') &&
+        sabhMode === 'normal' &&
+        !isFocusMode &&
+        currentCount > 0
+      ) {
+        e.preventDefault()
+        setIsResetModalOpen(true)
       }
     }
+
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [sabhMode, isTargetModalOpen, isResetModalOpen, handleNormalClick])
+  }, [
+    sabhMode,
+    isFocusMode,
+    isTargetModalOpen,
+    isResetModalOpen,
+    handleNormalClick,
+    handleEnterFocusMode,
+    currentZekr,
+    currentCount,
+  ])
 
   const renderNormalSabhContent = () => {
     if (!currentZekr) {
@@ -285,17 +331,18 @@ function ZekrSabh() {
           isFocusMode={isFocusMode}
         />
 
-        {!isFocusMode && currentTarget && (
+        {!isFocusMode && currentZekr && (
           <button
             type="button"
             className={styles.focusBtn}
-            onClick={() => setIsFocusMode(true)}
+            onClick={handleEnterFocusMode}
             title="الانتقال لوضع التركيز بدون مشتتات (F)"
           >
             🌙 وضع التركيز
             <kbd className={styles.kbdHint}>F</kbd>
           </button>
-        )}      </>
+        )}
+      </>
     )
   }
 

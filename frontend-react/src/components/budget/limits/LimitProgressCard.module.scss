@@ -20,13 +20,10 @@
 
   // ─── Status Variants ───
   &.safe {
-    border-color: var(--success-border);
-
-    .progressFill {
-      background: linear-gradient(90deg, var(--success) 0%, #16a34a 100%);
-    }
+  .progressFill {
+    background: linear-gradient(90deg, var(--success) 0%, var(--success-dark) 100%);
   }
-
+}
   &.warning {
     border-color: var(--warning-border);
     background: linear-gradient(
@@ -36,10 +33,11 @@
     );
 
     .progressFill {
-      background: linear-gradient(90deg, var(--warning) 0%, #d97706 100%);
+
+    background: linear-gradient(90deg, var(--warning) 0%, var(--warning-dark) 100%);
     }
   }
-
+}
   &.over {
     border-color: var(--danger-border);
     background: linear-gradient(
@@ -66,7 +64,6 @@
       font-size: $font-xs;
     }
   }
-}
 
 // ═══════════════════════════════════════
 // Header

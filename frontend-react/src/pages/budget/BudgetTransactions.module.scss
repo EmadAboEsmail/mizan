@@ -1,3 +1,4 @@
+
 @use '@/styles/tokens' as *;
 
 // ═══════════════════════════════════════
@@ -11,13 +12,12 @@
 }
 
 // ═══════════════════════════════════════
-// Top Bar
+// Top Bar — mobile-first layout
 // ═══════════════════════════════════════
 .topBar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: $space-3;
+  gap: $space-2;
   flex-wrap: wrap;
 }
 
@@ -25,10 +25,14 @@
   display: flex;
   align-items: center;
   gap: $space-2;
-  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .monthInput {
+  flex: 1;
+  min-width: 0;              // ✅ يسمح بالانضغاط
+  max-width: 180px;
   min-height: 40px;
   padding: $space-2 $space-3;
   border-radius: $radius-md;
@@ -53,8 +57,9 @@
 }
 
 .allBtn {
+  flex-shrink: 0;
   min-height: 40px;
-  padding: $space-2 $space-4;
+  padding: $space-2 $space-3;
   border-radius: $radius-md;
   border: 1px solid var(--border-default);
   background: var(--bg-elevated);
@@ -86,7 +91,9 @@
 .addBtn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: $space-2;
+  flex-shrink: 0;
   min-height: 44px;
   padding: $space-2 $space-4;
   background: var(--brand);
@@ -117,18 +124,29 @@
     outline: 2px solid var(--brand);
     outline-offset: 2px;
   }
+
+  // ✅ على شاشات صغيرة: أيقونة بس
+  @media (max-width: 380px) {
+    padding: $space-2;
+    min-width: 44px;
+
+    span:not([aria-hidden]) {
+      display: none;
+    }
+  }
 }
 
 // ═══════════════════════════════════════
-// Summary Cards
+// Summary Cards — auto-fit
 // ═══════════════════════════════════════
 .summaryCards {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: $space-2;
 
-  @media (min-width: $bp-sm) {
-    grid-template-columns: repeat(3, 1fr);
+  // ✅ على شاشات صغيرة: 1 عمود
+  @media (max-width: 380px) {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -142,6 +160,7 @@
   gap: 4px;
   box-shadow: $shadow-sm;
   transition: all $transition-base;
+  min-width: 0;
 
   body.dark & {
     box-shadow: $shadow-dark-sm;
@@ -180,12 +199,15 @@
 }
 
 .summaryValue {
-  font-size: $font-xl;
+  font-size: $font-lg;
   font-weight: $weight-extrabold;
   color: var(--text-primary);
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   .income & {
     color: var(--success);
@@ -196,7 +218,7 @@
   }
 
   @media (min-width: $bp-md) {
-    font-size: $font-2xl;
+    font-size: $font-xl;
   }
 }
 
@@ -206,7 +228,7 @@
   align-items: center;
   padding: 1px 6px;
   border-radius: $radius-full;
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: $weight-bold;
   line-height: 1.4;
   text-transform: none;
@@ -243,7 +265,7 @@
   button {
     flex: 1;
     min-height: 36px;
-    padding: $space-2 $space-2;
+    padding: $space-2 $space-1;
     font-size: $font-sm;
     font-weight: $weight-semibold;
     background: transparent;
@@ -253,6 +275,9 @@
     cursor: pointer;
     transition: all $transition-fast;
     touch-action: manipulation;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     &:hover:not(.filterActive) {
       color: var(--text-primary);
@@ -274,20 +299,18 @@
   }
 }
 
+// ✅ select + search في نفس الصف دايماً
 .filterRow {
   display: flex;
   gap: $space-2;
-
-  @media (max-width: $bp-sm) {
-    flex-direction: column;
-  }
 }
 
 .select {
   flex: 0 0 auto;
-  min-width: 140px;
+  min-width: 110px;
+  max-width: 150px;
   min-height: 40px;
-  padding: $space-2 $space-3;
+  padding: $space-2 $space-2;
   border-radius: $radius-md;
   border: 1px solid var(--border-default);
   background: var(--bg-elevated);
@@ -303,6 +326,10 @@
     outline-offset: 2px;
     border-color: var(--brand);
   }
+
+  @media (max-width: 380px) {
+    min-width: 90px;
+  }
 }
 
 .searchWrapper {
@@ -310,6 +337,7 @@
   position: relative;
   display: flex;
   align-items: center;
+  min-width: 0;
 }
 
 .searchIcon {
@@ -384,8 +412,8 @@
 .item {
   display: flex;
   align-items: center;
-  gap: $space-3;
-  padding: $space-3 $space-4;
+  gap: $space-2;
+  padding: $space-2 $space-3;
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
   border-radius: $radius-lg;
@@ -400,6 +428,11 @@
     background: var(--bg-hover);
     border-color: var(--border-strong);
   }
+
+  @media (min-width: $bp-md) {
+    gap: $space-3;
+    padding: $space-3 $space-4;
+  }
 }
 
 .itemClickable {
@@ -412,6 +445,7 @@
   border-bottom-color: transparent;
   background: var(--brand-bg);
   border-color: var(--brand-border);
+  box-shadow: none;
 
   &:hover {
     background: var(--brand-bg);
@@ -422,7 +456,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
 }
 
@@ -431,6 +465,7 @@
   align-items: center;
   justify-content: space-between;
   gap: $space-2;
+  min-width: 0;
 }
 
 .itemCategory {
@@ -440,6 +475,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .itemAmount {
@@ -447,6 +483,7 @@
   font-weight: $weight-extrabold;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
 }
 
 .amountIncome {
@@ -463,6 +500,7 @@
   justify-content: space-between;
   gap: $space-2;
   font-size: $font-xs;
+  min-width: 0;
 }
 
 .itemDesc {
@@ -470,6 +508,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .itemDate {
@@ -484,13 +523,13 @@
 // ═══════════════════════════════════════
 .itemActions {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   flex-shrink: 0;
 }
 
 .iconBtn {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: $radius-sm;
   background: transparent;
   border: 1px solid transparent;
@@ -517,6 +556,11 @@
   &:active {
     transform: scale(0.9);
   }
+
+  @media (min-width: $bp-md) {
+    width: 34px;
+    height: 34px;
+  }
 }
 
 // ═══════════════════════════════════════
@@ -531,8 +575,8 @@
     transform $transition-base,
     color $transition-base;
   flex-shrink: 0;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
 }
 
 .chevronOpen {
@@ -544,7 +588,7 @@
 // Expanded Content
 // ═══════════════════════════════════════
 .expandedContent {
-  padding: $space-4;
+  padding: $space-3 $space-4;
   background: var(--brand-bg);
   border: 1px solid var(--brand-border);
   border-top: none;
@@ -553,6 +597,10 @@
   flex-direction: column;
   gap: $space-3;
   animation: expandIn 0.2s ease-out;
+
+  @media (min-width: $bp-md) {
+    padding: $space-4;
+  }
 }
 
 @keyframes expandIn {
@@ -569,11 +617,11 @@
 .detailRow {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .detailLabel {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: $weight-extrabold;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -592,7 +640,7 @@
 // ═══════════════════════════════════════
 .empty {
   text-align: center;
-  padding: $space-10 $space-4;
+  padding: $space-8 $space-4;
   background: var(--bg-subtle);
   border: 1px dashed var(--border-default);
   border-radius: $radius-xl;
