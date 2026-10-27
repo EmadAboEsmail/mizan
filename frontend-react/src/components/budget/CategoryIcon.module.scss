@@ -4,11 +4,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: $radius-md;
+  border-radius: var(--radius-md);
   border: 1px solid transparent;
   flex-shrink: 0;
   line-height: 1;
   user-select: none;
-  transition: transform $transition-base;
-  font-weight: $weight-semibold;
+  transition: transform var(--duration-base) var(--ease-out);
+  font-weight: var(--weight-semibold);
 }

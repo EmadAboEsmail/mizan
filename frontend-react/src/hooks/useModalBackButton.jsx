@@ -1,86 +1,53 @@
-
-import { useEffect, useRef } from 'react';
-
-// الـ Stack العام لتتبع المودالات المفتوحة بالتسلسل
-const stack = [];
-let isListenerInitialized = false;
-
-// دالة معالجة حدث الرجوع في المتصفح
-function handlePopState(e) {
-  const top = stack[stack.length - 1];
-  if (!top) return;
-
-  // إذا كان الـ state الحالي يخص المودال الموجود في قمة الستاك، فلا نغلقه
-  if (e.state?.__modalId === top.id) return;
-
-  // خلاف ذلك، فهذا يعني أن المستخدم ضغط زر الرجوع لإغلاق المودال العلوي
-  top.poppedByBack = true;
-  top.onClose();
-}
-
-function initGlobalListener() {
-  if (isListenerInitialized) return;
-  isListenerInitialized = true;
-  window.addEventListener('popstate', handlePopState);
-}
-
-function removeGlobalListenerIfNeeded() {
-  // إزالة الـ Listener إذا لم تعد هناك أي مودالات مفتوحة لتنظيف الذاكرة
-  if (stack.length === 0 && isListenerInitialized) {
-    window.removeEventListener('popstate', handlePopState);
-    isListenerInitialized = false;
-  }
-}
+import { useEffect, useRef } from 'react'
 
 export function useModalBackButton(isOpen, onClose) {
-  const onCloseRef = useRef(onClose);
-
-  // ضمان ثبات الـ ID طوال دورة حياة المودال وعدم تغيره مع إعادة الـ Renders أو Strict Mode
-  const idRef = useRef(null);
-  if (!idRef.current) {
-    idRef.current = `modal-${Math.random().toString(36).substring(2, 9)}`;
-  }
-
-  // تحديث مرجع الـ callback دائمًا بدون إعادة تشغيل الـ Effect الأساسي
-  useEffect(() => {
-    onCloseRef.current = onClose;
-  }, [onClose]);
+  const onCloseRef = useRef(onClose)
 
   useEffect(() => {
-    if (!isOpen) return;
+    onCloseRef.current = onClose
+  }, [onClose])
 
-    initGlobalListener();
-    const currentId = idRef.current;
+  useEffect(() => {
+    if (!isOpen) return
 
-    const entry = {
-      id: currentId,
-      onClose: () => onCloseRef.current?.(),
-      poppedByBack: false,
-    };
+    const id = `modal-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+    const currentState = window.history.state || {}
 
-    stack.push(entry);
+    // ✅ pushState بنفس الـ URL — يخلي back يقفل المودال مش يخرج من الصفحة
+    try {
+      window.history.pushState(
+        { ...currentState, __modalId: id },
+        '',
+        window.location.href
+      )
+    } catch (err) {
+      console.warn('[useModalBackButton] pushState failed:', err)
+      return
+    }
 
-    // إضافة حالة جديدة لـ History مع الاحتفاظ بالحالة السابقة
-    window.history.pushState(
-      { ...window.history.state, __modalId: currentId },
-      ''
-    );
+    let handled = false
+
+    const onPop = () => {
+      if (handled) return
+      handled = true
+      onCloseRef.current?.()
+    }
+
+    window.addEventListener('popstate', onPop)
 
     return () => {
-      // إزالة المودال من الستاك عند إغلاقه أو إلغاء تثبيت المكون (Unmount)
-      const idx = stack.indexOf(entry);
-      if (idx !== -1) {
-        stack.splice(idx, 1);
-      }
+      window.removeEventListener('popstate', onPop)
 
-      removeGlobalListenerIfNeeded();
-
-      // إذا تم إغلاق المودال برمجياً (مثلاً الضغط على زر X أو Backdrop وليس زر الـ Back)
-      // يجب علينا إزالة الـ History State الذي أضفناه يدويًا حتى لا يتخلف سجل المتصفح
-      if (!entry.poppedByBack && window.history.state?.__modalId === currentId) {
-        window.history.back();
+      // ✅ لو المستخدم قفل بزر X مش back → امسح الـ marker بأمان
+      if (!handled && window.history.state?.__modalId === id) {
+        try {
+          const newState = { ...window.history.state }
+          delete newState.__modalId
+          window.history.replaceState(newState, '', window.location.href)
+        } catch (err) {
+          console.warn('[useModalBackButton] replaceState failed:', err)
+        }
       }
-    };
-  }, [isOpen]);
+    }
+  }, [isOpen])
 }
-

@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import styles from './GroupSelect.module.scss'
 
-// أيقونات SVG أنيقة
 const ChevronDownIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="6 9 12 15 18 9" />
@@ -24,31 +23,23 @@ function GroupSelect({ groups = [], value, onChange }) {
   const [isOpen, setIsOpen] = useState(false)
   const ref = useRef(null)
 
-  // العثور على المجموعة المحددة حالياً
   const selected = groups.find((g) => g.id === value)
 
-  // إغلاق القائمة عند النقر خارجها
   useEffect(() => {
     if (!isOpen) return
 
     const handleClickOutside = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) {
-        setIsOpen(false)
-      }
+      if (ref.current && !ref.current.contains(e.target)) setIsOpen(false)
     }
-
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isOpen])
 
-  // إغلاق بـ Escape
   useEffect(() => {
     if (!isOpen) return
-
     const handleKeyDown = (e) => {
       if (e.code === 'Escape') setIsOpen(false)
     }
-
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [isOpen])
@@ -56,19 +47,19 @@ function GroupSelect({ groups = [], value, onChange }) {
   if (groups.length === 0) {
     return (
       <div className={styles.empty}>
-        📂 لا توجد مجموعات أذكار. أضِف واحدة من صفحة الإعدادات.
+        <span className={styles.emptyIcon}>📂</span>
+        <span>لا توجد مجموعات أذكار. أضِف واحدة من الإعدادات.</span>
       </div>
     )
   }
 
   const handleSelect = (group) => {
-    onChange(group.id) // نرسل الـ ID بنوعه الأصلي (رقم أو نص) دون تشويه
+    onChange(group.id)
     setIsOpen(false)
   }
 
   return (
     <div className={styles.wrapper} ref={ref}>
-      {/* زر فتح القائمة */}
       <button
         type="button"
         className={`${styles.trigger} ${isOpen ? styles.open : ''}`}
@@ -86,17 +77,15 @@ function GroupSelect({ groups = [], value, onChange }) {
           </span>
           {selected && (
             <span className={styles.countBadge}>
-              {selected.items?.length ?? 0} ذكر
+              {selected.items?.length ?? 0}
             </span>
           )}
         </div>
-
         <span className={styles.arrow}>
           <ChevronDownIcon />
         </span>
       </button>
 
-      {/* القائمة المنسدلة */}
       {isOpen && (
         <div className={styles.dropdown}>
           <ul className={styles.menu} role="listbox">
@@ -115,15 +104,13 @@ function GroupSelect({ groups = [], value, onChange }) {
                     <div className={styles.titleLine}>
                       <span className={styles.name}>{g.name}</span>
                       <span className={styles.itemCountBadge}>
-                        {itemCount} ذكر
+                        {itemCount}
                       </span>
                     </div>
-
                     {g.description && (
                       <span className={styles.desc}>{g.description}</span>
                     )}
                   </div>
-
                   {isSelected && (
                     <span className={styles.checkIcon}>
                       <CheckIcon />

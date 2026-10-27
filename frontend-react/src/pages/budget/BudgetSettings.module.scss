@@ -3,7 +3,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: $space-4;
+  gap: var(--space-4);
   width: 100%;
-  padding-bottom: $space-6;
+  padding-bottom: var(--space-6);
 }

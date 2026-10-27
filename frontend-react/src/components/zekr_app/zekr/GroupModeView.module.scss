@@ -1,13 +1,16 @@
 @use '@/styles/tokens' as *;
 
+// ═══════════════════════════════════════
+// View
+// ═══════════════════════════════════════
 .view {
   width: 100%;
-  max-width: $container-narrow;
+  max-width: 500px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: $space-4;
-  animation: fadeIn 0.3s ease;
+  gap: var(--space-5);
+  animation: viewIn 0.3s var(--ease-out);
 }
 
 .selectWrapper {
@@ -18,8 +21,55 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: $space-4;
+  gap: var(--space-4);
   width: 100%;
+}
+
+// ═══════════════════════════════════════
+// Header: عداد الاكتمال
+// ═══════════════════════════════════════
+.headerRow {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.completionCounter {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  background: var(--zekr-soft);
+  border: 1px solid var(--zekr-border);
+  font-family: var(--font-body);
+}
+
+.counterDone {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--zekr);
+}
+
+.counterSlash {
+  font-size: 0.85rem;
+  color: var(--text-faint);
+  margin: 0 1px;
+}
+
+.counterTotal {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.counterLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-inline-start: 4px;
 }
 
 // ═══════════════════════════════════════
@@ -29,25 +79,66 @@
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: $space-1;
+  gap: 6px;
+  padding: 4px 2px;
 }
 
 .progressBar {
   flex: 1;
-  height: 4px;
-  border-radius: $radius-full;
-  background: var(--border-default);
-  transition: all $transition-base;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: var(--border-subtle);
+  overflow: hidden;
+  position: relative;
+  transition: all var(--duration-base) var(--ease-out);
 
   &.barCompleted {
-    background: var(--brand);
+    background: var(--zekr);
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 100%
+      );
+      animation: shimmer 2s infinite;
+    }
   }
 
   &.barActive {
-    background: var(--brand);
-    box-shadow: 0 0 8px var(--brand-border);
-    height: 6px;
+    background: var(--zekr);
+    box-shadow: 0 0 10px var(--zekr-glow);
+    transform: scaleY(1.3);
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--zekr);
+      animation: pulseBar 1.5s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes pulseBar {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
   }
 }
 
@@ -59,44 +150,43 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: $space-2;
+  gap: var(--space-2);
 }
 
 .stepIndicator {
-  font-size: $font-xs;
-  font-weight: $weight-bold;
+  font-size: 0.8rem;
+  font-weight: 700;
   color: var(--text-muted);
   background: var(--bg-subtle);
-  padding: 6px 12px;
-  border-radius: $radius-full;
-  line-height: 1.3;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
   font-variant-numeric: tabular-nums;
 }
 
 .navBtn {
   display: inline-flex;
   align-items: center;
-  gap: $space-1;
-  min-height: 36px;
+  gap: 4px;
   padding: 6px 12px;
-  font-size: $font-xs;
-  font-weight: $weight-bold;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 700;
   color: var(--text-secondary);
-  background: var(--bg-elevated);
+  background: var(--bg-card);
   border: 1px solid var(--border-default);
-  border-radius: $radius-md;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all $transition-fast;
+  transition: all var(--duration-fast) var(--ease-out);
   touch-action: manipulation;
 
   &:hover:not(:disabled) {
-    color: var(--brand);
-    border-color: var(--brand-border);
-    background: var(--brand-bg);
+    color: var(--zekr);
+    border-color: var(--zekr-border);
+    background: var(--zekr-soft);
   }
 
   &:active:not(:disabled) {
-    transform: scale(0.96);
+    transform: scale(0.95);
   }
 
   &:disabled {
@@ -105,7 +195,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--brand);
+    outline: 2px solid var(--zekr);
     outline-offset: 2px;
   }
 }
@@ -114,199 +204,16 @@
 // Open Target Alert
 // ═══════════════════════════════════════
 .openTargetAlert {
-  font-size: $font-sm;
-  color: var(--brand);
-  background: var(--brand-bg);
-  border: 1px solid var(--brand-border);
-  padding: $space-2 $space-4;
-  border-radius: $radius-md;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--zekr);
+  background: var(--zekr-soft);
+  border: 1px dashed var(--zekr-border);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
   text-align: center;
   max-width: 90%;
-  line-height: 1.4;
-}
-
-// ═══════════════════════════════════════
-// Transition Card
-// ═══════════════════════════════════════
-.transitionCard {
-  width: 100%;
-  padding: $space-8 $space-5;
-  background: var(--brand-bg);
-  border: 2px dashed var(--brand-border);
-  border-radius: $radius-2xl;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: $space-3;
-  cursor: pointer;
-  animation: scalePop 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
-  transition: all $transition-base;
-
-  &:hover {
-    background: var(--brand-bg-strong);
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
-}
-
-.doneIcon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--brand);
-  color: var(--text-on-brand);
-  font-size: $font-xl;
-  font-weight: $weight-extrabold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: $shadow-brand;
-  line-height: 1;
-
-  body.dark & {
-    box-shadow: none;
-  }
-}
-
-.transitionTitle {
-  margin: 0;
-  font-size: $font-xl;
-  font-weight: $weight-extrabold;
-  color: var(--text-primary);
-  line-height: 1.3;
-}
-
-.nextPreview {
-  margin: 0;
-  font-size: $font-sm;
-  color: var(--text-muted);
-  line-height: $leading-relaxed;
-
-  strong {
-    color: var(--brand);
-    font-weight: $weight-bold;
-  }
-}
-
-.skipPrompt {
-  font-size: $font-xs;
-  color: var(--text-faint);
-  margin-top: $space-1;
-}
-
-// ═══════════════════════════════════════
-// Complete Card
-// ═══════════════════════════════════════
-.completeCard {
-  width: 100%;
-  padding: $space-10 $space-5;
-  background: var(--brand-bg);
-  border: 2px solid var(--brand);
-  border-radius: $radius-2xl;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: $space-3;
-  cursor: pointer;
-  box-shadow: $shadow-lg;
-  animation: scalePop 0.35s cubic-bezier(0.34, 1.2, 0.64, 1);
-
-  body.dark & {
-    box-shadow: $shadow-dark-lg;
-  }
-}
-
-.celebrateIcon {
-  font-size: 3rem;
-  animation: bounce 1s infinite alternate;
-}
-
-.completeTitle {
-  margin: 0;
-  font-size: $font-xl;
-  font-weight: $weight-extrabold;
-  color: var(--brand);
-  line-height: 1.3;
-}
-
-.groupName {
-  margin: 0;
-  font-size: $font-sm;
-  font-weight: $weight-semibold;
-  color: var(--text-muted);
-}
-
-.restartBtn {
-  margin-top: $space-2;
-  min-height: $touch-target;
-  padding: $space-3 $space-6;
-  background: var(--brand);
-  color: var(--text-on-brand);
-  border: none;
-  border-radius: $radius-md;
-  font-size: $font-sm;
-  font-weight: $weight-bold;
-  cursor: pointer;
-  transition: all $transition-base;
-  box-shadow: $shadow-brand;
-  touch-action: manipulation;
-
-  body.dark & {
-    box-shadow: none;
-  }
-
-  &:hover {
-    background: var(--brand-dark);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    transform: scale(0.97);
-  }
-}
-
-// ═══════════════════════════════════════
-// Empty States
-// ═══════════════════════════════════════
-.emptyView,
-.emptyGroupCard {
-  text-align: center;
-  padding: $space-10 $space-5;
-  border-radius: $radius-xl;
-  border: 1px dashed var(--border-default);
-  background: var(--bg-subtle);
-
-  .emptyIcon {
-    font-size: 2.5rem;
-    margin-bottom: $space-2;
-    line-height: 1;
-  }
-
-  h3 {
-    margin: 0 0 $space-2;
-    font-size: $font-lg;
-    font-weight: $weight-bold;
-    color: var(--text-primary);
-    line-height: 1.3;
-  }
-
-  p {
-    margin: 0;
-    font-size: $font-sm;
-    color: var(--text-muted);
-    line-height: $leading-relaxed;
-  }
-
-  span {
-    display: block;
-    font-size: $font-xs;
-    color: var(--text-faint);
-    margin-top: $space-1;
-  }
+  line-height: 1.5;
 }
 
 // ═══════════════════════════════════════
@@ -315,52 +222,271 @@
 .focusBtn {
   display: inline-flex;
   align-items: center;
-  gap: $space-2;
-  min-height: 44px;
-  padding: $space-2 $space-5;
-  border-radius: $radius-full;
-  background: var(--brand-bg);
-  border: 1px solid var(--brand-border);
-  color: var(--brand);
-  font-size: $font-sm;
-  font-weight: $weight-bold;
+  gap: 6px;
+  padding: 10px var(--space-5);
+  border-radius: var(--radius-full);
+  background: var(--zekr-soft);
+  border: 1px solid var(--zekr-border);
+  color: var(--zekr);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all $transition-base;
-  margin-top: $space-2;
+  transition: all var(--duration-base) var(--ease-out);
   touch-action: manipulation;
+  margin-top: var(--space-1);
 
   &:hover {
-    background: var(--brand);
+    background: var(--zekr);
     color: var(--text-on-brand);
-    box-shadow: $shadow-brand;
-
-    body.dark & {
-      box-shadow: none;
-    }
+    box-shadow: 0 4px 14px var(--zekr-soft);
   }
 
   &:active {
     transform: scale(0.96);
   }
+}
 
-  &:focus-visible {
-    outline: 2px solid var(--brand);
-    outline-offset: 2px;
+// ═══════════════════════════════════════
+// Transition Card
+// ═══════════════════════════════════════
+.transitionCard {
+  width: 100%;
+  padding: var(--space-8) var(--space-5);
+  background: var(--zekr-soft);
+  border: 1.5px dashed var(--zekr-border);
+  border-radius: var(--radius-xl);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  animation: scalePop 0.3s var(--ease-spring);
+}
+
+.doneIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--zekr);
+  color: var(--text-on-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px var(--zekr-soft);
+  animation: bounceIn 0.5s var(--ease-spring);
+}
+
+.transitionTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--zekr);
+  letter-spacing: -0.5px;
+}
+
+.transitionNext {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: var(--space-2);
+}
+
+.nextPreview {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.5;
+  padding: 0 var(--space-3);
+  max-width: 100%;
+}
+
+.skipBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-3);
+  padding: 10px var(--space-5);
+  background: var(--zekr);
+  color: var(--text-on-brand);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px var(--zekr-soft);
+  transition: all var(--duration-base) var(--ease-out);
+
+  &:hover {
+    filter: brightness(0.94);
+    box-shadow: 0 6px 18px var(--zekr-soft);
   }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+// ═══════════════════════════════════════
+// Complete Card
+// ═══════════════════════════════════════
+.completeCard {
+  width: 100%;
+  padding: var(--space-10) var(--space-5);
+  background: linear-gradient(
+    135deg,
+    var(--zekr-soft) 0%,
+    var(--bg-subtle) 100%
+  );
+  border: 2px solid var(--zekr);
+  border-radius: var(--radius-2xl);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+  box-shadow: 0 8px 30px var(--zekr-soft);
+  animation: scalePop 0.4s var(--ease-spring);
+}
+
+.celebrateIcon {
+  font-size: 3.5rem;
+  animation: bounce 1s infinite alternate;
+  filter: drop-shadow(0 4px 12px rgba(198, 139, 60, 0.3));
+}
+
+.completeTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--zekr);
+  letter-spacing: -0.5px;
+}
+
+.completeSub {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.groupName {
+  margin: var(--space-2) 0 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 4px 12px;
+  background: var(--bg-card);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+}
+
+.restartBtn {
+  margin-top: var(--space-4);
+  padding: 12px var(--space-6);
+  background: var(--zekr);
+  color: var(--text-on-brand);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px var(--zekr-soft);
+  transition: all var(--duration-base) var(--ease-out);
+
+  &:hover {
+    filter: brightness(0.94);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--zekr-soft);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.97);
+  }
+}
+
+// ═══════════════════════════════════════
+// Empty States
+// ═══════════════════════════════════════
+.emptyView {
+  text-align: center;
+  padding: var(--space-10) var(--space-5);
+  border-radius: var(--radius-xl);
+  border: 1px dashed var(--border-strong);
+  background: var(--bg-subtle);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.emptyGroupCard {
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+  border-radius: var(--radius-xl);
+  border: 1px dashed var(--border-strong);
+  background: var(--bg-subtle);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.emptyIcon {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-2);
+  opacity: 0.8;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.emptyText {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 300px;
+}
+
+.emptyHint {
+  font-size: 0.78rem;
+  color: var(--text-faint);
+  margin-top: var(--space-1);
 }
 
 // ═══════════════════════════════════════
 // Animations
 // ═══════════════════════════════════════
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+@keyframes viewIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes scalePop {
   from {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.94);
   }
   to {
     opacity: 1;
@@ -368,7 +494,23 @@
   }
 }
 
+@keyframes bounceIn {
+  0% {
+    transform: scale(0);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 @keyframes bounce {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-10px); }
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-8px);
+  }
 }

@@ -5,24 +5,24 @@
   align-items: stretch;
   justify-content: center;
   flex-wrap: wrap;
-  gap: $space-1;
-  padding: $space-2;
-  margin: 0 auto $space-4;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  margin: 0 auto var(--space-4);
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
-  border-radius: $radius-full;
-  box-shadow: $shadow-sm;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
   animation: fadeIn 0.4s ease-out 0.2s both;
   width: fit-content;
   max-width: 100%;
 
   body.dark & {
-    box-shadow: $shadow-dark-sm;
+    box-shadow: var(--shadow-dark-sm);
   }
 
-  @media (max-width: $bp-sm) {
+  @media (max-width: 640px) {
     gap: 0;
-    padding: $space-1;
+    padding: var(--space-1);
   }
 }
 
@@ -33,9 +33,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: $space-2 $space-3;
-  border-radius: $radius-full;
-  transition: background $transition-fast;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
+  transition: background var(--duration-fast) var(--ease-out);
   position: relative;
 
   // Divider between stats
@@ -49,8 +49,8 @@
     background: var(--border-default);
   }
 
-  @media (max-width: $bp-sm) {
-    padding: $space-2 $space-2;
+  @media (max-width: 640px) {
+    padding: var(--space-2) var(--space-2);
     gap: 4px;
   }
 }
@@ -62,25 +62,25 @@
 }
 
 .value {
-  font-weight: $weight-extrabold;
+  font-weight: var(--weight-extrabold);
   color: var(--text-primary);
-  font-size: $font-sm;
+  font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
   line-height: 1;
 
-  @media (max-width: $bp-sm) {
-    font-size: $font-xs;
+  @media (max-width: 640px) {
+    font-size: var(--text-xs);
   }
 }
 
 .label {
-  font-size: $font-xs;
-  font-weight: $weight-medium;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
   color: var(--text-muted);
   line-height: 1;
   white-space: nowrap;
 
-  @media (max-width: $bp-sm) {
+  @media (max-width: 640px) {
     font-size: 0.7rem;
   }
 }

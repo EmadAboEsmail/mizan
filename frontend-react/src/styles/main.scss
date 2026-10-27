@@ -1,13 +1,6 @@
-// Foundation
-@use './colors';
-@use './typography';
-@use './spacing';
-@use './shadows';
-
-// Legacy (مؤقتاً)
-
-// Mixins
-@use './mixins';
-
-// Global
+// ═══════════════════════════════════════════════════════
+// Entry Point — Single Source of Truth
+// ═══════════════════════════════════════════════════════
+@use './tokens';
 @use './global';
+@use './mixins';

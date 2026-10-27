@@ -1,244 +1,195 @@
-@use '@/styles/tokens' as *;
+// ═══════════════════════════════════════════════════════
+// AppCard — Warm Editorial
+// ═══════════════════════════════════════════════════════
 
 .card {
-  --accent-color: var(--brand);
-  --accent-bg: var(--brand-bg);
-  --accent-border: var(--brand-border);
-
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: $space-4;
-  padding: $space-5;
-  border-radius: $radius-xl;
-  background: var(--bg-elevated);
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border-radius: var(--radius-xl);
+  background: var(--bg-card);
   border: 1px solid var(--border-default);
-  text-decoration: none;
   color: inherit;
-  box-shadow: $shadow-base;
-  transition: all $transition-base;
-  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  text-decoration: none;
   overflow: hidden;
-
-  body.dark & {
-    box-shadow: $shadow-dark-base;
-  }
-
-  // Accent line at top
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--accent-color);
-    opacity: 0;
-    transition: opacity $transition-base;
-  }
-
-  // Ambient glow (subtle)
-  &::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    inset-inline-end: -20%;
-    width: 200px;
-    height: 200px;
-    background: radial-gradient(circle, var(--accent-bg) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity $transition-slow;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  > * {
-    position: relative;
-    z-index: 1;
-  }
+  transition: transform var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out);
+  animation: cardEnter 0.55s var(--ease-out) both;
+  box-shadow: var(--shadow-sm);
 }
 
-// ═══════════════════════════════════════
-// Available (Interactive)
-// ═══════════════════════════════════════
+// شريط لوني أعلى البطاقة
+.accentStrip {
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 3px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity var(--duration-base) var(--ease-out);
+}
+
+// ─── Available (interactive) ───
 .available {
   cursor: pointer;
 
   &:hover {
     transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
     border-color: var(--accent-border);
-    box-shadow: $shadow-lg;
 
-    body.dark & {
-      box-shadow: $shadow-dark-lg;
-    }
-
-    &::before {
-      opacity: 1;
-    }
-
-    &::after {
+    .accentStrip {
       opacity: 1;
     }
 
     .arrow {
       transform: translateX(-4px);
-      color: var(--accent-color);
+      color: var(--accent);
     }
 
-    .iconWrapper {
-      transform: scale(1.06) rotate(-3deg);
-      background: var(--accent-bg);
-      border-color: var(--accent-border);
+    .iconWrap {
+      transform: scale(1.05) rotate(-3deg);
     }
   }
 
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.985);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--accent-color);
-    outline-offset: 2px;
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
   }
 }
 
-// ═══════════════════════════════════════
-// Disabled (Coming Soon)
-// ═══════════════════════════════════════
+// ─── Disabled ───
 .disabled {
   cursor: default;
-  opacity: 0.65;
+  opacity: 0.7;
   background: var(--bg-subtle);
   border-style: dashed;
-
-  &:hover {
-    transform: none;
-  }
 }
 
-// ═══════════════════════════════════════
-// Header
-// ═══════════════════════════════════════
+// ─── Header ───
 .header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: $space-3;
+  gap: var(--space-3);
 }
 
-.iconWrapper {
+.iconWrap {
   width: 56px;
   height: 56px;
-  border-radius: $radius-lg;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.9rem;
   flex-shrink: 0;
-  transition: all $transition-base;
+  transition: transform var(--duration-base) var(--ease-spring);
 }
 
-.badgeGroup {
+.icon {
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.headerMeta {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: $space-2;
+  gap: 4px;
 }
 
 .category {
-  font-size: $font-xs;
-  font-weight: $weight-medium;
-  color: var(--text-faint);
-  line-height: 1.2;
-}
-
-.statusBadge {
   font-size: 0.7rem;
-  font-weight: $weight-bold;
-  padding: 4px 10px;
-  border-radius: $radius-full;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-.statusActive {
-  background: var(--success-bg);
-  color: var(--success);
-}
-
-.statusSoon {
-  background: var(--bg-muted);
+  font-weight: 600;
   color: var(--text-muted);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
 }
 
-// ═══════════════════════════════════════
-// Body
-// ═══════════════════════════════════════
+.soonBadge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  border: 1px solid var(--border-default);
+}
+
+// ─── Body ───
 .body {
   display: flex;
   flex-direction: column;
-  gap: $space-2;
+  gap: 6px;
   flex: 1;
 }
 
 .name {
   margin: 0;
-  font-size: $font-xl;
-  font-weight: $weight-extrabold;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 800;
   color: var(--text-primary);
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  letter-spacing: -0.3px;
+  line-height: 1.15;
 }
 
-.desc {
-  margin: 0;
-  font-size: $font-sm;
-  line-height: $leading-relaxed;
+.tagline {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.2px;
+}
+
+.description {
+  margin: var(--space-1) 0 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
   color: var(--text-muted);
 }
 
-// ═══════════════════════════════════════
-// Footer
-// ═══════════════════════════════════════
+// ─── Footer ───
 .footer {
-  padding-top: $space-3;
-  border-top: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
 }
 
-.actionText {
+.openCta {
   display: inline-flex;
   align-items: center;
-  gap: $space-2;
-  font-size: $font-sm;
-  font-weight: $weight-semibold;
-  color: var(--text-primary);
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
 }
 
 .arrow {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  color: var(--text-faint);
-  transition:
-    transform $transition-base,
-    color $transition-base;
+  color: var(--text-muted);
+  transition: transform var(--duration-base) var(--ease-out),
+    color var(--duration-base) var(--ease-out);
 }
 
-.disabledHint {
-  font-size: $font-xs;
-  font-weight: $weight-semibold;
+.disabledCta {
+  font-size: 0.8rem;
+  font-weight: 600;
   color: var(--text-faint);
 }
 
-// ═══════════════════════════════════════
-// Animation
-// ═══════════════════════════════════════
-@keyframes fadeInUp {
+// ─── Animation ───
+@keyframes cardEnter {
   from {
     opacity: 0;
     transform: translateY(16px);
@@ -248,3 +199,4 @@
     transform: translateY(0);
   }
 }
+

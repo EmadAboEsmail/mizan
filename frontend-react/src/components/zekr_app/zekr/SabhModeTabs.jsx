@@ -1,7 +1,6 @@
 import { memo } from 'react'
 import styles from './SabhModeTabs.module.scss'
 
-// أيقونة الوضع العادي (تسبيح حر / مفرد)
 const SingleIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="9" />
@@ -9,7 +8,6 @@ const SingleIcon = () => (
   </svg>
 )
 
-// أيقونة وضع المجموعات (أوراد مجمعة / طبقات)
 const LayersIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="12 2 2 7 12 12 22 7 12 2" />
@@ -42,7 +40,7 @@ function SabhModeTabs({ value, onChange }) {
             <span className={styles.icon}>
               <IconComponent />
             </span>
-            <span>{m.label}</span>
+            <span className={styles.label}>{m.label}</span>
           </button>
         )
       })}

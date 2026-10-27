@@ -1,14 +1,17 @@
 @use '@/styles/tokens' as *;
 
+// ═══════════════════════════════════════
+// Container
+// ═══════════════════════════════════════
 .settingsContainer {
   display: flex;
   flex-direction: column;
-  gap: $space-5;
+  gap: var(--space-5);
   width: 100%;
-  max-width: $container-max;
+  max-width: 680px;
   margin: 0 auto;
-  padding: $space-2 0 $space-8;
-  animation: fadeIn 0.3s ease-out;
+  padding: var(--space-2) 0 var(--space-8);
+  animation: fadeIn var(--duration-base) var(--ease-out);
 }
 
 // ═══════════════════════════════════════
@@ -17,47 +20,52 @@
 .pageHeader {
   display: flex;
   align-items: center;
-  gap: $space-3;
-  padding: $space-2 $space-1;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-1) var(--space-3);
 }
 
 .headerIconWrapper {
-  width: 48px;
-  height: 48px;
-  border-radius: $radius-lg;
-  background: var(--brand-bg);
-  color: var(--brand);
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-lg);
+  background: var(--zekr-soft);
+  border: 1px solid var(--zekr-border);
+  color: var(--zekr);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: var(--shadow-xs);
+
+  svg {
+    width: 22px;
+    height: 22px;
+  }
 }
 
 .headerTextGroup {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   min-width: 0;
 }
 
 .pageTitle {
   margin: 0;
-  font-size: $font-2xl;
-  font-weight: $weight-extrabold;
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-extrabold);
   color: var(--text-primary);
-  letter-spacing: -0.03em;
-  line-height: 1.2;
-
-  @media (min-width: $bp-md) {
-    font-size: $font-3xl;
-  }
+  letter-spacing: -0.5px;
+  line-height: 1.1;
 }
 
 .pageSubtitle {
   margin: 0;
-  font-size: $font-sm;
+  font-size: var(--text-sm);
+  font-weight: 600;
   color: var(--text-muted);
-  line-height: $leading-relaxed;
+  line-height: 1.5;
 }
 
 // ═══════════════════════════════════════
@@ -66,17 +74,17 @@
 .sectionsList {
   display: flex;
   flex-direction: column;
-  gap: $space-4;
+  gap: var(--space-4);
   width: 100%;
 }
 
 // ═══════════════════════════════════════
-// Animation
+// Animations
 // ═══════════════════════════════════════
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;

@@ -4,38 +4,34 @@
   display: flex;
   background: var(--bg-subtle);
   padding: 4px;
-  border-radius: $radius-lg;
+  border-radius: var(--radius-md);
   gap: 4px;
   border: 1px solid var(--border-subtle);
+  width: 100%;
 }
 
 .tab {
   flex: 1;
-  min-height: 40px;
-  padding: $space-2 $space-2;
-  font-size: $font-sm;
-  font-weight: $weight-bold;
+  padding: 9px var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 700;
   border: none;
   background: transparent;
   color: var(--text-muted);
-  border-radius: $radius-md;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all $transition-base;
+  transition: all var(--duration-base) var(--ease-out);
   touch-action: manipulation;
 
   &:hover:not(.active) {
-    color: var(--text-primary);
-    background: var(--bg-hover);
+    color: var(--text-secondary);
   }
 
   &.active {
-    background: var(--bg-elevated);
-    color: var(--brand);
-    box-shadow: $shadow-sm;
-
-    body.dark & {
-      box-shadow: $shadow-dark-sm;
-    }
+    background: var(--bg-card);
+    color: var(--zekr);
+    box-shadow: var(--shadow-xs);
   }
 
   &:active {
@@ -43,7 +39,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--brand);
-    outline-offset: 2px;
+    outline: 2px solid var(--zekr);
+    outline-offset: 1px;
   }
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useZekrData } from '@/context/ZekrDataContext'
 import { useModalBackButton } from '@/hooks/useModalBackButton'
@@ -13,6 +13,56 @@ import FocusMode, {
   attemptFullscreen,
 } from '@/components/zekr_app/zekr/FocusMode.jsx'
 import styles from './ZekrSabh.module.scss'
+
+// ✅ هل الاهتزاز مفعل؟ (افتراضي: نعم)
+function useVibrationEnabled() {
+  return useMemo(() => {
+    try {
+      return localStorage.getItem('zekr:vibration') !== 'off'
+    } catch {
+      return true
+    }
+  }, [])
+}
+
+// ✅ Wake Lock Hook — يمنع إطفاء الشاشة في وضع التركيز
+function useWakeLock(active) {
+  useEffect(() => {
+    if (!active) return
+    if (!('wakeLock' in navigator)) return
+
+    let wakeLock = null
+    let cancelled = false
+
+    const acquire = async () => {
+      try {
+        wakeLock = await navigator.wakeLock.request('screen')
+        if (cancelled) {
+          wakeLock?.release().catch(() => { })
+          wakeLock = null
+        }
+      } catch (err) {
+        console.warn('[WakeLock] Failed:', err)
+      }
+    }
+
+    acquire()
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible' && !wakeLock && !cancelled) {
+        acquire()
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+
+    return () => {
+      cancelled = true
+      document.removeEventListener('visibilitychange', onVisibility)
+      wakeLock?.release().catch(() => { })
+      wakeLock = null
+    }
+  }, [active])
+}
 
 function ZekrSabh() {
   const navigate = useNavigate()
@@ -37,16 +87,22 @@ function ZekrSabh() {
   const urlZekrId = searchParams.get('zekr')
   const urlMode = searchParams.get('mode')
   const urlGroupId = searchParams.get('group')
-
   const sabhMode = urlMode === 'group' ? 'group' : 'normal'
 
   // ===========================
-  // UI-only state (not in URL)
+  // UI-only state
   // ===========================
   const [isTargetModalOpen, setIsTargetModalOpen] = useState(false)
   const [isResetModalOpen, setIsResetModalOpen] = useState(false)
   const [isFocusMode, setIsFocusMode] = useState(false)
   const [targetModalConfig, setTargetModalConfig] = useState(null)
+  // ✅ جديد: بداية جلسة التركيز (لحساب عداد الجلسة)
+  const [focusSessionStart, setFocusSessionStart] = useState(null)
+
+  const vibrationEnabled = useVibrationEnabled()
+
+  // ✅ Wake Lock نشط فقط في وضع التركيز
+  useWakeLock(isFocusMode)
 
   // ===========================
   // القيم المشتقة
@@ -58,12 +114,17 @@ function ZekrSabh() {
     : null
   const isComplete = !!currentTarget && currentCount >= currentTarget
 
+  // ✅ عدد التسبيحات في جلسة التركيز الحالية
+  const sessionCount =
+    focusSessionStart !== null
+      ? Math.max(0, currentCount - focusSessionStart)
+      : 0
+
   // ===========================
   // URL ↔ Context sync (zekr)
   // ===========================
   const zekrInitRef = useRef(false)
 
-  // 1. On first load: if URL has no zekr, mirror context's value to URL
   useEffect(() => {
     if (zekrInitRef.current) return
     if (allAdhkar.length === 0) return
@@ -80,7 +141,6 @@ function ZekrSabh() {
     }
   }, [allAdhkar.length, urlZekrId, currentZekrId, setSearchParams])
 
-  // 2. Sync URL → Context (mount with deep link, back/forward)
   useEffect(() => {
     if (!urlZekrId) return
     if (urlZekrId === currentZekrId) return
@@ -88,7 +148,6 @@ function ZekrSabh() {
     setCurrentZekrId(urlZekrId)
   }, [urlZekrId, allAdhkar, currentZekrId, setCurrentZekrId])
 
-  // 3. Cleanup: URL zekr was deleted
   useEffect(() => {
     if (!urlZekrId) return
     if (allAdhkar.length === 0) return
@@ -103,7 +162,6 @@ function ZekrSabh() {
     )
   }, [urlZekrId, allAdhkar, setSearchParams])
 
-  // User changes zekr via selector
   const handleZekrChange = useCallback(
     (newId) => {
       setCurrentZekrId(newId)
@@ -139,7 +197,7 @@ function ZekrSabh() {
   )
 
   // ===========================
-  // Group sync (default + cleanup)
+  // Group sync
   // ===========================
   useEffect(() => {
     if (sabhMode !== 'group') return
@@ -174,9 +232,11 @@ function ZekrSabh() {
   // ===========================
   const handleNormalClick = useCallback(() => {
     if (!currentZekrId) return
+    if (vibrationEnabled && 'vibrate' in navigator) {
+      try { navigator.vibrate(10) } catch { }
+    }
     handlePerformClick(currentZekrId)
-  }, [currentZekrId, handlePerformClick])
-
+  }, [currentZekrId, handlePerformClick, vibrationEnabled])
   const handleConfirmReset = async () => {
     if (!currentZekrId) return
     await handleResetForZekr(currentZekrId)
@@ -213,19 +273,26 @@ function ZekrSabh() {
     }
   }
 
+  // ✅ دخول التركيز — يسجل بداية الجلسة
   const handleEnterFocusMode = useCallback(async () => {
-    console.log('[Focus] Button clicked')
     try {
-      const result = await attemptFullscreen()
-      console.log('[Focus] Fullscreen result:', result)
+      await attemptFullscreen()
     } catch (err) {
-      console.error('[Focus] Fullscreen error:', err)
-    } finally {
-      console.log('[Focus] Setting isFocusMode = true')
-      setIsFocusMode(true)
+      console.warn('[Focus] Fullscreen failed:', err)
     }
-  }, [])  // ===========================
-  // Keyboard shortcuts
+    // سجل العدد الحالي كبداية الجلسة
+    setFocusSessionStart(currentZekrId ? counts[currentZekrId] || 0 : 0)
+    setIsFocusMode(true)
+  }, [currentZekrId, counts])
+
+  // ✅ خروج التركيز — يمسح الجلسة
+  const handleExitFocusMode = useCallback(() => {
+    setIsFocusMode(false)
+    setFocusSessionStart(null)
+  }, [])
+
+  // ===========================
+  // Keyboard shortcuts (محدثة)
   // ===========================
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -235,14 +302,21 @@ function ZekrSabh() {
       if (isInputActive) return
       if (isTargetModalOpen || isResetModalOpen) return
 
-      // Space: تسبيح
-      if (e.code === 'Space' && sabhMode === 'normal' && !isFocusMode) {
+      // ✅ Esc: خروج من وضع التركيز
+      if (e.key === 'Escape' && isFocusMode) {
+        e.preventDefault()
+        handleExitFocusMode()
+        return
+      }
+
+      // ✅ Space: يشتغل في الوضعين (عادي + تركيز)
+      if (e.code === 'Space' && sabhMode === 'normal') {
         e.preventDefault()
         handleNormalClick()
         return
       }
 
-      // F: وضع التركيز
+      // F: دخول التركيز (عادي فقط)
       if (
         (e.key === 'f' || e.key === 'F') &&
         sabhMode === 'normal' &&
@@ -254,7 +328,7 @@ function ZekrSabh() {
         return
       }
 
-      // R: تصفير
+      // R: تصفير (عادي فقط)
       if (
         (e.key === 'r' || e.key === 'R') &&
         sabhMode === 'normal' &&
@@ -275,6 +349,7 @@ function ZekrSabh() {
     isResetModalOpen,
     handleNormalClick,
     handleEnterFocusMode,
+    handleExitFocusMode,
     currentZekr,
     currentCount,
   ])
@@ -283,13 +358,14 @@ function ZekrSabh() {
     if (!currentZekr) {
       return (
         <div className={styles.emptyContainer}>
+          <div className={styles.emptyIcon}>📿</div>
           <p className={styles.empty}>لا توجد أذكار مضافة حالياً.</p>
           <button
             type="button"
             className={styles.addFirstBtn}
             onClick={() => navigate('/zekr/settings')}
           >
-            أضف ذكرك الأول من الإعدادات
+            أضف ذكرك الأول
           </button>
         </div>
       )
@@ -300,6 +376,7 @@ function ZekrSabh() {
         <ZekrDisplay
           zekrText={currentZekr.text}
           count={currentCount}
+          sessionCount={sessionCount}
           target={currentTarget}
           onClickCount={() =>
             handleOpenNormalTargetModal(currentZekrId, currentTarget)
@@ -318,9 +395,9 @@ function ZekrSabh() {
 
         <ActionButtons
           onReset={!isFocusMode ? () => setIsResetModalOpen(true) : undefined}
-          zekrText={currentZekr.text}
           showReset={!isFocusMode}
           count={currentCount}
+          target={currentTarget}
           onClick={handleNormalClick}
           progress={
             currentTarget
@@ -353,10 +430,7 @@ function ZekrSabh() {
       {sabhMode === 'normal' && (
         <div className={styles.normalModeContainer}>
           {isFocusMode ? (
-            <FocusMode
-              onClose={() => setIsFocusMode(false)}
-              onCount={handleNormalClick}
-            >
+            <FocusMode onClose={handleExitFocusMode} onCount={handleNormalClick}>
               {renderNormalSabhContent()}
             </FocusMode>
           ) : (

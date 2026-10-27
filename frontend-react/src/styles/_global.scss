@@ -1,4 +1,6 @@
-@use './typography' as t;
+// ═══════════════════════════════════════════════════════
+// Global Resets & Base
+// ═══════════════════════════════════════════════════════
 
 *,
 *::before,
@@ -6,7 +8,13 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 html,
@@ -15,24 +23,32 @@ body,
   direction: rtl;
   text-align: right;
   min-height: 100vh;
-  min-height: 100dvh;  // ✅ للـ mobile (dynamic viewport)
   width: 100%;
 }
 
 body {
-  margin: 0;
-  font-family: t.$font-arabic;
-  font-size: 1rem;
-  line-height: 1.6;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  font-weight: 400;
   background: var(--bg-base);
   color: var(--text-primary);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
+  transition: background-color var(--duration-slow) var(--ease-in-out),
+    color var(--duration-slow) var(--ease-in-out);
   overflow-x: hidden;
-  overscroll-behavior-y: contain;
+}
+
+// Headings
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: var(--leading-tight);
+  letter-spacing: -0.02em;
+}
+
+p {
+  margin: 0;
+  line-height: var(--leading-relaxed);
 }
 
 a {
@@ -40,62 +56,54 @@ a {
   color: inherit;
 }
 
-button {
+button,
+input,
+select,
+textarea {
   font-family: inherit;
-  border: none;
-  background: none;
-  cursor: pointer;
+  font-size: inherit;
   color: inherit;
 }
 
-// ─── Form elements inherit font
-input,
-textarea,
-select {
-  font-family: inherit;
-  font-size: 1rem;  // ✅ 16px يمنع zoom على iOS
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
 }
 
-// ─── Better scrollbars
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+// Scrollbar (Warm)
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--bg-subtle);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--border-strong);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
 
   &:hover {
     background: var(--text-faint);
   }
 }
 
-// ─── Selection
+// Selection
 ::selection {
-  background: var(--brand-bg-strong);
+  background: var(--budget-soft);
   color: var(--text-primary);
 }
 
-// ─── Focus visible
-:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-// ─── Reduced motion
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+// Utility
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
 }

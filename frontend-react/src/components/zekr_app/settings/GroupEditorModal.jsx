@@ -160,8 +160,13 @@ function GroupEditorModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={group.name}>
-      <div className={styles.body}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={group.name}
+      variant="center"
+      disableBackButton
+    >      <div className={styles.body}>
         {group.description && (
           <p className={styles.description}>{group.description}</p>
         )}
@@ -331,3 +336,4 @@ function GroupEditorModal({
 }
 
 export default GroupEditorModal
+

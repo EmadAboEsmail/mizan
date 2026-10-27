@@ -1,4 +1,5 @@
-import { useState } from 'react'
+
+import { useState, useEffect, useMemo } from 'react'
 import { useZekrData } from '@/context/ZekrDataContext'
 import SettingsSection from './SettingsSection.jsx'
 import GroupFormModal from './GroupFormModal.jsx'
@@ -35,7 +36,6 @@ const ArrowLeftIcon = () => (
 )
 
 function GroupsSection() {
-  // ✅ الـ context مباشرة — بدون props
   const {
     groups,
     allAdhkar,
@@ -52,7 +52,23 @@ function GroupsSection() {
   const [editorGroupId, setEditorGroupId] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const editorGroup = groups.find((g) => g.id === editorGroupId)
+  // ✅ نحتفظ بآخر مجموعة معروفة عشان ما يختفيش المودال أثناء تحديث groups
+  const [lastKnownGroup, setLastKnownGroup] = useState(null)
+
+  const editorGroup = useMemo(() => {
+    if (editorGroupId == null) return null
+    return (
+      groups.find((g) => String(g.id) === String(editorGroupId)) ?? null
+    )
+  }, [editorGroupId, groups])
+
+  useEffect(() => {
+    if (editorGroup) setLastKnownGroup(editorGroup)
+  }, [editorGroup])
+
+  // لو editorGroupId موجود لكن editorGroup مؤقتاً null → استخدم lastKnown
+  const effectiveGroup =
+    editorGroup ?? (editorGroupId != null ? lastKnownGroup : null)
 
   const handleAdd = async (name, description) => {
     await handleAddGroup(name, description)
@@ -75,6 +91,12 @@ function GroupsSection() {
     } finally {
       setIsDeleting(false)
     }
+  }
+
+  // ✅ دالة موحدة لإغلاق الـ editor (مع تنظيف lastKnownGroup)
+  const closeEditor = () => {
+    setEditorGroupId(null)
+    setLastKnownGroup(null)
   }
 
   return (
@@ -109,13 +131,21 @@ function GroupsSection() {
             {groups.map((g) => {
               const count = g.items?.length ?? 0
               return (
-                <li key={g.id} className={styles.item}>
-                  <button
-                    type="button"
-                    className={styles.mainClickable}
-                    onClick={() => setEditorGroupId(g.id)}
-                    title="اضغط لترتيب وتعديل أذكار المجموعة"
-                  >
+                <li
+                  key={g.id}
+                  className={styles.item}
+                  onClick={() => setEditorGroupId(g.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setEditorGroupId(g.id)
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`فتح مجموعة ${g.name} لترتيب الأذكار`}
+                >
+                  <div className={styles.mainClickable}>
                     <div className={styles.folderBadge}>
                       <FolderIcon />
                     </div>
@@ -124,7 +154,9 @@ function GroupsSection() {
                       <div className={styles.titleLine}>
                         <span className={styles.name}>{g.name}</span>
                         <span className={styles.countBadge}>
-                          {count === 0 ? 'فارغة' : `${count} ${count > 10 ? 'ذكر' : 'أذكار'}`}
+                          {count === 0
+                            ? 'فارغة'
+                            : `${count} ${count > 10 ? 'ذكر' : 'أذكار'}`}
                         </span>
                       </div>
 
@@ -133,16 +165,32 @@ function GroupsSection() {
                       )}
                     </div>
 
-                    <span className={styles.openArrow}>
+                    <span
+                      className={styles.openArrow}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setEditorGroupId(g.id)
+                      }}
+                      role="button"
+                      tabIndex={-1}
+                      aria-hidden="true"
+                    >
                       <ArrowLeftIcon />
                     </span>
-                  </button>
+                  </div>
 
-                  <div className={styles.actions}>
+                  <div
+                    className={styles.actions}
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                  >
                     <button
                       type="button"
                       className={`${styles.actionBtn} ${styles.edit}`}
-                      onClick={() => setFormMode({ editing: g })}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setFormMode({ editing: g })
+                      }}
                       title="تعديل الاسم والوصف"
                       aria-label={`تعديل مجموعة ${g.name}`}
                     >
@@ -151,7 +199,10 @@ function GroupsSection() {
                     <button
                       type="button"
                       className={`${styles.actionBtn} ${styles.danger}`}
-                      onClick={() => setDeleteTarget(g)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setDeleteTarget(g)
+                      }}
                       title="حذف المجموعة"
                       aria-label={`حذف مجموعة ${g.name}`}
                     >
@@ -185,11 +236,11 @@ function GroupsSection() {
         danger
       />
 
-      {/* نافذة تحرير محتوى وترتيب الأذكار */}
+      {/* ✅ نافذة تحرير محتوى وترتيب الأذكار (اللي كانت مفقودة!) */}
       <GroupEditorModal
         isOpen={editorGroupId !== null}
-        onClose={() => setEditorGroupId(null)}
-        group={editorGroup}
+        onClose={closeEditor}
+        group={effectiveGroup}
         allAdhkar={allAdhkar}
         onAddItem={handleAddGroupItem}
         onUpdateItem={handleUpdateGroupItem}

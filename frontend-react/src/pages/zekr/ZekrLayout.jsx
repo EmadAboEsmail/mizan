@@ -1,24 +1,17 @@
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Outlet } from 'react-router-dom'
 import { useZekrData } from '@/context/ZekrDataContext'
-import Tabs from '@/components/zekr_app/zekr/Tabs.jsx'
 import ThemeToggle from '@/components/ui/ThemeToggle.jsx'
+import BottomNav from '@/ui/BottomNav/BottomNav.jsx'
 import styles from './ZekrLayout.module.scss'
 
-const TABS = [
-  { id: 'sabh', label: 'سبحة', icon: '📿' },
-  { id: 'stats', label: 'إحصائيات', icon: '📊' },
-  { id: 'settings', label: 'إعدادات', icon: '⚙️' },
+const NAV_ITEMS = [
+  { to: '/zekr/sabh', label: 'السبحة', icon: '📿' },
+  { to: '/zekr/stats', label: 'الإحصائيات', icon: '📊' },
+  { to: '/zekr/settings', label: 'الإعدادات', icon: '⚙️' },
 ]
-const VALID_TABS = TABS.map((t) => t.id)
 
 function ZekrLayout() {
   const { loading, error, loadInitialData } = useZekrData()
-  const location = useLocation()
-  const navigate = useNavigate()
-
-  // الـ activeTab مشتق من الـ URL
-  const segment = location.pathname.split('/').filter(Boolean).pop()
-  const activeTab = VALID_TABS.includes(segment) ? segment : 'sabh'
 
   if (loading) {
     return (
@@ -57,16 +50,12 @@ function ZekrLayout() {
       </header>
 
       <div className={styles.container}>
-        <Tabs
-          tabs={TABS}
-          active={activeTab}
-          onChange={(id) => navigate(`/zekr/${id}`)}
-        />
-
         <main className={styles.content}>
           <Outlet />
         </main>
       </div>
+
+      <BottomNav items={NAV_ITEMS} accent="zekr" />
     </div>
   )
 }

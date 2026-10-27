@@ -1,39 +1,174 @@
-@use '@/styles/tokens' as *;
-
 .buttons {
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: $space-5;
+  justify-content: center;
   width: 100%;
 }
 
-// ─── Reset Button ───
-.reset {
-  width: 60px;
-  height: 60px;
+.counterWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// ═══════════════════════════════════════════════════════
+// الزر الدائري الكبير
+// ═══════════════════════════════════════════════════════
+.click {
+  position: relative;
+  width: min(62vw, 232px);
+  aspect-ratio: 1;
   border-radius: 50%;
-  background: var(--bg-elevated);
-  color: var(--text-muted);
-  border: 1.5px solid var(--border-default);
-  font-size: $font-lg;
+  border: none;
+  background: transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all $transition-base;
-  box-shadow: $shadow-sm;
   touch-action: manipulation;
-  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--duration-fast) var(--ease-out);
+  padding: 0;
 
-  body.dark & {
-    box-shadow: $shadow-dark-sm;
+  // الخلفية الداخلية
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 14px;
+    background: var(--bg-card);
+    border-radius: 50%;
+    box-shadow: var(--shadow-md);
+    transition: box-shadow var(--duration-base) var(--ease-out),
+      background-color var(--duration-base) var(--ease-out);
   }
 
+  &:hover::before {
+    box-shadow: var(--shadow-lg);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--zekr);
+    outline-offset: 6px;
+    border-radius: 50%;
+  }
+}
+
+// SVG Ring
+.ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ringBg {
+  fill: none;
+  stroke: var(--border-subtle);
+  transition: stroke var(--duration-base) var(--ease-out);
+
+  body.dark & {
+    stroke: var(--border-default);
+  }
+}
+
+.ringProgress {
+  fill: none;
+  stroke: var(--zekr);
+  transition: stroke-dashoffset 0.5s var(--ease-out),
+    stroke var(--duration-base) var(--ease-out);
+  filter: drop-shadow(0 0 6px var(--zekr-soft));
+}
+
+// المحتوى الداخلي (العداد)
+.inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  pointer-events: none;
+  text-align: center;
+}
+
+.bigCount {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 9vw, 3.2rem);
+  font-weight: 900;
+  color: var(--text-primary);
+  line-height: 1;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+  transition: color var(--duration-base) var(--ease-out);
+}
+
+.fromTarget {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.2px;
+}
+
+.hintText {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-faint);
+  letter-spacing: 0.3px;
+}
+
+// حالة الاكتمال
+.complete {
+  .ringProgress {
+    stroke: var(--success);
+    filter: drop-shadow(0 0 10px var(--success-soft));
+  }
+
+  .bigCount {
+    color: var(--zekr);
+  }
+
+  &::before {
+    box-shadow: 0 0 0 2px var(--zekr-border), var(--shadow-lg);
+  }
+}
+
+// زر إعادة الضبط
+.reset {
+  position: absolute;
+  bottom: -8px;
+  inset-inline-end: -8px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  color: var(--text-muted);
+  font-size: 1.15rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--duration-fast) var(--ease-out);
+  z-index: 3;
+  touch-action: manipulation;
+
   &:hover:not(:disabled) {
-    background: var(--bg-hover);
-    color: var(--text-primary);
-    border-color: var(--border-strong);
+    background: var(--danger-soft);
+    border-color: var(--danger-border);
+    color: var(--danger);
+    transform: scale(1.05);
   }
 
   &:active:not(:disabled) {
@@ -41,122 +176,73 @@
   }
 
   &:disabled {
-    opacity: 0.4;
+    opacity: 0.35;
     cursor: not-allowed;
   }
 }
 
-// ─── Main Tally Button ───
-.click {
-  --ring-color: var(--brand);
-  --ring-bg: var(--border-default);
-  --progress: 0%;
-
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  border: none;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-primary);
-  font-size: $font-lg;
-  font-weight: $weight-bold;
-  cursor: pointer;
-  touch-action: manipulation;
-  user-select: none;
-
-  // Progress ring
-  background: conic-gradient(
-    var(--ring-color) var(--progress),
-    var(--ring-bg) var(--progress)
-  );
-  box-shadow:
-    $shadow-lg,
-    inset 0 2px 4px rgba(255, 255, 255, 0.1);
-
-  body.dark & {
-    box-shadow:
-      $shadow-dark-lg,
-      inset 0 2px 4px rgba(255, 255, 255, 0.05);
-  }
-
-  // Inner circle
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 8px;
-    background: var(--bg-elevated);
-    border-radius: 50%;
-    z-index: 0;
-    transition: background $transition-base;
-  }
-
-  &:hover::before {
-    background: var(--bg-hover);
-  }
-
-  > * {
-    position: relative;
-    z-index: 1;
-    padding: $space-5;
-    text-align: center;
-    line-height: 1.4;
-    word-break: break-word;
-    max-width: 90%;
-  }
-
-  @media (max-width: 380px) {
-    width: 180px;
-    height: 180px;
-    font-size: $font-base;
-  }
-}
-
-// ─── Complete State ───
-.complete {
-  --ring-color: var(--success);
-  --ring-bg: var(--success);
-
-  &::before {
-    box-shadow: inset 0 0 30px var(--success-bg);
-  }
-}
-
-// ─── Click Animation ───
+// ═══════════════════════════════════════════════════════
+// حركة النبض عند النقر
+// ═══════════════════════════════════════════════════════
 .clicked {
-  animation: pulse 0.18s ease;
+  animation: pulse 0.18s var(--ease-out);
 }
 
 @keyframes pulse {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(0.93); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.94);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
-// ─── Focus Mode Button ───
-.floatingRightBtn {
+// ═══════════════════════════════════════════════════════
+// وضع التركيز — زر عائم صغير
+// ═══════════════════════════════════════════════════════
+.floatingFocusBtn {
   position: fixed;
-  bottom: max($space-6, env(safe-area-inset-bottom));
-  right: max($space-5, env(safe-area-inset-right));
-  width: 80px;
-  height: 80px;
-  font-size: $font-sm;
-  z-index: $z-focus-mode;
-  box-shadow:
-    $shadow-xl,
-    0 0 0 3px var(--bg-elevated);
+  bottom: max(28px, env(safe-area-inset-bottom));
+  inset-inline-end: max(24px, env(safe-area-inset-right));
+  width: 88px;
+  height: 88px;
+  font-size: 1rem;
+  font-weight: 800;
+  z-index: var(--z-focus-mode);
+  background: conic-gradient(
+    var(--zekr) var(--progress, 0%),
+    rgba(255, 255, 255, 0.12) var(--progress, 0%)
+  );
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.7),
+    0 0 0 2px rgba(255, 255, 255, 0.15);
 
   &::before {
-    inset: 5px;
+    inset: 6px;
+    background: #0a0a0a;
+    box-shadow: none;
   }
 
-  > * {
-    padding: $space-2;
-  }
-
+  .focusLabel {
+  position: relative;
+  z-index: 2;
+  color: #F5F0E8;
+  font-family: var(--font-display);
+}
   &:active {
     transform: scale(0.92);
+  }
+
+  &.complete {
+    background: conic-gradient(
+      var(--success) 100%,
+      var(--success) 100%
+    );
+
+    &::before {
+      background: #0a0a0a;
+    }
   }
 }

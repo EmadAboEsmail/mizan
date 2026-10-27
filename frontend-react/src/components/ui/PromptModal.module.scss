@@ -2,22 +2,22 @@
 
 .input {
   width: 100%;
-  min-height: $touch-target;
-  padding: $space-3 $space-4;
-  font-size: $font-lg;
-  font-weight: $weight-semibold;
+  min-height: var(--touch-target);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
   background: var(--bg-subtle);
   border: 1.5px solid var(--border-default);
-  border-radius: $radius-md;
+  border-radius: var(--radius-md);
   color: var(--text-primary);
   text-align: center;
   outline: none;
-  transition: all $transition-base;
+  transition: all var(--duration-base) var(--ease-out);
   font-family: inherit;
 
   &::placeholder {
     color: var(--text-faint);
-    font-weight: $weight-regular;
+    font-weight: var(--weight-regular);
   }
 
   &:focus {
@@ -28,23 +28,23 @@
 }
 
 .error {
-  font-size: $font-sm;
-  font-weight: $weight-semibold;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
   color: var(--danger);
   text-align: center;
-  padding: $space-2 $space-3;
+  padding: var(--space-2) var(--space-3);
   background: var(--danger-bg);
-  border-radius: $radius-sm;
-  margin-top: $space-2;
+  border-radius: var(--radius-sm);
+  margin-top: var(--space-2);
 }
 
 .buttons {
   display: flex;
   flex-direction: column-reverse;
-  gap: $space-2;
-  margin-top: $space-4;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
 
-  @media (min-width: $bp-sm) {
+  @media (min-width: 640px) {
     flex-direction: row;
   }
 }
@@ -52,13 +52,13 @@
 .cancel,
 .confirm {
   flex: 1;
-  min-height: $touch-target;
-  padding: $space-3 $space-4;
-  font-size: $font-base;
-  font-weight: $weight-semibold;
-  border-radius: $radius-md;
+  min-height: var(--touch-target);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-base);
+  font-weight: var(--weight-semibold);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all $transition-base;
+  transition: all var(--duration-base) var(--ease-out);
   touch-action: manipulation;
 
   &:active:not(:disabled) {

@@ -1,45 +1,60 @@
-import { useTheme } from '@/context/ThemeContext.jsx'
+import { useEffect, useState } from 'react'
 import styles from './ThemeToggle.module.scss'
 
-// أيقونة الشمس
 const SunIcon = () => (
-  <svg className={styles.icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="5" />
-    <line x1="12" y1="1" x2="12" y2="3" />
-    <line x1="12" y1="21" x2="12" y2="23" />
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-    <line x1="1" y1="12" x2="3" y2="12" />
-    <line x1="21" y1="12" x2="23" y2="12" />
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+  <svg
+    className={styles.icon}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
   </svg>
 )
 
-// أيقونة القمر
 const MoonIcon = () => (
-  <svg className={styles.icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    className={styles.icon}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
   </svg>
 )
 
-function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme()
-  const isDark = theme === 'dark'
+export default function ThemeToggle() {
+  const [isDark, setIsDark] = useState(
+    () => document.body.classList.contains('dark')
+  )
+
+  useEffect(() => {
+    document.body.classList.toggle('dark', isDark)
+    try {
+      localStorage.setItem('theme', isDark ? 'dark' : 'light')
+    } catch { }
+  }, [isDark])
 
   return (
     <button
       type="button"
-      className={`${styles.toggle} ${isDark ? styles.isDark : styles.isLight}`}
-      onClick={toggleTheme}
-      aria-label={isDark ? 'التبديل إلى الوضع الفاتح' : 'التبديل إلى الوضع الداكن'}
-      title={isDark ? 'تفعيل الوضع الفاتح' : 'تفعيل الوضع الداكن'}
+      className={styles.toggle}
+      onClick={() => setIsDark((v) => !v)}
+      aria-label={isDark ? 'الوضع الفاتح' : 'الوضع الداكن'}
+      title={isDark ? 'الوضع الفاتح' : 'الوضع الداكن'}
     >
-      <span className={styles.iconContainer} key={theme}>
+      <span key={isDark ? 'sun' : 'moon'} className={styles.iconContainer}>
         {isDark ? <SunIcon /> : <MoonIcon />}
       </span>
     </button>
   )
 }
-
-export default ThemeToggle

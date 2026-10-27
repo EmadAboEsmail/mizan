@@ -5,12 +5,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: $space-4;
+  gap: var(--space-4);
   width: 100%;
   min-height: 76px;
-  padding: $space-4 $space-5;
-  margin-bottom: $space-5;
-  border-radius: $radius-xl;
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-xl);
   background:
     linear-gradient(
       135deg,
@@ -20,7 +20,7 @@
   border: 1px solid var(--brand-border);
   text-decoration: none;
   color: inherit;
-  transition: all $transition-base;
+  transition: all var(--duration-base) var(--ease-out);
   touch-action: manipulation;
   overflow: hidden;
   animation: fadeInUp 0.4s ease-out 0.1s both;
@@ -50,10 +50,10 @@
   &:hover {
     transform: translateY(-2px);
     border-color: var(--brand);
-    box-shadow: $shadow-md;
+    box-shadow: var(--shadow-md);
 
     body.dark & {
-      box-shadow: $shadow-dark-md;
+      box-shadow: var(--shadow-dark-md);
     }
 
     &::before {
@@ -90,13 +90,13 @@
   justify-content: center;
   width: 48px;
   height: 48px;
-  border-radius: $radius-md;
+  border-radius: var(--radius-md);
   background: var(--bg-elevated);
-  box-shadow: $shadow-sm;
-  transition: transform $transition-base;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-base) var(--ease-out);
 
   body.dark & {
-    box-shadow: $shadow-dark-sm;
+    box-shadow: var(--shadow-dark-sm);
   }
 }
 
@@ -109,8 +109,8 @@
 }
 
 .label {
-  font-size: $font-xs;
-  font-weight: $weight-bold;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
   color: var(--brand);
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -118,8 +118,8 @@
 }
 
 .text {
-  font-size: $font-lg;
-  font-weight: $weight-bold;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -128,8 +128,8 @@
 }
 
 .count {
-  font-size: $font-xs;
-  font-weight: $weight-medium;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
   color: var(--text-muted);
   line-height: 1.2;
 }
@@ -148,8 +148,8 @@
   border-radius: 50%;
   background: var(--bg-elevated);
   transition:
-    transform $transition-base,
-    background $transition-base;
+    transform var(--duration-base) var(--ease-out),
+    background var(--duration-base) var(--ease-out);
 
   body.dark & {
     background: var(--bg-subtle);

@@ -60,8 +60,8 @@ function AdhkarFormModal({ isOpen, onClose, onConfirm, initial = null }) {
       isOpen={isOpen}
       onClose={onClose}
       title={initial ? 'تعديل الذكر' : 'إضافة ذكر جديد'}
-    >
-      <form className={styles.form} onSubmit={handleSubmit} noValidate>
+      variant="sheet"
+    >      <form className={styles.form} onSubmit={handleSubmit} noValidate>
         {/* حقل نص الذكر */}
         <div className={styles.fieldGroup}>
           <label htmlFor="zekr-text" className={styles.label}>

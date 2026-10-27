@@ -2,40 +2,40 @@
 
 .toastContainer {
   position: fixed;
-  top: max($space-4, env(safe-area-inset-top));
+  top: max(var(--space-4), env(safe-area-inset-top));
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
-  gap: $space-2;
-  z-index: $z-toast;
+  gap: var(--space-2);
+  z-index: var(--z-toast);
   pointer-events: none;
-  width: calc(100% - #{$space-8});
+  width: calc(100% - #{var(--space-8)});
   max-width: 400px;
 
-  @media (min-width: $bp-md) {
-    top: $space-6;
+  @media (min-width: 768px) {
+    top: var(--space-6);
   }
 }
 
 .toast {
   display: flex;
   align-items: center;
-  gap: $space-3;
-  padding: $space-3 $space-4;
-  border-radius: $radius-md;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
   background: var(--bg-elevated);
   color: var(--text-primary);
-  font-size: $font-sm;
-  font-weight: $weight-semibold;
-  box-shadow: $shadow-lg;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  box-shadow: var(--shadow-lg);
   border: 1px solid var(--border-default);
   border-inline-start: 4px solid var(--info);
   animation: slideDown 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
   pointer-events: auto;
 
   body.dark & {
-    box-shadow: $shadow-dark-lg;
+    box-shadow: var(--shadow-dark-lg);
   }
 }
 
@@ -73,7 +73,7 @@
 }
 
 .icon {
-  font-size: $font-lg;
+  font-size: var(--text-lg);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -81,7 +81,7 @@
 
 .message {
   flex: 1;
-  line-height: $leading-snug;
+  line-height: var(--leading-snug);
 }
 
 // ─── Animation ───

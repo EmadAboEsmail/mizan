@@ -1,65 +1,77 @@
 import { Link } from 'react-router-dom'
 import styles from './AppCard.module.scss'
 
-// أيقونة سهم التنقل
-const ArrowLeftIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="15 18 9 12 15 6" />
+const ArrowIcon = () => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <line x1="19" y1="12" x2="5" y2="12" />
+    <polyline points="12 19 5 12 12 5" />
   </svg>
 )
 
-function AppCard({ app, index = 0 }) {
+export default function AppCard({ app, index = 0 }) {
   const isAvailable = !!app.available
-
-  // نحدد نوع العنصر: Link لو متاح، و div لو غير متاح (بدون تكرار JSX)
   const Component = isAvailable ? Link : 'div'
+  const accentVar = `var(--${app.accent || 'zekr'})`
 
   return (
     <Component
       to={isAvailable ? app.path : undefined}
-      className={`${styles.card} ${isAvailable ? styles.available : styles.disabled}`}
+      className={`${styles.card} ${isAvailable ? styles.available : styles.disabled
+        }`}
       style={{
-        animationDelay: `${index * 0.08}s`,
-        '--accent-color': app.accentColor || '#059669', // تمرير اللون المميز كـ CSS Variable
+        animationDelay: `${index * 0.08 + 0.15}s`,
+        '--accent': accentVar,
+        '--accent-soft': `var(--${app.accent}-soft)`,
+        '--accent-border': `var(--${app.accent}-border)`,
       }}
       aria-disabled={!isAvailable}
-      aria-label={`${app.name} - ${isAvailable ? 'متاح للاستخدام' : 'قيد التطوير'}`}
+      aria-label={`${app.name} — ${isAvailable ? 'افتح' : 'قريباً'}`}
     >
-      {/* الشريط العلوي للبطاقة: الأيقونة مع التصنيف والشارة */}
-      <div className={styles.header}>
-        <div className={styles.iconWrapper}>
-          <span className={styles.icon}>{app.icon}</span>
-        </div>
+      <div className={styles.accentStrip} aria-hidden="true" />
 
-        <div className={styles.badgeGroup}>
-          {app.category && (
-            <span className={styles.category}>{app.category}</span>
-          )}
-          <span className={`${styles.statusBadge} ${isAvailable ? styles.statusActive : styles.statusSoon}`}>
-            {isAvailable ? 'متاح' : 'قريباً'}
+      <header className={styles.header}>
+        <div className={styles.iconWrap}>
+          <span className={styles.icon} aria-hidden="true">
+            {app.icon}
           </span>
         </div>
-      </div>
 
-      {/* تفاصيل البطاقة */}
+        <div className={styles.headerMeta}>
+          <span className={styles.category}>{app.category}</span>
+          {!isAvailable && (
+            <span className={styles.soonBadge}>قريباً</span>
+          )}
+        </div>
+      </header>
+
       <div className={styles.body}>
         <h2 className={styles.name}>{app.name}</h2>
-        <p className={styles.desc}>{app.description}</p>
+        <span className={styles.tagline}>{app.tagline}</span>
+        <p className={styles.description}>{app.description}</p>
       </div>
 
-      {/* تذييل البطاقة (Call To Action) */}
-      <div className={styles.footer}>
+      <footer className={styles.footer}>
         {isAvailable ? (
-          <div className={styles.actionText}>
-            <span>فتح التطبيق</span>
-            <span className={styles.arrow}><ArrowLeftIcon /></span>
-          </div>
+          <span className={styles.openCta}>
+            <span>افتح</span>
+            <span className={styles.arrow}>
+              <ArrowIcon />
+            </span>
+          </span>
         ) : (
-          <span className={styles.disabledHint}>قيد التطوير ⏳</span>
+          <span className={styles.disabledCta}>قيد التطوير</span>
         )}
-      </div>
+      </footer>
     </Component>
   )
 }
-
-export default AppCard

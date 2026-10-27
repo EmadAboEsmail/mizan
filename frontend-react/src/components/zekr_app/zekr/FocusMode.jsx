@@ -21,11 +21,8 @@ const ExpandIcon = () => (
 async function attemptFullscreen() {
   const docEl = document.documentElement
   if (!docEl) return false
-
   try {
-    if (document.fullscreenElement || document.webkitFullscreenElement) {
-      return true
-    }
+    if (document.fullscreenElement || document.webkitFullscreenElement) return true
     if (typeof docEl.requestFullscreen === 'function') {
       await docEl.requestFullscreen({ navigationUI: 'hide' })
       return true
@@ -51,9 +48,14 @@ function exitFullscreenSilent() {
       if (document.exitFullscreen) document.exitFullscreen().catch(() => { })
       else if (document.webkitExitFullscreen) document.webkitExitFullscreen()
     }
-  } catch (err) {
-    // تجاهل
-  }
+  } catch { }
+}
+
+// ✅ تنسيق الوقت mm:ss
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return `${m}:${s.toString().padStart(2, '0')}`
 }
 
 function FocusMode({ isOpen = true, onClose, onCount, children }) {
@@ -61,38 +63,44 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
   onCloseRef.current = onClose
 
   const isClosingRef = useRef(false)
-  const [isFullscreen, setIsFullscreen] = useState(false)
+  const hasTriedFullscreenRef = useRef(false)  // ✅ محاولة fullscreen مرة واحدة
+  const startTimeRef = useRef(null)
 
-  // ═══════════════════════════════════════
-  // ✅ handleClose — الطريقة الوحيدة للخروج
-  // بيتنادى من: زر Exit, Escape, fullscreenchange (ESC)
-  // ═══════════════════════════════════════
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [sessionTime, setSessionTime] = useState(0)
+
+  // ✅ عدّاد وقت الجلسة
+  useEffect(() => {
+    if (!isOpen) {
+      setSessionTime(0)
+      startTimeRef.current = null
+      return
+    }
+    startTimeRef.current = Date.now()
+    const interval = setInterval(() => {
+      if (startTimeRef.current) {
+        setSessionTime(Math.floor((Date.now() - startTimeRef.current) / 1000))
+      }
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [isOpen])
+
   const handleClose = useCallback(() => {
     if (isClosingRef.current) return
     isClosingRef.current = true
-
-    // الخروج من fullscreen
     exitFullscreenSilent()
-
-    // ثم استدعاء onClose
     onCloseRef.current?.()
   }, [])
 
-  // ═══════════════════════════════════════
-  // 1. Fullscreen monitoring (بدون exitFullscreen في cleanup!)
-  // ═══════════════════════════════════════
+  // ✅ Fullscreen monitoring (بدون تغييرات عن نسختك)
   useEffect(() => {
     if (!isOpen) return
-
     isClosingRef.current = false
+    hasTriedFullscreenRef.current = false
 
     const handleFullscreenChange = () => {
-      const active = !!(
-        document.fullscreenElement || document.webkitFullscreenElement
-      )
+      const active = !!(document.fullscreenElement || document.webkitFullscreenElement)
       setIsFullscreen(active)
-
-      // لو المستخدم خرج من fullscreen بـ ESC → نقفل FocusMode
       if (!active && !isClosingRef.current) {
         handleClose()
       }
@@ -100,25 +108,15 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
 
     document.addEventListener('fullscreenchange', handleFullscreenChange)
     document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
+    setIsFullscreen(!!(document.fullscreenElement || document.webkitFullscreenElement))
 
-    setIsFullscreen(
-      !!(document.fullscreenElement || document.webkitFullscreenElement)
-    )
-
-    // ⚠️ مفيش exitFullscreen هنا!
-    // الـ exitFullscreen بيتنادى بس في handleClose
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange)
-      document.removeEventListener(
-        'webkitfullscreenchange',
-        handleFullscreenChange
-      )
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange)
     }
   }, [isOpen, handleClose])
 
-  // ═══════════════════════════════════════
-  // 2. Escape key
-  // ═══════════════════════════════════════
+  // ✅ Escape
   useEffect(() => {
     if (!isOpen) return
     const handleKeyDown = (e) => {
@@ -128,73 +126,70 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, handleClose])
 
-  // ═══════════════════════════════════════
-  // 3. Wake Lock
-  // ═══════════════════════════════════════
+  // ✅ Wake Lock
   useEffect(() => {
     if (!isOpen) return
-    let wakeLock = null
+    if (!('wakeLock' in navigator)) return
 
-    const requestWakeLock = async () => {
+    let wakeLock = null
+    let cancelled = false
+
+    const acquire = async () => {
       try {
-        if ('wakeLock' in navigator) {
-          wakeLock = await navigator.wakeLock.request('screen')
+        wakeLock = await navigator.wakeLock.request('screen')
+        if (cancelled) {
+          wakeLock?.release().catch(() => { })
+          wakeLock = null
         }
-      } catch (err) {
-        // تجاهل
+      } catch { }
+    }
+    acquire()
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible' && !wakeLock && !cancelled) {
+        acquire()
       }
     }
-
-    requestWakeLock()
-
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') requestWakeLock()
-    }
-    document.addEventListener('visibilitychange', handleVisibility)
+    document.addEventListener('visibilitychange', onVisibility)
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibility)
-      if (wakeLock) wakeLock.release().catch(() => { })
+      cancelled = true
+      document.removeEventListener('visibilitychange', onVisibility)
+      wakeLock?.release().catch(() => { })
+      wakeLock = null
     }
   }, [isOpen])
 
-  // ═══════════════════════════════════════
-  // 4. قفل التمرير
-  // ═══════════════════════════════════════
+  // ✅ Scroll lock
   useEffect(() => {
     if (!isOpen) return
-    const originalOverflow = document.body.style.overflow
-    const originalOverscroll = document.body.style.overscrollBehavior
+    const prevOverflow = document.body.style.overflow
+    const prevOverscroll = document.body.style.overscrollBehavior
     document.body.style.overflow = 'hidden'
     document.body.style.overscrollBehavior = 'none'
     return () => {
-      document.body.style.overflow = originalOverflow
-      document.body.style.overscrollBehavior = originalOverscroll
+      document.body.style.overflow = prevOverflow
+      document.body.style.overscrollBehavior = prevOverscroll
     }
   }, [isOpen])
 
   if (!isOpen) return null
 
-  // ═══════════════════════════════════════
-  // 5. Tap handler
-  // ═══════════════════════════════════════
+  // ✅ Tap على أي مكان = تسبيح (بدون اهتزاز هنا — ZekrSabh مسؤول)
+  // ✅ Fullscreen-on-tap يشتغل مرة واحدة بس
   const handleTapScreen = async () => {
-    if (!isFullscreen) {
+    if (!isFullscreen && !hasTriedFullscreenRef.current) {
+      hasTriedFullscreenRef.current = true
       await attemptFullscreen()
     }
     if (onCount) {
       onCount()
-      if ('vibrate' in navigator) {
-        navigator.vibrate(15)
-      }
     }
   }
 
-  // ═══════════════════════════════════════
-  // 6. زر Fullscreen اليدوي
-  // ═══════════════════════════════════════
   const handleFullscreenBtn = async (e) => {
     e.stopPropagation()
+    hasTriedFullscreenRef.current = true
     await attemptFullscreen()
   }
 
@@ -206,7 +201,6 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
       aria-modal="true"
       aria-label="وضع التركيز التام"
     >
-      {/* زر الخروج */}
       <button
         type="button"
         className={styles.exitBtn}
@@ -220,7 +214,6 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
         <ExitFocusIcon />
       </button>
 
-      {/* زر Fullscreen — يظهر لو مش in fullscreen */}
       {!isFullscreen && (
         <button
           type="button"
@@ -233,7 +226,11 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
         </button>
       )}
 
-      {/* محتوى الشاشة */}
+      {/* ✅ مؤقّت الجلسة في الركن السفلي */}
+      <div className={styles.sessionTime} aria-hidden="true">
+        {formatTime(sessionTime)}
+      </div>
+
       <div className={styles.centerContainer}>{children}</div>
     </div>,
     document.body

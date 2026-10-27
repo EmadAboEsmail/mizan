@@ -249,6 +249,15 @@ function StatsTab() {
   // ===========================
   return (
     <div className={styles.stats}>
+      <header className={styles.pageHeader}>
+        <div className={styles.headerIcon}>📊</div>
+        <div className={styles.headerText}>
+          <h1 className={styles.pageTitle}>إحصائياتك</h1>
+          <p className={styles.pageSubtitle}>
+            تتبّع رحلتك مع الأذكار
+          </p>
+        </div>
+      </header>
       <PeriodTabs value={period} onChange={setPeriod} />
       <ZekrFilter adhkar={allAdhkar} value={zekrId} onChange={setZekrId} />
 

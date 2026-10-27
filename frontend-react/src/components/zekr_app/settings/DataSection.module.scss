@@ -1,336 +1,361 @@
 @use '@/styles/tokens' as *;
 
+// ═══════════════════════════════════════
+// Container
+// ═══════════════════════════════════════
 .container {
   display: flex;
   flex-direction: column;
-  gap: $space-5;
+  gap: var(--space-5);
   width: 100%;
 }
 
 // ═══════════════════════════════════════
-// Section Title
+// Sub Section Title
 // ═══════════════════════════════════════
 .subSectionTitle {
-  font-size: $font-sm;
-  font-weight: $weight-bold;
-  color: var(--text-muted);
-  margin: 0 0 $space-2;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 800;
+  color: var(--text-secondary);
+  letter-spacing: -0.2px;
 }
 
 // ═══════════════════════════════════════
-// Backup Section
+// 1. Backup Section
 // ═══════════════════════════════════════
 .backupSection {
   display: flex;
   flex-direction: column;
-  gap: $space-3;
 }
 
 .backupGrid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: $space-3;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
 
-  @media (min-width: $bp-md) {
-    grid-template-columns: repeat(2, 1fr);
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
   }
 }
 
 .backupCard {
   background: var(--bg-subtle);
   border: 1px solid var(--border-default);
-  border-radius: $radius-md;
-  padding: $space-4;
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: $space-3;
-  transition: all $transition-base;
+  gap: var(--space-4);
+  transition: all var(--duration-base) var(--ease-out);
 
   &:hover {
-    background: var(--bg-hover);
-    border-color: var(--border-strong);
+    border-color: var(--zekr-border);
   }
 }
 
 .backupHeader {
   display: flex;
   align-items: flex-start;
-  gap: $space-2;
+  gap: var(--space-3);
 }
 
 .backupIcon {
   font-size: 1.4rem;
   line-height: 1;
-  flex-shrink: 0;
 }
 
 .backupTitle {
-  font-size: $font-sm;
-  font-weight: $weight-bold;
-  color: var(--text-primary);
   display: block;
-  margin-bottom: 2px;
-  line-height: 1.3;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
 }
 
 .backupDesc {
-  font-size: $font-xs;
-  color: var(--text-muted);
   margin: 0;
-  line-height: 1.4;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  line-height: 1.5;
 }
 
 .exportBtn,
 .importBtn {
   width: 100%;
-  min-height: 40px;
-  padding: $space-2 $space-4;
-  font-size: $font-sm;
-  font-weight: $weight-bold;
-  border-radius: $radius-sm;
+  padding: 10px var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all $transition-base;
+  transition: all var(--duration-base) var(--ease-out);
   touch-action: manipulation;
-
-  &:active:not(:disabled) {
-    transform: scale(0.97);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  min-height: 42px;
 
   &:focus-visible {
-    outline: 2px solid var(--brand);
+    outline: 2px solid var(--zekr);
     outline-offset: 2px;
   }
 }
 
 .exportBtn {
-  background: var(--brand);
+  background: var(--zekr);
   color: var(--text-on-brand);
   border: none;
-  box-shadow: $shadow-brand;
+  box-shadow: 0 2px 8px var(--zekr-soft);
 
-  body.dark & {
-    box-shadow: none;
+  &:hover {
+    filter: brightness(0.94);
+    box-shadow: 0 4px 14px var(--zekr-soft);
   }
 
-  &:hover:not(:disabled) {
-    background: var(--brand-dark);
-    box-shadow: $shadow-brand-hover;
+  &:active {
+    transform: scale(0.97);
   }
 }
 
 .importBtn {
   background: transparent;
-  color: var(--brand);
-  border: 1.5px solid var(--brand-border);
+  color: var(--zekr);
+  border: 1px solid var(--zekr-border);
 
-  &:hover:not(:disabled) {
-    background: var(--brand-bg);
-    border-color: var(--brand);
+  &:hover {
+    background: var(--zekr-soft);
+    border-color: var(--zekr);
+  }
+
+  &:active {
+    transform: scale(0.97);
   }
 }
 
 // ═══════════════════════════════════════
-// Status Message
+// Status Message (Import Feedback)
 // ═══════════════════════════════════════
 .statusMessage {
-  padding: $space-3 $space-4;
-  border-radius: $radius-md;
-  font-size: $font-sm;
-  font-weight: $weight-semibold;
+  margin-top: var(--space-3);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 600;
   text-align: center;
-  line-height: 1.4;
-  animation: fadeIn 0.25s ease;
+  animation: fadeIn var(--duration-base) var(--ease-out);
+  line-height: 1.5;
 }
 
 .statusSuccess {
-  background: var(--success-bg);
+  background: var(--success-soft);
   color: var(--success);
   border: 1px solid var(--success-border);
 }
 
 .statusError {
-  background: var(--danger-bg);
+  background: var(--danger-soft);
   color: var(--danger);
   border: 1px solid var(--danger-border);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
 // ═══════════════════════════════════════
-// Reset Options List
+// 2. Options List (Reset Options)
 // ═══════════════════════════════════════
 .optionsList {
   display: flex;
   flex-direction: column;
-  gap: $space-2;
+  gap: var(--space-2);
 }
 
 .row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: $space-3;
-  padding: $space-3 $space-4;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
   background: var(--bg-subtle);
   border: 1px solid var(--border-subtle);
-  border-radius: $radius-md;
-  transition: all $transition-fast;
+  border-radius: var(--radius-md);
+  transition: border-color var(--duration-fast) var(--ease-out);
 
   &:hover {
-    background: var(--bg-hover);
-    border-color: var(--border-default);
+    border-color: var(--border-strong);
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
   }
 }
 
 .rowInfo {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-width: 0;
+  gap: 4px;
   flex: 1;
 }
 
 .titleLine {
   display: flex;
   align-items: center;
-  gap: $space-2;
+  gap: 6px;
 }
 
 .icon {
-  font-size: $font-base;
+  font-size: 1rem;
   line-height: 1;
 }
 
 .title {
-  font-size: $font-sm;
-  font-weight: $weight-bold;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 700;
   color: var(--text-primary);
-  line-height: 1.3;
 }
 
 .desc {
-  font-size: $font-xs;
-  color: var(--text-muted);
   margin: 0;
-  line-height: 1.4;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  line-height: 1.5;
 }
 
-// ═══════════════════════════════════════
-// Action Button
-// ═══════════════════════════════════════
 .actionBtn {
-  min-height: 36px;
-  padding: 6px $space-4;
-  font-size: $font-xs;
-  font-weight: $weight-bold;
-  border-radius: $radius-sm;
-  border: 1px solid var(--border-strong);
-  background: var(--bg-elevated);
+  padding: 8px 16px;
+  background: var(--bg-card);
   color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
-  transition: all $transition-fast;
-  flex-shrink: 0;
+  transition: all var(--duration-fast) var(--ease-out);
   touch-action: manipulation;
+  flex-shrink: 0;
+
+  @media (max-width: 480px) {
+    width: 100%;
+  }
 
   &:hover {
     background: var(--bg-hover);
+    border-color: var(--border-strong);
     color: var(--text-primary);
   }
 
   &:active {
-    transform: scale(0.96);
+    transform: scale(0.97);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--brand);
+    outline: 2px solid var(--zekr);
     outline-offset: 2px;
   }
 }
 
 // ═══════════════════════════════════════
-// Danger Zone
+// 3. Danger Zone
 // ═══════════════════════════════════════
 .dangerZone {
   display: flex;
-  flex-direction: column;
-  gap: $space-3;
-  padding: $space-4;
-  border-radius: $radius-lg;
-  background: var(--danger-bg);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--danger-soft);
   border: 1px solid var(--danger-border);
+  border-radius: var(--radius-lg);
+  flex-wrap: wrap;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
 }
 
 .dangerHeader {
   display: flex;
   align-items: flex-start;
-  gap: $space-2;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 200px;
 }
 
 .dangerIcon {
   font-size: 1.4rem;
   line-height: 1;
-  flex-shrink: 0;
 }
 
 .dangerInfo {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .dangerTitle {
-  font-size: $font-sm;
-  font-weight: $weight-extrabold;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 800;
   color: var(--danger);
-  line-height: 1.3;
 }
 
 .dangerDesc {
-  font-size: $font-xs;
-  color: var(--text-muted);
   margin: 0;
-  line-height: 1.4;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  line-height: 1.5;
 }
 
 .dangerBtn {
-  min-height: 40px;
-  padding: $space-2 $space-5;
-  font-size: $font-sm;
-  font-weight: $weight-bold;
-  border-radius: $radius-md;
-  border: none;
+  padding: 10px 20px;
   background: var(--danger);
-  color: #ffffff;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
-  transition: all $transition-base;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+  box-shadow: 0 2px 8px var(--danger-soft);
+  transition: all var(--duration-fast) var(--ease-out);
   touch-action: manipulation;
-  align-self: flex-start;
+  flex-shrink: 0;
+
+  @media (max-width: 480px) {
+    width: 100%;
+  }
 
   &:hover {
-    background: var(--danger-dark);
-    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
+    filter: brightness(0.94);
+    box-shadow: 0 4px 14px var(--danger-soft);
   }
 
   &:active {
-    transform: scale(0.96);
+    transform: scale(0.97);
   }
 
   &:focus-visible {
     outline: 2px solid var(--danger);
     outline-offset: 2px;
+  }
+}
+
+// ═══════════════════════════════════════
+// Animations
+// ═══════════════════════════════════════
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

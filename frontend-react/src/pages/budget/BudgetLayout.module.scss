@@ -1,4 +1,3 @@
-
 @use '@/styles/tokens' as *;
 
 // ═══════════════════════════════════════
@@ -11,13 +10,24 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: $space-4 $space-4 calc(#{$space-8} + env(safe-area-inset-bottom, 0px));
+  // ✅ مساحة BottomNav + Safe area + padding
+  padding: var(--space-4) var(--space-4)
+    calc(
+      var(--bottom-nav-height) + var(--space-8) +
+        env(safe-area-inset-bottom, 0px)
+    );
   background: var(--bg-base);
   color: var(--text-primary);
-  transition: background-color $transition-base, color $transition-base;
+  transition:
+    background-color var(--duration-base) var(--ease-in-out),
+    color var(--duration-base) var(--ease-in-out);
 
-  @media (min-width: $bp-md) {
-    padding: $space-6 $space-6 $space-10;
+  @media (min-width: 768px) {
+    padding: var(--space-6) var(--space-6)
+      calc(
+        var(--bottom-nav-height) + var(--space-10) +
+          env(safe-area-inset-bottom, 0px)
+      );
   }
 }
 
@@ -26,28 +36,28 @@
 // ═══════════════════════════════════════
 .navHeader {
   width: 100%;
-  max-width: $container-max;
+  max-width: var(--container-max);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: $space-3;
-  margin-bottom: $space-4;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 
 .backBtn {
   display: inline-flex;
   align-items: center;
-  gap: $space-1;
+  gap: var(--space-1);
   min-height: 40px;
-  padding: $space-2 $space-3;
-  border-radius: $radius-md;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
   color: var(--text-secondary);
-  font-size: $font-sm;
-  font-weight: $weight-semibold;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
   text-decoration: none;
-  transition: all $transition-base;
+  transition: all var(--duration-base) var(--ease-out);
   touch-action: manipulation;
 
   &:hover {
@@ -69,7 +79,7 @@
 .headerActions {
   display: flex;
   align-items: center;
-  gap: $space-2;
+  gap: var(--space-2);
 }
 
 // ═══════════════════════════════════════
@@ -77,116 +87,26 @@
 // ═══════════════════════════════════════
 .container {
   width: 100%;
-  max-width: $container-max;
+  max-width: var(--container-max);
   display: flex;
   flex-direction: column;
   align-items: center;
+  // ✅ احتياطي إضافي
+  padding-bottom: var(--space-6);
 }
 
-// ═══════════════════════════════════════
-// Page Title
-// ═══════════════════════════════════════
 .pageTitle {
-  margin: 0 0 $space-4;
-  font-size: $font-2xl;
-  font-weight: $weight-extrabold;
+  margin: 0 0 var(--space-5);
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-extrabold);
+  letter-spacing: -0.5px;
   color: var(--text-primary);
-  letter-spacing: -0.03em;
-  text-align: center;
-  line-height: 1.2;
-
-  @media (min-width: $bp-md) {
-    font-size: $font-3xl;
-  }
 }
 
-// ═══════════════════════════════════════
-// Tabs
-// ═══════════════════════════════════════
-// ═══════════════════════════════════════
-// Tabs — مُصلح للـ overflow
-// ═══════════════════════════════════════
-.tabs {
-  width: 100%;
-  box-sizing: border-box;      // ✅ بيمنع الـ overflow
-  display: flex;
-  gap: 4px;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-subtle);
-  border-radius: $radius-lg;
-  padding: 4px;
-  margin-bottom: $space-5;
-  overflow: hidden;            // ✅ احتياطي
-}
-
-.tab {
-  flex: 1 1 0;                 // ✅ flex: 1 1 0 (مش 1)
-  min-width: 0;                // ✅ يسمح بالانضغاط
-  box-sizing: border-box;      // ✅
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: $space-1;
-  min-height: 44px;
-  padding: $space-2 $space-1;  // ✅ padding أصغر على الجوانب
-  font-size: $font-sm;
-  font-weight: $weight-bold;
-  background: transparent;
-  border: none;
-  border-radius: $radius-md;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: all $transition-base;
-  touch-action: manipulation;
-  white-space: nowrap;
-  overflow: hidden;
-
-  @media (min-width: $bp-md) {
-    padding: $space-2 $space-3;
-  }
-
-  &:hover:not(.active) {
-    color: var(--text-primary);
-    background: var(--bg-hover);
-  }
-
-  &.active {
-    background: var(--bg-elevated);
-    color: var(--brand);
-    box-shadow: $shadow-sm;
-
-    body.dark & {
-      box-shadow: $shadow-dark-sm;
-    }
-  }
-
-  &:active {
-    transform: scale(0.97);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--brand);
-    outline-offset: 2px;
-  }
-}
-
-.tabIcon {
-  font-size: $font-base;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.tabLabel {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;     // ✅ لو مش كفاية مساحة → "..."
-  min-width: 0;
-}// ═══════════════════════════════════════
-// Content
-// ═══════════════════════════════════════
 .content {
   width: 100%;
-  animation: fadeIn 0.3s ease forwards;
+  animation: fadeIn var(--duration-base) var(--ease-out);
 }
 
 // ═══════════════════════════════════════
@@ -194,13 +114,12 @@
 // ═══════════════════════════════════════
 .loadingScreen {
   min-height: 70vh;
-  min-height: 70dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: $space-4;
-  padding: $space-6;
+  gap: var(--space-4);
+  padding: var(--space-6);
 }
 
 .spinner {
@@ -209,13 +128,12 @@
   border: 3.5px solid var(--brand-bg);
   border-top-color: var(--brand);
   border-radius: 50%;
-  will-change: transform; // ⬅️ أداء أعلى للأنيميشن على كارت الشاشة
   animation: spin 0.8s linear infinite;
 }
 
 .loadingText {
-  font-size: $font-sm;
-  font-weight: $weight-semibold;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
   color: var(--text-muted);
   margin: 0;
 }
@@ -225,11 +143,10 @@
 // ═══════════════════════════════════════
 .errorScreen {
   min-height: 70vh;
-  min-height: 70dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: $space-4;
+  padding: var(--space-4);
 }
 
 .errorCard {
@@ -237,17 +154,17 @@
   width: 100%;
   background: var(--bg-elevated);
   border: 1px solid var(--danger-border);
-  border-radius: $radius-xl;
-  padding: $space-6 $space-4;
+  border-radius: var(--radius-xl);
+  padding: var(--space-6) var(--space-4);
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: $space-3;
-  box-shadow: $shadow-md;
+  gap: var(--space-3);
+  box-shadow: var(--shadow-md);
 
   body.dark & {
-    box-shadow: $shadow-dark-md;
+    box-shadow: var(--shadow-dark-md);
   }
 }
 
@@ -258,29 +175,29 @@
 
 .errorTitle {
   margin: 0;
-  font-size: $font-lg;
-  font-weight: $weight-bold;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
   color: var(--danger);
 }
 
 .errorMessage {
   margin: 0;
-  font-size: $font-sm;
+  font-size: var(--text-sm);
   color: var(--text-muted);
-  line-height: $leading-relaxed;
+  line-height: var(--leading-relaxed);
 }
 
 .retryBtn {
-  min-height: $touch-target;
-  padding: $space-3 $space-6;
-  border-radius: $radius-md;
+  min-height: var(--touch-target);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-md);
   background: var(--brand);
   color: var(--text-on-brand);
   border: none;
-  font-size: $font-sm;
-  font-weight: $weight-semibold;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
   cursor: pointer;
-  transition: all $transition-base;
+  transition: all var(--duration-base) var(--ease-out);
   touch-action: manipulation;
 
   &:hover {
@@ -291,7 +208,6 @@
     transform: scale(0.96);
   }
 
-  // ⬅️ تحسين: إضافة فوكس مرئي لزر إعادية المحاولة
   &:focus-visible {
     outline: 2px solid var(--brand);
     outline-offset: 2px;
@@ -299,22 +215,19 @@
 }
 
 // ═══════════════════════════════════════
-// Animations & Accessibility
+// Animations
 // ═══════════════════════════════════════
 @keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-// ⬅️ دعم إمكانية الوصول عند إيقاف الحركة من الجهاز
-@media (prefers-reduced-motion: reduce) {
-  .content,
-  .spinner {
-    animation: none !important;
+  to {
+    transform: rotate(360deg);
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

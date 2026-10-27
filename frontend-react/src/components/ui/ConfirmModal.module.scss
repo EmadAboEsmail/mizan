@@ -3,19 +3,19 @@
 .message {
   text-align: center;
   color: var(--text-secondary);
-  font-size: $font-base;
-  line-height: $leading-relaxed;
-  margin: 0 0 $space-2;
-  padding: $space-3 0;
+  font-size: var(--font-base);
+  line-height: var(--leading-relaxed);
+  margin: 0 0 var(--space-2);
+  padding: var(--space-3) 0;
 }
 
 .buttons {
   display: flex;
   flex-direction: column-reverse;
-  gap: $space-2;
-  margin-top: $space-3;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 
-  @media (min-width: $bp-sm) {
+  @media (min-width: 640px) {
     flex-direction: row;
   }
 }
@@ -23,13 +23,13 @@
 .cancel,
 .confirm {
   flex: 1;
-  min-height: $touch-target;
-  padding: $space-3 $space-4;
-  font-size: $font-base;
-  font-weight: $weight-semibold;
-  border-radius: $radius-md;
+  min-height: var(--touch-target);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-base);
+  font-weight: var(--weight-semibold);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all $transition-base;
+  transition: all var(--duration-base) var(--ease-out);
   touch-action: manipulation;
 
   &:active:not(:disabled) {
@@ -58,7 +58,7 @@
   background: var(--brand);
   border: 1px solid var(--brand);
   color: var(--text-on-brand);
-  box-shadow: $shadow-brand;
+  box-shadow: var(--shadow-brand);
 
   body.dark & {
     box-shadow: none;
@@ -67,7 +67,7 @@
   &:hover:not(:disabled) {
     background: var(--brand-dark);
     border-color: var(--brand-dark);
-    box-shadow: $shadow-brand-hover;
+    box-shadow: var(--shadow-brand-hover);
   }
 }
 
