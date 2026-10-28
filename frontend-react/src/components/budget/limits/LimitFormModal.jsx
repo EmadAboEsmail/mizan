@@ -88,6 +88,7 @@ function LimitFormModal({
       isOpen={isOpen}
       onClose={onClose}
       title={initial ? 'تعديل الميزانية' : 'إضافة ميزانية'}
+      variant="sheet"
     >
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
         {/* التصنيف */}

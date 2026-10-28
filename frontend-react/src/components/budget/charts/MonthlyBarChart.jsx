@@ -22,7 +22,7 @@ function formatShort(n) {
  * Bar chart مزدوج: دخل (أخضر) + مصروف (أحمر) لكل شهر.
  * data: [{ month: "YYYY-MM", income, expense, net }]
  */
-function MonthlyBarChart({ data = [] }, highLightMonth = null) {
+function MonthlyBarChart({ data = [], highlightMonth = null }) {
   const [hoveredIndex, setHoveredIndex] = useState(null)
 
   if (!data || data.length === 0) {
@@ -48,7 +48,7 @@ function MonthlyBarChart({ data = [] }, highLightMonth = null) {
           const incomeH = ((d.income || 0) / maxValue) * chartHeight
           const expenseH = ((d.expense || 0) / maxValue) * chartHeight
           const isHovered = hoveredIndex === i
-          const isSelected = highLightMonth === d.month
+          const isSelected = highlightMonth === d.month
 
           return (
             <div

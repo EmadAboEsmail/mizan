@@ -1,0 +1,177 @@
+@use '@/styles/tokens' as *;
+
+// ═══════════════════════════════════════
+// Container
+// ═══════════════════════════════════════
+.listContainer {
+  width: 100%;
+}
+
+.virtualList {
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--bg-subtle);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 4px;
+
+    &:hover {
+      background: var(--text-faint);
+    }
+  }
+}
+
+.virtualRowInner {
+  padding: 4px 0;
+}
+
+// ═══════════════════════════════════════
+// Date Header
+// ═══════════════════════════════════════
+.dateHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-2) var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: var(--space-1);
+}
+
+.dateLeft {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+  flex: 1;
+}
+
+.dateLabel {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dateCount {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-faint);
+  white-space: nowrap;
+  padding: 1px 8px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-full);
+}
+
+.dateTotal {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 800;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.3px;
+  flex-shrink: 0;
+}
+
+.datePositive {
+  color: var(--success);
+}
+
+.dateNegative {
+  color: var(--danger);
+}
+
+// ═══════════════════════════════════════
+// Empty State
+// ═══════════════════════════════════════
+.empty {
+  text-align: center;
+  padding: var(--space-10) var(--space-5);
+  background: var(--bg-subtle);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  opacity: 0.8;
+  margin-bottom: var(--space-2);
+  animation: floatIcon 3s ease-in-out infinite;
+}
+
+@keyframes floatIcon {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.emptyTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.4;
+  max-width: 320px;
+}
+
+.emptySub {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  line-height: 1.5;
+  max-width: 300px;
+}
+
+.emptyAddBtn {
+  margin-top: var(--space-3);
+  padding: 12px var(--space-6);
+  background: var(--budget);
+  color: var(--text-on-brand);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 10px var(--budget-soft);
+  transition: all var(--duration-base) var(--ease-out);
+  touch-action: manipulation;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover {
+    filter: brightness(0.94);
+    box-shadow: 0 4px 14px var(--budget-soft);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.97);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--budget);
+    outline-offset: 3px;
+  }
+}

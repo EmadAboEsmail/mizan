@@ -322,6 +322,7 @@ function DataSection() {
           setClearExisting(false)
         }}
         title="استيراد من CSV"
+        variant="sheet"
       >
         <div className={styles.csvModal}>
           {/* اختيار الملف */}

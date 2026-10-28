@@ -129,8 +129,8 @@ function TransactionFormModal({
       isOpen={isOpen}
       onClose={onClose}
       title={initial ? 'تعديل المعاملة' : 'إضافة معاملة'}
-    >
-      <form className={styles.form} onSubmit={handleSubmit} noValidate>
+      variant="sheet"
+    >      <form className={styles.form} onSubmit={handleSubmit} noValidate>
         {/* ─── 1. Segmented Toggle ─── */}
         <div
           className={styles.segmented}

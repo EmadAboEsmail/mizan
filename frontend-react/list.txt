@@ -1,3 +1,0 @@
-./src/components/zekr_app/settings/GroupsSection.jsx
-./src/components/zekr_app/settings/GroupFormModal.jsx
-./src/components/zekr_app/settings/GroupEditorModal.jsx

@@ -66,6 +66,7 @@ function CategoryFormModal({ isOpen, onClose, onConfirm, initial = null, default
       isOpen={isOpen}
       onClose={onClose}
       title={initial ? 'تعديل التصنيف' : 'إضافة تصنيف جديد'}
+      variant="sheet"
     >
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
         {!initial && (
