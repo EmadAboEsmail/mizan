@@ -3,6 +3,7 @@ import { VariableSizeList as VirtualList } from 'react-window'
 import TransactionRow from './TransactionRow.jsx'
 import { formatAmount, formatDayHeader } from './transactionsHelpers.js'
 import styles from './TransactionsList.module.scss'
+import EmptyState from '../../ui/EmptyState.jsx'
 
 // ═══════════════════════════════════════
 // VirtualRow (header أو transaction)
@@ -61,35 +62,6 @@ const VirtualTransactionRow = memo(function VirtualTransactionRow({
 // ═══════════════════════════════════════
 // Empty State
 // ═══════════════════════════════════════
-function EmptyState({ onAdd, totalTransactions, currentMonth }) {
-  const isEmpty = totalTransactions === 0
-  const noMatch = !isEmpty
-
-  return (
-    <div className={styles.empty}>
-      <div className={styles.emptyIcon}>
-        {isEmpty ? '📭' : '🔍'}
-      </div>
-      <p className={styles.emptyTitle}>
-        {isEmpty
-          ? currentMonth === null
-            ? 'لا توجد معاملات بعد'
-            : 'لا توجد معاملات في هذا الشهر'
-          : 'لا توجد نتائج تطابق الفلتر'}
-      </p>
-      {noMatch && (
-        <p className={styles.emptySub}>
-          جرب تغيير الفلاتر أو البحث بكلمة مختلفة
-        </p>
-      )}
-      {isEmpty && (
-        <button type="button" className={styles.emptyAddBtn} onClick={onAdd}>
-          ➕ إضافة أول معاملة
-        </button>
-      )}
-    </div>
-  )
-}
 
 // ═══════════════════════════════════════
 // Main List
@@ -114,9 +86,24 @@ export default function TransactionsList({
   if (!items || items.length === 0) {
     return (
       <EmptyState
-        onAdd={onAdd}
-        totalTransactions={totalTransactions}
-        currentMonth={currentMonth}
+        icon={totalTransactions === 0 ? '📭' : '🔍'}
+        title={
+          totalTransactions === 0
+            ? currentMonth === null
+              ? 'لا توجد معاملات بعد'
+              : 'لا توجد معاملات في هذا الشهر'
+            : 'لا توجد نتائج تطابق الفلتر'
+        }
+        subtitle={
+          totalTransactions === 0
+            ? currentMonth === null
+              ? 'ابدأ بإضافة أول معاملة'
+              : 'جرّب شهراً آخر أو اعرض كل الفترات'
+            : 'جرب تغيير الفلاتر أو البحث بكلمة مختلفة'
+        }
+        action={totalTransactions === 0 ? onAdd : undefined}
+        actionLabel="إضافة أول معاملة"
+        variant="default"
       />
     )
   }
