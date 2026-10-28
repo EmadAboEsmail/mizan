@@ -2,50 +2,51 @@ name: Build Android APK
 
 on:
   push:
-    branches: [main, master]
-  workflow_dispatch:
+    branches: [ main ] # يعمل تلقائياً عند الرفع على فرع main
+  workflow_dispatch: # يسمح بالتشغيل اليدوي من واجهة GitHub
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout code
+      - name: Checkout Source
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: "npm"
-          cache-dependency-path: frontend-react/package-lock.json
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: "temurin"
-          java-version: 21
+          cache: 'npm'
 
       - name: Install Dependencies
-        working-directory: frontend-react
         run: npm ci
 
       - name: Build Web App
-        working-directory: frontend-react
         run: npm run build
 
-      - name: Capacitor Sync
-        working-directory: frontend-react
+      - name: Add Android Platform
+        run: npx cap add android
+
+      - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Build APK
-        working-directory: frontend-react/android
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      - name: Grant Execute Permission to Gradlew
+        run: chmod +x android/gradlew
+
+      - name: Build APK (Debug)
         run: |
-          chmod +x ./gradlew
+          cd android
           ./gradlew assembleDebug
 
-      - name: Upload APK
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: zekr-app-debug
-          path: frontend-react/android/app/build/outputs/apk/debug/app-debug.apk
+          name: app-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
