@@ -1,0 +1,21 @@
+@use '@/styles/tokens' as *;
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-subtle) 0%,
+    var(--bg-subtle-hover) 50%,
+    var(--bg-subtle) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

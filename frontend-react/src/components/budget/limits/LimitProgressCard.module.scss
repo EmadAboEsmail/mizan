@@ -217,7 +217,10 @@
   font-weight: 800;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+letter-spacing: -0.2px;
 
   &.negative {
     color: var(--danger);
