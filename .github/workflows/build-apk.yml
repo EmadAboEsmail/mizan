@@ -25,9 +25,11 @@ jobs:
       - name: Build Web App
         run: npm run build
 
-      - name: Add Android Platform
-        run: npx cap add android
+      # ✅ تثبيت Android SDK (لأنه غير متوفر افتراضيًا)
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
+      # ✅ استخدام sync بدلاً من add (لأن مجلد android موجود بالفعل)
       - name: Sync Capacitor
         run: npx cap sync android
 
@@ -43,7 +45,7 @@ jobs:
       - name: Build APK (Debug)
         run: |
           cd android
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
