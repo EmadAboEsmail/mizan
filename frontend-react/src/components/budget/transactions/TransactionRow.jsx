@@ -1,20 +1,10 @@
 import { memo } from 'react'
 import CategoryIcon from '@/components/budget/CategoryIcon.jsx'
-import { formatAmount, formatDate, formatDayHeader } from './transactionsHelpers.js'
+import { formatAmount, formatDayHeader } from './transactionsHelpers.js'
 import styles from './TransactionRow.module.scss'
 
 const ChevronIcon = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <polyline points="6 9 12 15 18 9" />
   </svg>
 )
@@ -57,16 +47,6 @@ const TransactionRow = memo(function TransactionRow({
     }
   }
 
-  const handleEditClick = (e) => {
-    e.stopPropagation()
-    onEdit(txn)
-  }
-
-  const handleDeleteClick = (e) => {
-    e.stopPropagation()
-    onDelete(txn)
-  }
-
   return (
     <div className={styles.itemWrapper}>
       <div
@@ -77,26 +57,14 @@ const TransactionRow = memo(function TransactionRow({
         tabIndex={hasMore ? 0 : undefined}
         aria-expanded={hasMore ? showExpanded : undefined}
       >
-        {/* شريط جانبي ملوّن */}
-        <span
-          className={`${styles.accentBar} ${isIncome ? styles.accentIncome : styles.accentExpense}`}
-          aria-hidden="true"
-        />
+        <CategoryIcon category={category} size={42} />
 
-        {/* الأيقونة */}
-        <div className={styles.iconWrap}>
-          <CategoryIcon category={category} size={44} />
-        </div>
-
-        {/* المعلومات */}
         <div className={styles.itemInfo}>
           <div className={styles.itemTop}>
             <span className={styles.itemCategory}>
               {category?.name || 'غير محدد'}
             </span>
-            <span
-              className={`${styles.itemAmount} ${isIncome ? styles.amountIncome : styles.amountExpense}`}
-            >
+            <span className={`${styles.itemAmount} ${isIncome ? styles.amountIncome : styles.amountExpense}`}>
               {isIncome ? '+' : '−'}
               {formatAmount(txn.amount)}
             </span>
@@ -109,7 +77,6 @@ const TransactionRow = memo(function TransactionRow({
           </div>
         </div>
 
-        {/* Chevron */}
         {hasMore && (
           <span className={`${styles.chevron} ${showExpanded ? styles.chevronOpen : ''}`}>
             <ChevronIcon />
@@ -117,7 +84,6 @@ const TransactionRow = memo(function TransactionRow({
         )}
       </div>
 
-      {/* المحتوى الموسع */}
       {showExpanded && (
         <div className={styles.expandedContent}>
           {txn.details && (
@@ -132,17 +98,15 @@ const TransactionRow = memo(function TransactionRow({
               <span className={styles.detailValue}>{txn.description}</span>
             </div>
           )}
-          <div className={styles.detailRow}>
-            <span className={styles.detailLabel}>📅 التاريخ</span>
-            <span className={styles.detailValue}>{formatDate(txn.date)}</span>
-          </div>
 
-          {/* أزرار كبيرة في الوضع الموسع */}
           <div className={styles.expandedActions}>
             <button
               type="button"
               className={styles.expandEditBtn}
-              onClick={handleEditClick}
+              onClick={(e) => {
+                e.stopPropagation()
+                onEdit(txn)
+              }}
             >
               <EditIcon />
               <span>تعديل</span>
@@ -150,7 +114,10 @@ const TransactionRow = memo(function TransactionRow({
             <button
               type="button"
               className={styles.expandDeleteBtn}
-              onClick={handleDeleteClick}
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete(txn)
+              }}
             >
               <DeleteIcon />
               <span>حذف</span>
