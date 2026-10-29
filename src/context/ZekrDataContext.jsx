@@ -29,7 +29,9 @@ import {
   deleteGroupItem,
   getBackup,
   restoreBackup,
-} from '@/api/client.js'
+  // ... الموجود
+  importLegacy as apiImportLegacy,
+} from '@/services/zekrService.js'
 import { useToast } from './ToastContext'
 
 const ZekrDataContext = createContext(null)
@@ -420,6 +422,11 @@ export function ZekrDataProvider({ children }) {
     handleDeleteGroupItem,
     handleExportBackup,
     handleImportBackup,
+    importLegacy: async (legacy) => {
+      const res = await apiImportLegacy(legacy)
+      loadInitialData()
+      return res
+    }
   }
 
   return <ZekrDataContext.Provider value={value}>{children}</ZekrDataContext.Provider>

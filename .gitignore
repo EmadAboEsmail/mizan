@@ -69,3 +69,4 @@ Thumbs.db
 # ===========================
 *.log
 logs/
+backend-fastapi/

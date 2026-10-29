@@ -5,7 +5,7 @@ import {
   deleteAllBudgetData,
   exportBudgetCsv,
   importBudgetCsv,
-} from '@/api/budgetClient.js'
+} from '@/services/budgetService.js'
 import { useToast } from '@/context/ToastContext'
 import { useBudget } from '@/context/BudgetContext'
 import Modal from '@/components/ui/Modal.jsx'
@@ -13,11 +13,12 @@ import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import styles from './DataSection.module.scss'
 
 function DataSection() {
-  const { reload } = useBudget()
+  const { reload, importLegacyBudget } = useBudget()
   const { showToast } = useToast()
   const [loading, setLoading] = useState(false)
   const [confirmType, setConfirmType] = useState(null)
   const [pendingRestore, setPendingRestore] = useState(null)
+  const [legacyStatus, setLegacyStatus] = useState(null)
 
   // CSV import state
   const [csvModalOpen, setCsvModalOpen] = useState(false)
@@ -27,7 +28,9 @@ function DataSection() {
   const jsonFileRef = useRef(null)
   const csvFileRef = useRef(null)
 
-  // ============ JSON EXPORT ============
+  // ═══════════════════════════════════════
+  // JSON Export
+  // ═══════════════════════════════════════
   const handleExportJson = async () => {
     try {
       setLoading(true)
@@ -44,7 +47,9 @@ function DataSection() {
     }
   }
 
-  // ============ CSV EXPORT ============
+  // ═══════════════════════════════════════
+  // CSV Export
+  // ═══════════════════════════════════════
   const handleExportCsv = async () => {
     try {
       setLoading(true)
@@ -58,7 +63,9 @@ function DataSection() {
     }
   }
 
-  // ============ JSON IMPORT ============
+  // ═══════════════════════════════════════
+  // JSON Import
+  // ═══════════════════════════════════════
   const handleJsonFileChange = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -95,7 +102,9 @@ function DataSection() {
     }
   }
 
-  // ============ CSV IMPORT ============
+  // ═══════════════════════════════════════
+  // CSV Import
+  // ═══════════════════════════════════════
   const handleCsvFileChange = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -125,7 +134,52 @@ function DataSection() {
     }
   }
 
-  // ============ DELETE ============
+  // ═══════════════════════════════════════
+  // Legacy Import (FastAPI old data)
+  // ═══════════════════════════════════════
+  const handleLegacyImport = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.json'
+
+    input.onchange = async (e) => {
+      const file = e.target.files?.[0]
+      if (!file) return
+
+      setLoading(true)
+      setLegacyStatus(null)
+
+      try {
+        const text = await file.text()
+        const legacy = JSON.parse(text)
+        const res = await importLegacyBudget(legacy)
+
+        let msg = `✅ تم: ${res.categories} تصنيف، ${res.transactions} معاملة، ${res.limits} حد`
+        if (res.failed > 0) msg += ` — ⚠️ ${res.failed} فشل`
+
+        setLegacyStatus({
+          type: res.failed > 0 ? 'error' : 'success',
+          text: msg,
+        })
+        showToast('تم استيراد بيانات الميزانية القديمة!')
+      } catch (err) {
+        console.error('[Legacy Budget Import] Failed:', err)
+        setLegacyStatus({
+          type: 'error',
+          text: `⚠️ فشل: ${err.message || 'خطأ غير متوقع'}`,
+        })
+        showToast('فشل الاستيراد')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    input.click()
+  }
+
+  // ═══════════════════════════════════════
+  // Delete
+  // ═══════════════════════════════════════
   const handleConfirmDelete = async () => {
     if (!confirmType) return
     try {
@@ -165,7 +219,44 @@ function DataSection() {
         <h3 className={styles.title}>النسخ الاحتياطي والبيانات</h3>
       </div>
 
-      {/* === JSON Backup === */}
+      {/* ═══════════════════════════════════════
+          Legacy Import (أولاً — الأهم)
+      ═══════════════════════════════════════ */}
+      <div className={styles.legacySection}>
+        <div className={styles.groupLabel}>📦 استيراد البيانات القديمة</div>
+        <div className={styles.legacyCard}>
+          <div className={styles.legacyIcon}>📂</div>
+          <div className={styles.legacyContent}>
+            <span className={styles.legacyTitle}>من FastAPI القديم</span>
+            <p className={styles.legacyDesc}>
+              استيراد التصنيفات والمعاملات والحدود من ملف{' '}
+              <code>zekr-legacy-backup.json</code>
+            </p>
+          </div>
+          <button
+            type="button"
+            className={styles.actionBtn}
+            onClick={handleLegacyImport}
+            disabled={loading}
+          >
+            اختيار ملف
+          </button>
+        </div>
+        {legacyStatus && (
+          <div
+            className={`${styles.statusMessage} ${legacyStatus.type === 'success'
+                ? styles.statusSuccess
+                : styles.statusError
+              }`}
+          >
+            {legacyStatus.text}
+          </div>
+        )}
+      </div>
+
+      {/* ═══════════════════════════════════════
+          JSON Backup
+      ═══════════════════════════════════════ */}
       <div className={styles.groupLabel}>📦 نسخة كاملة (JSON)</div>
       <div className={styles.backupGrid}>
         <div className={styles.card}>
@@ -212,7 +303,9 @@ function DataSection() {
         </div>
       </div>
 
-      {/* === CSV Export/Import === */}
+      {/* ═══════════════════════════════════════
+          CSV Export/Import
+      ═══════════════════════════════════════ */}
       <div className={styles.groupLabel}>📊 معاملات (CSV — Excel)</div>
       <div className={styles.backupGrid}>
         <div className={styles.card}>
@@ -241,13 +334,6 @@ function DataSection() {
               إضافة أو استبدال من ملف CSV
             </p>
           </div>
-          <input
-            ref={csvFileRef}
-            type="file"
-            accept=".csv"
-            style={{ display: 'none' }}
-            onChange={handleCsvFileChange}
-          />
           <button
             type="button"
             className={styles.actionBtn}
@@ -259,7 +345,9 @@ function DataSection() {
         </div>
       </div>
 
-      {/* === Danger Zone === */}
+      {/* ═══════════════════════════════════════
+          Danger Zone
+      ═══════════════════════════════════════ */}
       <div className={styles.dangerZone}>
         <h4 className={styles.dangerTitle}>⚠️ منطقة الخطر</h4>
         <div className={styles.dangerRow}>
@@ -296,7 +384,9 @@ function DataSection() {
         </div>
       </div>
 
-      {/* === Confirm Modal (JSON + Delete) === */}
+      {/* ═══════════════════════════════════════
+          Confirm Modals
+      ═══════════════════════════════════════ */}
       <ConfirmModal
         isOpen={confirmType !== null}
         onClose={() => {
@@ -313,7 +403,9 @@ function DataSection() {
         danger={confirmType !== 'restore'}
       />
 
-      {/* === CSV Import Modal === */}
+      {/* ═══════════════════════════════════════
+          CSV Import Modal
+      ═══════════════════════════════════════ */}
       <Modal
         isOpen={csvModalOpen}
         onClose={() => {
@@ -325,7 +417,6 @@ function DataSection() {
         variant="sheet"
       >
         <div className={styles.csvModal}>
-          {/* اختيار الملف */}
           <div className={styles.csvField}>
             <label className={styles.csvLabel}>ملف CSV</label>
             <input
@@ -340,7 +431,6 @@ function DataSection() {
             )}
           </div>
 
-          {/* خيار المسح */}
           <label className={styles.checkboxLabel}>
             <input
               type="checkbox"
@@ -354,7 +444,6 @@ function DataSection() {
             </span>
           </label>
 
-          {/* الأعمدة المتوقعة */}
           <div className={styles.hint}>
             <strong>الأعمدة المطلوبة:</strong>
             <code>date, type, amount, category</code>
@@ -363,7 +452,6 @@ function DataSection() {
             <code>category_icon, category_color, details, description</code>
           </div>
 
-          {/* أزرار */}
           <div className={styles.modalButtons}>
             <button
               type="button"
@@ -392,9 +480,9 @@ function DataSection() {
   )
 }
 
-// ===========================
+// ═══════════════════════════════════════
 // Helpers
-// ===========================
+// ═══════════════════════════════════════
 function todayStr() {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(

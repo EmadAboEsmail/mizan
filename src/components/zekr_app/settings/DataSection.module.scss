@@ -359,3 +359,62 @@
     transform: translateY(0);
   }
 }
+// ═══════════════════════════════════════
+// Legacy Import Section
+// ═══════════════════════════════════════
+.legacySection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--budget-soft);
+  border: 1px dashed var(--budget-border);
+  border-radius: var(--radius-lg);
+}
+
+.legacyDesc {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  line-height: 1.6;
+
+  code {
+    display: inline-block;
+    padding: 1px 6px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-xs);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-primary);
+  }
+}
+
+.legacyBtn {
+  padding: 10px var(--space-5);
+  background: var(--budget);
+  color: var(--text-on-brand);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--duration-base) var(--ease-out);
+  align-self: flex-start;
+  box-shadow: 0 2px 10px var(--budget-soft);
+
+  &:hover:not(:disabled) {
+    filter: brightness(0.94);
+    box-shadow: 0 4px 14px var(--budget-soft);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

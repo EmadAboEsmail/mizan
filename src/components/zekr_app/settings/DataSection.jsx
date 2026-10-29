@@ -46,7 +46,6 @@ const DANGER_OPTION = {
 }
 
 function DataSection() {
-  // ✅ الـ context مباشرة — بدون props
   const {
     handleDeleteAllCounts,
     handleDeleteAllTargets,
@@ -54,6 +53,7 @@ function DataSection() {
     handleDeleteAll,
     handleExportBackup,
     handleImportBackup,
+    importLegacy, // ⬅️ مهم — ضيفها هنا
   } = useZekrData()
 
   const { showToast } = useToast()
@@ -62,6 +62,7 @@ function DataSection() {
   const [loading, setLoading] = useState(false)
   const [importStatus, setImportStatus] = useState(null)
   const [pendingFileContent, setPendingFileContent] = useState(null)
+  const [legacyStatus, setLegacyStatus] = useState(null) // ⬅️ جديد
 
   const fileInputRef = useRef(null)
 
@@ -93,7 +94,6 @@ function DataSection() {
     }
   }
 
-  // عند اختيار المستخدم لملف النسخة الاحتياطية
   const handleFileChange = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -107,7 +107,6 @@ function DataSection() {
     e.target.value = ''
   }
 
-  // تنفيذ استيراد النسخة بعد التأكيد
   const handleConfirmImport = async () => {
     if (!pendingFileContent) return
 
@@ -132,7 +131,6 @@ function DataSection() {
     }
   }
 
-  // تصدير مع toast
   const handleExportClick = async () => {
     try {
       await handleExportBackup()
@@ -142,10 +140,52 @@ function DataSection() {
     }
   }
 
+  // ⬅️ دالة استيراد zekr.db القديم
+  const handleLegacyImport = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.json'
+
+    input.onchange = async (e) => {
+      const file = e.target.files?.[0]
+      if (!file) return
+
+      setLoading(true)
+      setLegacyStatus(null)
+
+      try {
+        const text = await file.text()
+        const legacy = JSON.parse(text)
+        const res = await importLegacy(legacy)
+
+        let msg = `✅ تم: ${res.imported}/${res.total}`
+        if (res.adhkar) msg += ` (${res.adhkar} ذكر)`
+        if (res.failed > 0) msg += ` — ⚠️ فشل ${res.failed}`
+
+        setLegacyStatus({
+          type: res.failed > 0 ? 'error' : 'success',
+          text: msg,
+        })
+        showToast('تم استيراد البيانات القديمة بنجاح!')
+      } catch (err) {
+        console.error('[Legacy Import] Failed:', err)
+        setLegacyStatus({
+          type: 'error',
+          text: `⚠️ فشل: ${err.message || 'خطأ غير متوقع'}`,
+        })
+        showToast('فشل الاستيراد')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    input.click()
+  }
+
   return (
     <SettingsSection id="data" title="إدارة البيانات والذاكرة">
       <div className={styles.container}>
-        {/* 1. قسم النسخ الاحتياطي */}
+        {/* 1. النسخ الاحتياطي */}
         <div className={styles.backupSection}>
           <h4 className={styles.subSectionTitle}>النسخ الاحتياطي السحابي والمحلي</h4>
 
@@ -211,7 +251,37 @@ function DataSection() {
           )}
         </div>
 
-        {/* 2. العمليات الجزئية والتصفير */}
+        {/* 2. 🆕 استيراد البيانات القديمة */}
+        <div className={styles.legacySection}>
+          <h4 className={styles.subSectionTitle}>📦 استيراد البيانات القديمة</h4>
+          <p className={styles.legacyDesc}>
+            لو عندك نسخة من التطبيق القديم (FastAPI)، اختار ملف{' '}
+            <code>zekr-legacy-backup.json</code> لاستيراد الأذكار والإحصائيات
+            والمجموعات.
+          </p>
+
+          <button
+            type="button"
+            className={styles.legacyBtn}
+            onClick={handleLegacyImport}
+            disabled={loading}
+          >
+            📂 اختيار ملف zekr-legacy-backup.json
+          </button>
+
+          {legacyStatus && (
+            <div
+              className={`${styles.statusMessage} ${legacyStatus.type === 'success'
+                ? styles.statusSuccess
+                : styles.statusError
+                }`}
+            >
+              {legacyStatus.text}
+            </div>
+          )}
+        </div>
+
+        {/* 3. التصفير */}
         <div className={styles.optionsList}>
           <h4 className={styles.subSectionTitle}>خيارات التصفير السريع</h4>
           {RESET_OPTIONS.map((item) => (
@@ -235,7 +305,7 @@ function DataSection() {
           ))}
         </div>
 
-        {/* 3. منطقة الخطر */}
+        {/* 4. منطقة الخطر */}
         <div className={styles.dangerZone}>
           <div className={styles.dangerHeader}>
             <span className={styles.dangerIcon}>{DANGER_OPTION.icon}</span>
@@ -255,7 +325,6 @@ function DataSection() {
         </div>
       </div>
 
-      {/* نافذة تأكيد عمليات المسح */}
       <ConfirmModal
         isOpen={confirmType !== null}
         onClose={() => setConfirmType(null)}
@@ -267,7 +336,6 @@ function DataSection() {
         danger
       />
 
-      {/* نافذة تأكيد استيراد ملف النسخة الاحتياطية */}
       <ConfirmModal
         isOpen={pendingFileContent !== null}
         onClose={() => setPendingFileContent(null)}

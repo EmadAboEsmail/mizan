@@ -21,7 +21,8 @@ import {
   createCategory as apiCreateCat,
   updateCategory as apiUpdateCat,
   deleteCategory as apiDeleteCat,
-} from '@/api/budgetClient.js'
+  importLegacyBudget as apiImportLegacyBudget,  // ⬅️ تأكد إنها موجودة
+} from '@/services/budgetService.js'
 import { useToast } from './ToastContext'
 
 const BudgetContext = createContext(null)
@@ -628,6 +629,17 @@ export function BudgetProvider({ children }) {
     createOrUpdateLimit,
     updateLimit,
     deleteLimit,
+    // ... الموجود
+    createOrUpdateLimit,
+    updateLimit,
+    deleteLimit,
+
+    // ⬅️ ضيف ده لو مش موجود
+    importLegacyBudget: async (legacy) => {
+      const res = await apiImportLegacyBudget(legacy)
+      await reload()
+      return res
+    }
   }
 
   return (

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useBudget } from '@/context/BudgetContext'
-import { getMonthlyTrend } from '@/api/budgetClient.js'
+import { getMonthlyTrend } from '@/services/budgetService.js'
 import DonutChart from '@/components/budget/charts/DonutChart.jsx'
 import MonthlyBarChart from '@/components/budget/charts/MonthlyBarChart.jsx'
 import CategoryIcon from '@/components/budget/CategoryIcon.jsx'

@@ -1,28 +1,35 @@
-export const SCHEMA_VERSION = 1
+// ═══════════════════════════════════════
+// SCHEMA_VERSION = 2
+// التغيير: كل الـ IDs نصية (TEXT) عشان تتوافق مع FastAPI القديم
+// ═══════════════════════════════════════
+export const SCHEMA_VERSION = 2
 
 export const CREATE_TABLES = `
+  -- ═══════════════════════════════════════
+  -- Adhkar
+  -- ═══════════════════════════════════════
   CREATE TABLE IF NOT EXISTS adhkar (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id TEXT PRIMARY KEY,
     text TEXT NOT NULL,
     default_target INTEGER,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
   );
 
   CREATE TABLE IF NOT EXISTS counts (
-    zekr_id INTEGER PRIMARY KEY,
+    zekr_id TEXT PRIMARY KEY,
     count INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (zekr_id) REFERENCES adhkar(id) ON DELETE CASCADE
   );
 
   CREATE TABLE IF NOT EXISTS targets (
-    zekr_id INTEGER PRIMARY KEY,
+    zekr_id TEXT PRIMARY KEY,
     target INTEGER,
     FOREIGN KEY (zekr_id) REFERENCES adhkar(id) ON DELETE CASCADE
   );
 
   CREATE TABLE IF NOT EXISTS clicks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    zekr_id INTEGER NOT NULL,
+    zekr_id TEXT NOT NULL,
     clicked_at INTEGER NOT NULL,
     FOREIGN KEY (zekr_id) REFERENCES adhkar(id) ON DELETE CASCADE
   );
@@ -33,6 +40,9 @@ export const CREATE_TABLES = `
   CREATE INDEX IF NOT EXISTS idx_clicks_date
     ON clicks(clicked_at);
 
+  -- ═══════════════════════════════════════
+  -- Groups
+  -- ═══════════════════════════════════════
   CREATE TABLE IF NOT EXISTS groups (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -43,7 +53,7 @@ export const CREATE_TABLES = `
   CREATE TABLE IF NOT EXISTS group_items (
     id TEXT PRIMARY KEY,
     group_id TEXT NOT NULL,
-    zekr_id INTEGER NOT NULL,
+    zekr_id TEXT NOT NULL,
     position INTEGER NOT NULL DEFAULT 0,
     target INTEGER,
     FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
@@ -53,6 +63,9 @@ export const CREATE_TABLES = `
   CREATE INDEX IF NOT EXISTS idx_group_items_group
     ON group_items(group_id, position);
 
+  -- ═══════════════════════════════════════
+  -- Budget: Categories
+  -- ═══════════════════════════════════════
   CREATE TABLE IF NOT EXISTS categories (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -65,6 +78,9 @@ export const CREATE_TABLES = `
   CREATE INDEX IF NOT EXISTS idx_categories_type
     ON categories(type);
 
+  -- ═══════════════════════════════════════
+  -- Budget: Transactions
+  -- ═══════════════════════════════════════
   CREATE TABLE IF NOT EXISTS transactions (
     id TEXT PRIMARY KEY,
     amount REAL NOT NULL,
@@ -86,6 +102,9 @@ export const CREATE_TABLES = `
   CREATE INDEX IF NOT EXISTS idx_txn_type
     ON transactions(type);
 
+  -- ═══════════════════════════════════════
+  -- Budget: Limits
+  -- ═══════════════════════════════════════
   CREATE TABLE IF NOT EXISTS limits (
     id TEXT PRIMARY KEY,
     category_id TEXT NOT NULL,
@@ -97,6 +116,9 @@ export const CREATE_TABLES = `
   CREATE UNIQUE INDEX IF NOT EXISTS idx_limit_cat_month
     ON limits(category_id, month);
 
+  -- ═══════════════════════════════════════
+  -- Meta
+  -- ═══════════════════════════════════════
   CREATE TABLE IF NOT EXISTS meta (
     key TEXT PRIMARY KEY,
     value TEXT
