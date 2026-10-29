@@ -16,6 +16,7 @@
     "@capacitor/cli": "^8.5.3",
     "@capacitor/core": "^8.5.3",
     "@capacitor/status-bar": "^8.0.4",
+    "@img/sharp-wasm32": "^0.35.5",
     "jeep-sqlite-current-sqljs": "^2.9.2",
     "lucide-react": "^1.61.0",
     "react": "^19.2.8",
@@ -25,6 +26,7 @@
     "sql.js": "^1.15.2"
   },
   "devDependencies": {
+    "@capawesome/capacitor-assets": "^5.0.1",
     "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",

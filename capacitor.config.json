@@ -1,21 +1,23 @@
 {
-  "appId": "com.omda.zekr",
-  "appName": "ذكر",
+  "appId": "app.mizan.quran",
+  "appName": "ميزان",
   "webDir": "dist",
-  "android": {
-    "backgroundColor": "#000000"
+  "server": {
+    "androidScheme": "https"
   },
   "plugins": {
     "CapacitorSQLite": {
       "androidIsEncryption": false,
       "androidBiometric": {
-        "biometricAuth": false
+        "biometricAuth": false,
+        "biometricTitle": "Biometric login for capacitor sqlite",
+        "biometricSubTitle": "Log in using your biometric",
+        "biometricDescription": "This is biometric authentication for SQLite"
       }
     },
     "StatusBar": {
-      "overlaysWebView": true,
       "style": "DARK",
-      "backgroundColor": "#000000"
+      "backgroundColor": "#FAF6F0"
     }
   }
 }
