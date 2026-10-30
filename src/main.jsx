@@ -3,10 +3,10 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, HashRouter } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
 
-import { ThemeProvider } from "./context/ThemeContext.jsx";
-import { ToastProvider } from "./context/ToastContext.jsx";
-import { ZekrDataProvider } from "./context/ZekrDataContext.jsx";
-import { BudgetProvider } from "./context/BudgetContext.jsx";
+import { ThemeProvider } from "./contexts/ThemeContext.jsx";
+import { ToastProvider } from "./contexts/ToastContext.jsx";
+import { ZekrDataProvider } from "./contexts/ZekrDataContext.jsx";
+import { BudgetProvider } from "./contexts/BudgetContext.jsx";
 import { defineCustomElements } from "jeep-sqlite-current-sqljs/loader";
 import { initDB } from "./db/index.js";
 import App from "./App.jsx";

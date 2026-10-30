@@ -10,17 +10,17 @@ import InstallPrompt from './components/pwa/InstallPrompt.jsx'
 // ═══════════════════════════════════════
 // Lazy imports (يتحمل عند الحاجة)
 // ═══════════════════════════════════════
-const ZekrLayout = lazy(() => import('./pages/zekr/ZekrLayout.jsx'))
-const ZekrSabh = lazy(() => import('./pages/zekr/ZekrSabh.jsx'))
-const ZekrStats = lazy(() => import('./pages/zekr/ZekrStats.jsx'))
-const ZekrSettings = lazy(() => import('./pages/zekr/ZekrSettings.jsx'))
+const ZekrLayout = lazy(() => import('./pages/zekr/Layout.jsx'))
+const ZekrSabh = lazy(() => import('./pages/zekr/Sabh.jsx'))
+const ZekrStats = lazy(() => import('./pages/zekr/Stats.jsx'))
+const ZekrSettings = lazy(() => import('./pages/zekr/Settings.jsx'))
 
-const BudgetLayout = lazy(() => import('./pages/budget/BudgetLayout.jsx'))
+const BudgetLayout = lazy(() => import('./pages/budget/Layout.jsx'))
 const BudgetTransactions = lazy(() =>
-  import('./pages/budget/BudgetTransactions.jsx')
+  import('./pages/budget/Transactions.jsx')
 )
-const BudgetReports = lazy(() => import('./pages/budget/BudgetReports.jsx'))
-const BudgetSettings = lazy(() => import('./pages/budget/BudgetSettings.jsx'))
+const BudgetReports = lazy(() => import('./pages/budget/Reports.jsx'))
+const BudgetSettings = lazy(() => import('./pages/budget/Settings.jsx'))
 
 // ═══════════════════════════════════════
 // Loading Fallback

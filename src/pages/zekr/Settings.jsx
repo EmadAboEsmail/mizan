@@ -1,4 +1,4 @@
-import SettingsTab from '@/components/zekr_app/settings/SettingsTab.jsx'
+import SettingsTab from '@/components/zekr/settings/SettingsTab.jsx'
 
 function ZekrSettings() {
   return <SettingsTab />
