@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useBudget } from '@/context/BudgetContext'
+import { useBudget } from '@/contexts/BudgetContext'
 import CategoryIcon from '@/components/budget/CategoryIcon.jsx'
 import CategoryFormModal from './CategoryFormModal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'

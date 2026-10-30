@@ -4,7 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 // ═══════════════════════════════════════
 // Eager imports (يظهر فوراً)
 // ═══════════════════════════════════════
-import Home from './pages/home/Home.jsx'
+import Home from './pages/Home.jsx'
 import InstallPrompt from './components/pwa/InstallPrompt.jsx'
 
 // ═══════════════════════════════════════

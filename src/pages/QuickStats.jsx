@@ -1,4 +1,4 @@
-import { useZekrData } from '@/context/ZekrDataContext'
+import { useZekrData } from '@/contexts/ZekrDataContext'
 import styles from './QuickStats.module.scss'
 
 function QuickStats() {

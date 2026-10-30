@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useZekrData } from '@/context/ZekrDataContext'
+import { useZekrData } from '@/contexts/ZekrDataContext'
 import SettingsSection from './SettingsSection.jsx'
 import AdhkarFormModal from './AdhkarFormModal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'

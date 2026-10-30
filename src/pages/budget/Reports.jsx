@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { useBudget } from '@/context/BudgetContext'
+import { useBudget } from '@/contexts/BudgetContext'
 import { getMonthlyTrend } from '@/services/budgetService.js'
 import DonutChart from '@/components/budget/charts/DonutChart.jsx'
 import MonthlyBarChart from '@/components/budget/charts/MonthlyBarChart.jsx'
 import CategoryIcon from '@/components/budget/CategoryIcon.jsx'
 import LimitProgressCard from '@/components/budget/limits/LimitProgressCard.jsx'
 import InsightsGrid from '@/components/budget/insights/InsightsGrid.jsx'
-import styles from './BudgetReports.module.scss'
+import styles from './Reports.module.scss'
 
 // ===========================
 // Helpers (outside component)

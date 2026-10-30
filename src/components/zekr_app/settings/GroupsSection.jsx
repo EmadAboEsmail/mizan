@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useMemo } from 'react'
-import { useZekrData } from '@/context/ZekrDataContext'
+import { useZekrData } from '@/contexts/ZekrDataContext'
 import SettingsSection from './SettingsSection.jsx'
 import GroupFormModal from './GroupFormModal.jsx'
 import GroupEditorModal from './GroupEditorModal.jsx'

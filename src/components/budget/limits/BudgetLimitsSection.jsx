@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useBudget } from '@/context/BudgetContext'
+import { useBudget } from '@/contexts/BudgetContext'
 import LimitFormModal from './LimitFormModal.jsx'
 import LimitProgressCard from './LimitProgressCard.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'

@@ -6,8 +6,8 @@ import {
   exportBudgetCsv,
   importBudgetCsv,
 } from '@/services/budgetService.js'
-import { useToast } from '@/context/ToastContext'
-import { useBudget } from '@/context/BudgetContext'
+import { useToast } from '@/contexts/ToastContext'
+import { useBudget } from '@/contexts/BudgetContext'
 import Modal from '@/components/ui/Modal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import styles from './DataSection.module.scss'

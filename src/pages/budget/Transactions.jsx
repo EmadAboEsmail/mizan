@@ -6,7 +6,7 @@ import {
   useDeferredValue,
   useRef,
 } from 'react'
-import { useBudget } from '@/context/BudgetContext'
+import { useBudget } from '@/contexts/BudgetContext'
 import TransactionFormModal from '@/components/budget/TransactionFormModal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import LimitsOverview from '@/components/budget/limits/LimitsOverview.jsx'
@@ -19,7 +19,7 @@ import {
   ROW_HEIGHT,
   groupTransactionsByDate,
 } from '@/components/budget/transactions/transactionsHelpers.js'
-import styles from './BudgetTransactions.module.scss'
+import styles from './Transactions.module.scss'
 
 // ✅ برة الـ component (ثابت)
 const DATE_HEADER_HEIGHT = 48

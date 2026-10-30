@@ -1,23 +1,23 @@
 import { Link, Outlet } from 'react-router-dom'
-import { useZekrData } from '@/context/ZekrDataContext'
+import { useBudget } from '@/contexts/BudgetContext'
 import ThemeToggle from '@/components/ui/ThemeToggle.jsx'
-import BottomNav from '@/ui/BottomNav/BottomNav.jsx'
-import styles from './ZekrLayout.module.scss'
+import BottomNav from '@/components/ui/BottomNav/BottomNav.jsx'
+import styles from './Layout.module.scss'
 
 const NAV_ITEMS = [
-  { to: '/zekr/sabh', label: 'السبحة', icon: '📿' },
-  { to: '/zekr/stats', label: 'الإحصائيات', icon: '📊' },
-  { to: '/zekr/settings', label: 'الإعدادات', icon: '⚙️' },
+  { to: '/budget/transactions', label: 'المعاملات', icon: '💳' },
+  { to: '/budget/reports', label: 'التقارير', icon: '📊' },
+  { to: '/budget/settings', label: 'الإعدادات', icon: '⚙️' },
 ]
 
-function ZekrLayout() {
-  const { loading, error, loadInitialData } = useZekrData()
+function BudgetLayout() {
+  const { loading, error, reload } = useBudget()
 
-  if (loading) {
+  if (loading && !error) {
     return (
       <div className={styles.loadingScreen}>
         <div className={styles.spinner} />
-        <p className={styles.loadingText}>جاري تجهيز الأذكار والبيانات...</p>
+        <p className={styles.loadingText}>جاري تحميل الميزانية...</p>
       </div>
     )
   }
@@ -29,7 +29,7 @@ function ZekrLayout() {
           <div className={styles.errorIcon}>⚠️</div>
           <h2 className={styles.errorTitle}>تعذر الاتصال بالخادم</h2>
           <p className={styles.errorMessage}>{error}</p>
-          <button type="button" className={styles.retryBtn} onClick={loadInitialData}>
+          <button type="button" className={styles.retryBtn} onClick={reload}>
             إعادة المحاولة ↺
           </button>
         </div>
@@ -38,7 +38,7 @@ function ZekrLayout() {
   }
 
   return (
-    <div className={styles.zekr}>
+    <div className={styles.budget}>
       <header className={styles.navHeader}>
         <Link to="/" className={styles.backBtn} title="الرجوع للرئيسية">
           <span>←</span>
@@ -50,14 +50,15 @@ function ZekrLayout() {
       </header>
 
       <div className={styles.container}>
+        <h1 className={styles.pageTitle}>💰 الميزانية</h1>
         <main className={styles.content}>
           <Outlet />
         </main>
       </div>
 
-      <BottomNav items={NAV_ITEMS} accent="zekr" />
+      <BottomNav items={NAV_ITEMS} accent="budget" />
     </div>
   )
 }
 
-export default ZekrLayout
+export default BudgetLayout

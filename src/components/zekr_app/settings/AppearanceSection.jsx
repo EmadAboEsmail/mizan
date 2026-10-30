@@ -1,4 +1,4 @@
-import { useTheme } from '@/context/ThemeContext.jsx'
+import { useTheme } from '@/contexts/ThemeContext.jsx'
 import SettingsSection from './SettingsSection.jsx'
 import styles from './AppearanceSection.module.scss'
 

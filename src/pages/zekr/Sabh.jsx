@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useZekrData } from '@/context/ZekrDataContext'
+import { useZekrData } from '@/contexts/ZekrDataContext'
 import { useModalBackButton } from '@/hooks/useModalBackButton'
 import ZekrDisplay from '@/components/zekr_app/zekr/ZekrDisplay.jsx'
 import AdhkarSelect from '@/components/zekr_app/zekr/AdhkarSelect.jsx'
@@ -12,7 +12,7 @@ import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import FocusMode, {
   attemptFullscreen,
 } from '@/components/zekr_app/zekr/FocusMode.jsx'
-import styles from './ZekrSabh.module.scss'
+import styles from './Sabh.module.scss'
 
 // ✅ هل الاهتزاز مفعل؟ (افتراضي: نعم)
 function useVibrationEnabled() {

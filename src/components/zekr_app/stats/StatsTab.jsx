@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useZekrData } from '@/context/ZekrDataContext'
+import { useZekrData } from '@/contexts/ZekrDataContext'
 import { useAnimatedNumber } from '@/hooks/useAnimatedNumber'
 import { getStats, getStreak } from '@/services/zekrService.js'
 import { downloadCsv, getCsvFilename } from '@/utils/csv.js'

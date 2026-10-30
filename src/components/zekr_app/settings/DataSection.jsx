@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
-import { useZekrData } from '@/context/ZekrDataContext'
-import { useToast } from '@/context/ToastContext'
+import { useZekrData } from '@/contexts/ZekrDataContext'
+import { useToast } from '@/contexts/ToastContext'
 import SettingsSection from './SettingsSection.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import styles from './DataSection.module.scss'

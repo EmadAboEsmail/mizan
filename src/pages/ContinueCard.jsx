@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useZekrData } from '@/context/ZekrDataContext'
+import { useZekrData } from '@/contexts/ZekrDataContext'
 import styles from './ContinueCard.module.scss'
 
 const ArrowLeftIcon = () => (
