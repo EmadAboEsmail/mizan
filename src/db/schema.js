@@ -1,13 +1,6 @@
-// ═══════════════════════════════════════
-// SCHEMA_VERSION = 2
-// التغيير: كل الـ IDs نصية (TEXT) عشان تتوافق مع FastAPI القديم
-// ═══════════════════════════════════════
-export const SCHEMA_VERSION = 2
+export const SCHEMA_VERSION = 3  // ← اترفعت من 2 لـ 3
 
 export const CREATE_TABLES = `
-  -- ═══════════════════════════════════════
-  -- Adhkar
-  -- ═══════════════════════════════════════
   CREATE TABLE IF NOT EXISTS adhkar (
     id TEXT PRIMARY KEY,
     text TEXT NOT NULL,
@@ -27,18 +20,23 @@ export const CREATE_TABLES = `
     FOREIGN KEY (zekr_id) REFERENCES adhkar(id) ON DELETE CASCADE
   );
 
-  CREATE TABLE IF NOT EXISTS clicks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- ═══════════════════════════════════════
+  -- 🆕 Clicks hourly — صف واحد لكل ساعة بدل صف لكل click
+  -- التوفير: ~99% (من ~30 bytes لكل click إلى ~30 bytes لكل ساعة)
+  -- ═══════════════════════════════════════
+  CREATE TABLE IF NOT EXISTS clicks_hourly (
     zekr_id TEXT NOT NULL,
-    clicked_at INTEGER NOT NULL,
+    hour INTEGER NOT NULL,          -- Unix hour (Math.floor(timestamp / 3600000))
+    count INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (zekr_id, hour),
     FOREIGN KEY (zekr_id) REFERENCES adhkar(id) ON DELETE CASCADE
   );
 
-  CREATE INDEX IF NOT EXISTS idx_clicks_zekr_date
-    ON clicks(zekr_id, clicked_at);
+  CREATE INDEX IF NOT EXISTS idx_clicks_hourly_hour
+    ON clicks_hourly(hour);
 
-  CREATE INDEX IF NOT EXISTS idx_clicks_date
-    ON clicks(clicked_at);
+  CREATE INDEX IF NOT EXISTS idx_clicks_hourly_zekr_hour
+    ON clicks_hourly(zekr_id, hour);
 
   -- ═══════════════════════════════════════
   -- Groups
@@ -64,7 +62,7 @@ export const CREATE_TABLES = `
     ON group_items(group_id, position);
 
   -- ═══════════════════════════════════════
-  -- Budget: Categories
+  -- Budget
   -- ═══════════════════════════════════════
   CREATE TABLE IF NOT EXISTS categories (
     id TEXT PRIMARY KEY,
@@ -78,9 +76,6 @@ export const CREATE_TABLES = `
   CREATE INDEX IF NOT EXISTS idx_categories_type
     ON categories(type);
 
-  -- ═══════════════════════════════════════
-  -- Budget: Transactions
-  -- ═══════════════════════════════════════
   CREATE TABLE IF NOT EXISTS transactions (
     id TEXT PRIMARY KEY,
     amount REAL NOT NULL,
@@ -102,9 +97,6 @@ export const CREATE_TABLES = `
   CREATE INDEX IF NOT EXISTS idx_txn_type
     ON transactions(type);
 
-  -- ═══════════════════════════════════════
-  -- Budget: Limits
-  -- ═══════════════════════════════════════
   CREATE TABLE IF NOT EXISTS limits (
     id TEXT PRIMARY KEY,
     category_id TEXT NOT NULL,
@@ -116,9 +108,6 @@ export const CREATE_TABLES = `
   CREATE UNIQUE INDEX IF NOT EXISTS idx_limit_cat_month
     ON limits(category_id, month);
 
-  -- ═══════════════════════════════════════
-  -- Meta
-  -- ═══════════════════════════════════════
   CREATE TABLE IF NOT EXISTS meta (
     key TEXT PRIMARY KEY,
     value TEXT

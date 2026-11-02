@@ -1,11 +1,24 @@
 import { query, queryOne, run, transaction } from '@/db/adapter.js'
-import { getStats as calcStats, getStreak as calcStreak } from './statsCalculator.js'
+import {
+  getStats as calcStats,
+  getStreak as calcStreak,
+} from './statsCalculator.js'
+import {
+  bufferClick,
+  flush as flushClicks,
+  getPendingForZekr,
+  getPendingMap,
+  clearBuffer,
+} from './clickBuffer.js'
 
 function genId(prefix) {
   const rand = Math.random().toString(16).substring(2, 14).padEnd(12, '0')
   return `${prefix}_${rand}`
 }
-function nowMs() { return Date.now() }
+
+function nowMs() {
+  return Date.now()
+}
 
 // ═══════════════════════════════════════
 // Adhkar
@@ -42,7 +55,9 @@ export async function updateAdhkar(id, text, default_target = null) {
   if (!existing) throw new Error('الذكر غير موجود')
 
   await run('UPDATE adhkar SET text = ?, default_target = ? WHERE id = ?', [
-    trimmed, default_target, id,
+    trimmed,
+    default_target,
+    id,
   ])
 
   return { id: String(id), text: trimmed, default_target }
@@ -55,41 +70,46 @@ export async function deleteAdhkar(id) {
 }
 
 // ═══════════════════════════════════════
-// Counts
+// Counts (DB + pending buffer)
 // ═══════════════════════════════════════
 export async function getCounts() {
   const rows = await query('SELECT zekr_id, count FROM counts')
   const result = {}
-  for (const r of rows) result[String(r.zekr_id)] = Number(r.count) || 0
+  for (const r of rows) {
+    result[String(r.zekr_id)] = Number(r.count) || 0
+  }
+
+  const pending = getPendingMap()
+  for (const [zekrId, count] of Object.entries(pending)) {
+    result[zekrId] = (result[zekrId] || 0) + count
+  }
+
   return result
 }
 
 // ═══════════════════════════════════════
-// Clicks
+// Clicks — BUFFERED (batch every 60s)
 // ═══════════════════════════════════════
 export async function addClick(zekr_id) {
   const zekr = await queryOne('SELECT id FROM adhkar WHERE id = ?', [zekr_id])
   if (!zekr) throw new Error('الذكر غير موجود')
 
-  await transaction([
-    {
-      statement: 'INSERT INTO clicks (zekr_id, clicked_at) VALUES (?, ?)',
-      values: [zekr_id, nowMs()],
-    },
-    {
-      statement: `INSERT INTO counts (zekr_id, count) VALUES (?, 1)
-                  ON CONFLICT(zekr_id) DO UPDATE SET count = count + 1`,
-      values: [zekr_id],
-    },
-  ])
+  bufferClick(zekr_id)
 
-  const row = await queryOne('SELECT count FROM counts WHERE zekr_id = ?', [zekr_id])
-  return { count: Number(row?.count) || 0 }
+  const row = await queryOne('SELECT count FROM counts WHERE zekr_id = ?', [
+    zekr_id,
+  ])
+  const dbCount = Number(row?.count) || 0
+  const pending = getPendingForZekr(zekr_id)
+
+  return { count: dbCount + pending }
 }
 
 export async function resetClick(zekr_id) {
   const zekr = await queryOne('SELECT id FROM adhkar WHERE id = ?', [zekr_id])
   if (!zekr) throw new Error('الذكر غير موجود')
+
+  await flushClicks()
 
   await run(
     `INSERT INTO counts (zekr_id, count) VALUES (?, 0)
@@ -176,7 +196,12 @@ export async function createGroup(name, description = null) {
     [id, trimmed, description, createdAt]
   )
 
-  return buildGroupResponse({ id, name: trimmed, description, created_at: createdAt })
+  return buildGroupResponse({
+    id,
+    name: trimmed,
+    description,
+    created_at: createdAt,
+  })
 }
 
 export async function updateGroup(id, name, description = null) {
@@ -187,7 +212,9 @@ export async function updateGroup(id, name, description = null) {
   if (!trimmed) throw new Error('الاسم لا يمكن أن يكون فارغًا')
 
   await run('UPDATE groups SET name = ?, description = ? WHERE id = ?', [
-    trimmed, description, id,
+    trimmed,
+    description,
+    id,
   ])
 
   return buildGroupResponse({ ...existing, name: trimmed, description })
@@ -232,10 +259,16 @@ export async function updateGroupItem(groupId, itemId, updates) {
   if (!item) throw new Error('الذكر غير موجود في المجموعة')
 
   if (updates.target !== undefined) {
-    await run('UPDATE group_items SET target = ? WHERE id = ?', [updates.target, itemId])
+    await run('UPDATE group_items SET target = ? WHERE id = ?', [
+      updates.target,
+      itemId,
+    ])
   }
   if (updates.position !== undefined) {
-    await run('UPDATE group_items SET position = ? WHERE id = ?', [updates.position, itemId])
+    await run('UPDATE group_items SET position = ? WHERE id = ?', [
+      updates.position,
+      itemId,
+    ])
   }
 
   const group = await queryOne('SELECT * FROM groups WHERE id = ?', [groupId])
@@ -280,6 +313,7 @@ export async function getStreak() {
 // Delete All
 // ═══════════════════════════════════════
 export async function deleteAllCounts() {
+  await flushClicks()
   await run('UPDATE counts SET count = 0')
   return { ok: true }
 }
@@ -290,16 +324,20 @@ export async function deleteAllTargets() {
 }
 
 export async function deleteAllClicks() {
+  await flushClicks()
+  clearBuffer()
   await transaction([
-    { statement: 'DELETE FROM clicks', values: [] },
+    { statement: 'DELETE FROM clicks_hourly', values: [] },
     { statement: 'UPDATE counts SET count = 0', values: [] },
   ])
   return { ok: true }
 }
 
 export async function deleteAllData() {
+  await flushClicks()
+  clearBuffer()
   await transaction([
-    { statement: 'DELETE FROM clicks', values: [] },
+    { statement: 'DELETE FROM clicks_hourly', values: [] },
     { statement: 'DELETE FROM counts', values: [] },
     { statement: 'DELETE FROM targets', values: [] },
   ])
@@ -310,42 +348,61 @@ export async function deleteAllData() {
 // Backup / Restore
 // ═══════════════════════════════════════
 export async function getBackup() {
+  await flushClicks()
+
   const adhkar = await query('SELECT id, text, default_target FROM adhkar')
   const counts = await query('SELECT zekr_id, count FROM counts')
-  const targets = await query('SELECT zekr_id, target FROM targets WHERE target IS NOT NULL')
-  const clicks = await query('SELECT zekr_id, clicked_at FROM clicks')
-  const groups = await query('SELECT id, name, description, created_at FROM groups')
+  const targets = await query(
+    'SELECT zekr_id, target FROM targets WHERE target IS NOT NULL'
+  )
+  const clicks_hourly = await query(
+    'SELECT zekr_id, hour, count FROM clicks_hourly'
+  )
+  const groups = await query(
+    'SELECT id, name, description, created_at FROM groups'
+  )
   const group_items = await query('SELECT * FROM group_items')
 
   return {
-    version: '1.0',
+    version: '2.0',
     exported_at: nowMs(),
-    adhkar, counts, targets, clicks, groups, group_items,
+    adhkar,
+    counts,
+    targets,
+    clicks_hourly,
+    groups,
+    group_items,
   }
 }
 
 export async function restoreBackup(data) {
+  await flushClicks()
+  clearBuffer()
+
   const statements = []
 
   statements.push({ statement: 'DELETE FROM group_items', values: [] })
   statements.push({ statement: 'DELETE FROM groups', values: [] })
-  statements.push({ statement: 'DELETE FROM clicks', values: [] })
+  statements.push({ statement: 'DELETE FROM clicks_hourly', values: [] })
   statements.push({ statement: 'DELETE FROM counts', values: [] })
   statements.push({ statement: 'DELETE FROM targets', values: [] })
   statements.push({ statement: 'DELETE FROM adhkar', values: [] })
 
   for (const a of data.adhkar || []) {
     statements.push({
-      statement: 'INSERT INTO adhkar (id, text, default_target) VALUES (?, ?, ?)',
+      statement:
+        'INSERT INTO adhkar (id, text, default_target) VALUES (?, ?, ?)',
       values: [a.id, a.text, a.default_target ?? null],
     })
   }
+
   for (const c of data.counts || []) {
     statements.push({
       statement: 'INSERT INTO counts (zekr_id, count) VALUES (?, ?)',
       values: [c.zekr_id, c.count],
     })
   }
+
   for (const t of data.targets || []) {
     if (t.target != null) {
       statements.push({
@@ -354,25 +411,44 @@ export async function restoreBackup(data) {
       })
     }
   }
-  for (const cl of data.clicks || []) {
+
+  for (const cl of data.clicks_hourly || []) {
     statements.push({
-      statement: 'INSERT INTO clicks (zekr_id, clicked_at) VALUES (?, ?)',
-      values: [cl.zekr_id, cl.clicked_at ?? cl.timestamp],
+      statement:
+        'INSERT INTO clicks_hourly (zekr_id, hour, count) VALUES (?, ?, ?)',
+      values: [cl.zekr_id, cl.hour, cl.count],
     })
   }
+
+  for (const cl of data.clicks || []) {
+    const ts = cl.clicked_at ?? cl.timestamp
+    if (!ts) continue
+    const hour = Math.floor(ts / 3600000)
+    statements.push({
+      statement: `INSERT INTO clicks_hourly (zekr_id, hour, count) VALUES (?, ?, 1)
+                  ON CONFLICT(zekr_id, hour) DO UPDATE SET count = count + 1`,
+      values: [cl.zekr_id, hour],
+    })
+  }
+
   for (const g of data.groups || []) {
     statements.push({
-      statement: 'INSERT INTO groups (id, name, description, created_at) VALUES (?, ?, ?, ?)',
+      statement:
+        'INSERT INTO groups (id, name, description, created_at) VALUES (?, ?, ?, ?)',
       values: [g.id, g.name, g.description, g.created_at ?? nowMs()],
     })
   }
+
   for (const gi of data.group_items || []) {
     statements.push({
-      statement: 'INSERT INTO group_items (id, group_id, zekr_id, position, target) VALUES (?, ?, ?, ?, ?)',
+      statement:
+        'INSERT INTO group_items (id, group_id, zekr_id, position, target) VALUES (?, ?, ?, ?, ?)',
       values: [
         gi.id ?? genId('gi'),
-        gi.group_id, gi.zekr_id,
-        gi.position ?? 1, gi.target ?? null,
+        gi.group_id,
+        gi.zekr_id,
+        gi.position ?? 1,
+        gi.target ?? null,
       ],
     })
   }
@@ -382,23 +458,12 @@ export async function restoreBackup(data) {
 }
 
 // ═══════════════════════════════════════
-// Import Legacy (من zekr.db القديم)
-// ═══════════════════════════════════════
-// ═══════════════════════════════════════
-// Type casting helpers
-// ═══════════════════════════════════════
-// ═══════════════════════════════════════
-// Type casting
+// Import Legacy
 // ═══════════════════════════════════════
 function toInt(v) {
   if (v == null || v === '') return null
   const n = Number(v)
   return Number.isFinite(n) ? Math.trunc(n) : null
-}
-function toNum(v) {
-  if (v == null || v === '') return null
-  const n = Number(v)
-  return Number.isFinite(n) ? n : null
 }
 function toStr(v) {
   return v == null ? null : String(v)
@@ -407,13 +472,13 @@ function toStrOr(v, fallback) {
   return v == null || v === '' ? fallback : String(v)
 }
 
-// ═══════════════════════════════════════
-// Import Legacy — نسخة صلبة
-// ═══════════════════════════════════════
 export async function importLegacy(legacy) {
   if (!legacy || typeof legacy !== 'object') {
     throw new Error('ملف JSON غير صالح')
   }
+
+  await flushClicks()
+  clearBuffer()
 
   console.log('[Legacy] Starting import...')
   console.log('[Legacy] Counts:', {
@@ -425,59 +490,30 @@ export async function importLegacy(legacy) {
     group_items: (legacy.group_items || []).length,
   })
 
-  // تحقق من شكل البيانات
-  if (legacy.adhkar?.[0]) {
-    console.log('[Legacy] Sample adhkar:', legacy.adhkar[0])
-    console.log('[Legacy] Types:', {
-      'id': typeof legacy.adhkar[0].id,
-      'default_target': typeof legacy.adhkar[0].default_target,
-    })
-  }
-  if (legacy.counts?.[0]) {
-    console.log('[Legacy] Sample counts:', legacy.counts[0])
-    console.log('[Legacy] count type:', typeof legacy.counts[0].count)
-  }
-  if (legacy.clicks?.[0]) {
-    console.log('[Legacy] Sample clicks:', legacy.clicks[0])
-    console.log('[Legacy] timestamp types:', {
-      'timestamp': typeof legacy.clicks[0].timestamp,
-      'clicked_at': typeof legacy.clicks[0].clicked_at,
-    })
-  }
-
-  // ═══════════════════════════════════════
-  // 1. امسح كل شيء (DELETEs منفصلة)
-  // ═══════════════════════════════════════
-  console.log('[Legacy] Step 1: Clearing existing data...')
   await run('DELETE FROM group_items')
   await run('DELETE FROM groups')
-  await run('DELETE FROM clicks')
+  await run('DELETE FROM clicks_hourly')
   await run('DELETE FROM counts')
   await run('DELETE FROM targets')
   await run('DELETE FROM adhkar')
 
-  // ═══════════════════════════════════════
-  // 2. جمع الـ INSERTs
-  // ═══════════════════════════════════════
   const statements = []
   const seenAdhkarIds = new Set()
   const seenGroupIds = new Set()
 
-  // Adhkar
   for (const a of legacy.adhkar || []) {
     const id = toStrOr(a.id, genId('zekr'))
     if (!id || seenAdhkarIds.has(id)) continue
     seenAdhkarIds.add(id)
 
     statements.push({
-      statement: 'INSERT INTO adhkar (id, text, default_target) VALUES (?, ?, ?)',
+      statement:
+        'INSERT INTO adhkar (id, text, default_target) VALUES (?, ?, ?)',
       values: [id, toStrOr(a.text, '(بدون نص)'), toInt(a.default_target)],
     })
   }
   console.log(`[Legacy] Prepared ${seenAdhkarIds.size} adhkar`)
 
-  // Counts
-  let countAdded = 0
   for (const c of legacy.counts || []) {
     const zekrId = toStr(c.zekr_id)
     if (!zekrId || !seenAdhkarIds.has(zekrId)) continue
@@ -486,11 +522,8 @@ export async function importLegacy(legacy) {
       statement: 'INSERT INTO counts (zekr_id, count) VALUES (?, ?)',
       values: [zekrId, toInt(c.count) ?? 0],
     })
-    countAdded++
   }
-  console.log(`[Legacy] Prepared ${countAdded} counts`)
 
-  // Targets
   for (const t of legacy.targets || []) {
     const zekrId = toStr(t.zekr_id)
     const target = toInt(t.target)
@@ -502,29 +535,38 @@ export async function importLegacy(legacy) {
     })
   }
 
-  // Clicks
-  let clicksAdded = 0
+  const clicksMap = new Map()
   for (const cl of legacy.clicks || []) {
     const zekrId = toStr(cl.zekr_id)
     const ts = toInt(cl.timestamp ?? cl.clicked_at)
     if (!zekrId || ts == null || !seenAdhkarIds.has(zekrId)) continue
 
-    statements.push({
-      statement: 'INSERT INTO clicks (zekr_id, clicked_at) VALUES (?, ?)',
-      values: [zekrId, ts],
-    })
-    clicksAdded++
+    const hour = Math.floor(ts / 3600000)
+    const key = `${zekrId}|${hour}`
+    clicksMap.set(key, (clicksMap.get(key) || 0) + 1)
   }
-  console.log(`[Legacy] Prepared ${clicksAdded} clicks`)
 
-  // Groups
+  for (const [key, count] of clicksMap) {
+    const [zekrId, hourStr] = key.split('|')
+    statements.push({
+      statement:
+        'INSERT INTO clicks_hourly (zekr_id, hour, count) VALUES (?, ?, ?)',
+      values: [zekrId, Number(hourStr), count],
+    })
+  }
+  console.log(
+    `[Legacy] Prepared ${clicksMap.size} hourly groups (from ${(legacy.clicks || []).length
+    } clicks)`
+  )
+
   for (const g of legacy.groups || []) {
     const id = toStrOr(g.id, genId('grp'))
     if (!id || seenGroupIds.has(id)) continue
     seenGroupIds.add(id)
 
     statements.push({
-      statement: 'INSERT INTO groups (id, name, description, created_at) VALUES (?, ?, ?, ?)',
+      statement:
+        'INSERT INTO groups (id, name, description, created_at) VALUES (?, ?, ?, ?)',
       values: [
         id,
         toStrOr(g.name, 'مجموعة'),
@@ -534,7 +576,6 @@ export async function importLegacy(legacy) {
     })
   }
 
-  // Group Items
   for (const gi of legacy.group_items || []) {
     const groupId = toStr(gi.group_id)
     const zekrId = toStr(gi.zekr_id)
@@ -545,7 +586,8 @@ export async function importLegacy(legacy) {
     const id = gi.id != null ? `gi_${gi.id}` : genId('gi')
 
     statements.push({
-      statement: 'INSERT INTO group_items (id, group_id, zekr_id, position, target) VALUES (?, ?, ?, ?, ?)',
+      statement:
+        'INSERT INTO group_items (id, group_id, zekr_id, position, target) VALUES (?, ?, ?, ?, ?)',
       values: [
         id,
         groupId,
@@ -556,12 +598,9 @@ export async function importLegacy(legacy) {
     })
   }
 
-  console.log(`[Legacy] Total INSERTs prepared: ${statements.length}`)
+  console.log(`[Legacy] Total INSERTs: ${statements.length}`)
 
-  // ═══════════════════════════════════════
-  // 3. تنفيذ الإدخالات — chunk + fallback
-  // ═══════════════════════════════════════
-  const CHUNK_SIZE = 50
+  const CHUNK_SIZE = 100
   let executed = 0
   const failed = []
 
@@ -570,19 +609,17 @@ export async function importLegacy(legacy) {
     try {
       await transaction(chunk)
       executed += chunk.length
-      if ((i / CHUNK_SIZE) % 5 === 0) {
-        console.log(`[Legacy] ✅ ${executed}/${statements.length}`)
-      }
     } catch (err) {
-      console.warn(`[Legacy] ⚠️ Chunk ${i}-${i + chunk.length} failed — retrying individually`)
-      // Fallback: واحد واحد
+      console.warn(
+        `[Legacy] Chunk ${i}-${i + chunk.length} failed, retrying individually`
+      )
       for (const stmt of chunk) {
         try {
           await transaction([stmt])
           executed++
         } catch (e) {
           failed.push({
-            sql: stmt.statement,
+            sql: stmt.statement.substring(0, 60),
             values: stmt.values,
             error: e.message,
           })
@@ -596,11 +633,13 @@ export async function importLegacy(legacy) {
     }
   }
 
-  console.log(`[Legacy] Done! Imported ${executed}/${statements.length}, Failed: ${failed.length}`)
+  console.log(
+    `[Legacy] Done! Imported ${executed}/${statements.length}, Failed: ${failed.length}`
+  )
 
   return {
     adhkar: seenAdhkarIds.size,
-    clicks: clicksAdded,
+    clicks: (legacy.clicks || []).length,
     groups: seenGroupIds.size,
     failed: failed.length,
     total: statements.length,
