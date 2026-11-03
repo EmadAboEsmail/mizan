@@ -27,7 +27,7 @@ function ZekrLayout() {
       <div className={styles.errorScreen}>
         <div className={styles.errorCard}>
           <div className={styles.errorIcon}>⚠️</div>
-          <h2 className={styles.errorTitle}>تعذر الاتصال بالخادم</h2>
+          <h2 className={styles.errorTitle}>تعذر تحميل البيانات</h2>
           <p className={styles.errorMessage}>{error}</p>
           <button type="button" className={styles.retryBtn} onClick={loadInitialData}>
             إعادة المحاولة ↺

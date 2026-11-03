@@ -1,4 +1,4 @@
-import { SearchIcon } from './transactionsIcons.jsx'
+import { SearchIcon } from '../icons/transactionsIcons.jsx'
 import styles from './TransactionsFilters.module.scss'
 
 export default function TransactionsFilters({
