@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Modal from '@/components/ui/Modal.jsx'
+import { normalizeDigits } from '@/utils/numbers.js'
 import styles from './AdhkarFormModal.module.scss'
 
 // الأهداف الأكثر شيوعاً في الأذكار
@@ -36,7 +37,7 @@ function AdhkarFormModal({ isOpen, onClose, onConfirm, initial = null }) {
 
     let targetValue = null
     if (target !== '') {
-      const num = Number(target)
+      const num = Number(normalizeDigits(target))
       // التأكد من أنه عدد صحيح ضمن النطاق
       if (!Number.isInteger(num) || num < 1 || num > 10000) {
         setError('الهدف يجب أن يكون عدداً صحيحاً بين 1 و 10,000')

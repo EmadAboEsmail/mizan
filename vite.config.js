@@ -65,10 +65,10 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "icons/*.png"],
       manifest: {
-        name: "مساحتي الرقمية",
-        short_name: "مساحتي",
+        name: "ميزان",
+        short_name: "ميزان",
         description:
-          "منصة تطبيقات عربية — ذِكر للسبحة والإحصائيات، والميزانية لإدارة الدخل والمصروف",
+          "ميزان — ذِكر للسبحة والإحصائيات، والميزانية لإدارة الدخل والمصروف",
         theme_color: "#059669",
         background_color: "#f8fafc",
         display: "standalone",

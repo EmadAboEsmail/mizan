@@ -20,7 +20,9 @@ export default function BottomNav({ items, accent = 'zekr' }) {
             `${styles.item} ${isActive ? styles.active : ''}`
           }
         >
-          <span className={styles.icon}>{item.icon}</span>
+          <span className={styles.icon} aria-hidden="true">
+            {item.icon}
+          </span>
           <span className={styles.label}>{item.label}</span>
         </NavLink>
       ))}

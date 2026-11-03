@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Modal from '@/components/ui/Modal.jsx'
 import CategoryIcon from './CategoryIcon.jsx'
+import { normalizeDigits } from '@/utils/numbers.js'
 import styles from './TransactionFormModal.module.scss'
 
 function todayISO() {
@@ -82,7 +83,7 @@ function TransactionFormModal({
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const trimmedAmount = amount.trim().replace(',', '.')
+    const trimmedAmount = normalizeDigits(amount).trim()
     const numAmount = Number(trimmedAmount)
 
     if (!trimmedAmount) {

@@ -2,18 +2,40 @@ import { createContext, useContext, useEffect, useState } from 'react'
 
 const ThemeContext = createContext()
 
+function readInitialTheme() {
+  try {
+    const saved = localStorage.getItem('theme')
+    if (saved === 'dark' || saved === 'light') return saved
+  } catch {
+    /* التخزين غير متاح */
+  }
+  // أول تشغيل: اتبع إعداد النظام
+  try {
+    if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) return 'dark'
+  } catch {
+    /* ignore */
+  }
+  return 'light'
+}
+
+const META_COLORS = { light: '#FAF6F0', dark: '#131210' }
+
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'light'
-  })
+  const [theme, setTheme] = useState(readInitialTheme)
 
   useEffect(() => {
-    if (theme === 'dark') {
-      document.body.classList.add('dark')
-    } else {
-      document.body.classList.remove('dark')
+    document.body.classList.toggle('dark', theme === 'dark')
+
+    // لون شريط المتصفح يتبع الثيم المختار فعليًا لا إعداد النظام فقط
+    document
+      .querySelectorAll('meta[name="theme-color"]')
+      .forEach((m) => m.setAttribute('content', META_COLORS[theme]))
+
+    try {
+      localStorage.setItem('theme', theme)
+    } catch {
+      /* ignore */
     }
-    localStorage.setItem('theme', theme)
   }, [theme])
 
   const toggleTheme = () => {

@@ -20,10 +20,11 @@ function ConfirmModal({
       <p className={styles.message}>{message}</p>
 
       <div className={styles.buttons}>
-        <button className={styles.cancel} onClick={onClose}>
+        <button type="button" className={styles.cancel} onClick={onClose}>
           {cancelLabel}
         </button>
         <button
+          type="button"
           className={`${styles.confirm} ${danger ? styles.danger : ''}`}
           onClick={handleConfirm}
         >
