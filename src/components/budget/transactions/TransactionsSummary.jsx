@@ -1,4 +1,4 @@
-import { formatAmount } from './transactionsHelpers.js'
+import { formatAmount } from './lib/transactionsHelpers.js'
 import styles from './TransactionsSummary.module.scss'
 
 export default function TransactionsSummary({ summary, insights, isAllMonths }) {

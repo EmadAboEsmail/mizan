@@ -18,7 +18,7 @@ import {
   formatAmount,
   ROW_HEIGHT,
   groupTransactionsByDate,
-} from '@/components/budget/transactions/transactionsHelpers.js'
+} from '@/components/budget/transactions/lib/transactionsHelpers.js'
 import styles from './Transactions.module.scss'
 
 // ✅ برة الـ component (ثابت)

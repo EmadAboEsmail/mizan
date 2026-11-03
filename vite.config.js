@@ -117,18 +117,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2,wasm}"],
         navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
-          {
-            urlPattern: ({ url }) => url.pathname.startsWith("/api/"),
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "api-cache",
-              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 7 },
-              cacheableResponse: { statuses: [0, 200] },
-              networkTimeoutSeconds: 5,
-            },
-          },
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|webp|woff2?)$/i,
             handler: "CacheFirst",
@@ -163,8 +152,5 @@ export default defineConfig({
     host: true,
     strictPort: true,
     hmr: { host: "localhost", port: 3000, protocol: "ws" },
-    proxy: {
-      "/api": { target: "http://localhost:8000", changeOrigin: true },
-    },
   },
 });

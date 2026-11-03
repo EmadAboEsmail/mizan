@@ -2,16 +2,16 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useZekrData } from '@/contexts/ZekrDataContext'
 import { useModalBackButton } from '@/hooks/useModalBackButton'
-import ZekrDisplay from '@/components/zekr/ZekrDisplay.jsx'
-import AdhkarSelect from '@/components/zekr/AdhkarSelect.jsx'
-import ActionButtons from '@/components/zekr/ActionButtons.jsx'
-import SabhModeTabs from '@/components/zekr/SabhModeTabs.jsx'
-import GroupModeView from '@/components/zekr/GroupModeView.jsx'
+import ZekrDisplay from '@/components/zekr/sabh/ZekrDisplay.jsx'
+import AdhkarSelect from '@/components/zekr/sabh/AdhkarSelect.jsx'
+import ActionButtons from '@/components/zekr/sabh/ActionButtons.jsx'
+import SabhModeTabs from '@/components/zekr/sabh/SabhModeTabs.jsx'
+import GroupModeView from '@/components/zekr/sabh/GroupModeView.jsx'
 import PromptModal from '@/components/ui/PromptModal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import FocusMode, {
   attemptFullscreen,
-} from '@/components/zekr/FocusMode.jsx'
+} from '@/components/zekr/sabh/FocusMode.jsx'
 import styles from './Sabh.module.scss'
 
 // ✅ هل الاهتزاز مفعل؟ (افتراضي: نعم)

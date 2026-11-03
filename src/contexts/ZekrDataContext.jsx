@@ -98,7 +98,7 @@ export function ZekrDataProvider({ children }) {
       .catch((err) => {
         console.error('فشل تحميل البيانات:', err)
         setError(
-          err.message || 'فشل الاتصال بالخادم، يرجى التأكد من تشغيل السيرفر.'
+          err.message || 'فشل تحميل البيانات المحلية'
         )
         setLoading(false)
       })

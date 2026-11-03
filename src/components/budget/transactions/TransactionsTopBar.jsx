@@ -3,8 +3,8 @@ import {
   PlusIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-} from './transactionsIcons.jsx'
-import { AR_MONTHS } from './transactionsHelpers.js'
+} from '../icons/transactionsIcons.jsx'
+import { AR_MONTHS } from './lib/transactionsHelpers.js'
 import styles from './TransactionsTopBar.module.scss'
 
 // ─── Helpers ───
