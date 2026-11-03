@@ -496,13 +496,15 @@ export async function importLegacyBudget(legacy) {
   console.log('[Legacy Budget Import] Transactions:', (legacy.transactions || []).length)
   console.log('[Legacy Budget Import] Limits:', (legacy.limits || []).length)
 
-  // امسح كل شيء أول
-  await run('DELETE FROM limits')
-  await run('DELETE FROM transactions')
-  await run('DELETE FROM categories')
-
-  const statements = []
+  // كل شيء (الحذف + الإدراج) داخل معاملة واحدة: عند أي فشل تبقى البيانات القديمة كما هي
+  const statements = [
+    { statement: 'DELETE FROM limits', values: [] },
+    { statement: 'DELETE FROM transactions', values: [] },
+    { statement: 'DELETE FROM categories', values: [] },
+  ]
   const seenCatIds = new Set()
+  const seenTxnIds = new Set()
+  const seenLimitKeys = new Set()
 
   // Categories
   for (const c of legacy.categories || []) {
@@ -535,12 +537,16 @@ export async function importLegacyBudget(legacy) {
     const amount = toNumL(t.amount)
     if (amount == null || amount <= 0) continue
 
+    const txnId = toStrOrL(t.id, `txn_${Math.random().toString(16).slice(2, 14)}`)
+    if (seenTxnIds.has(txnId)) continue
+    seenTxnIds.add(txnId)
+
     statements.push({
       statement: `INSERT INTO transactions
         (id, amount, type, category_id, date, details, description, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       values: [
-        toStrOrL(t.id, `txn_${Math.random().toString(16).slice(2, 14)}`),
+        txnId,
         Math.round(amount * 100) / 100,
         type,
         catId,
@@ -561,12 +567,17 @@ export async function importLegacyBudget(legacy) {
     const amount = toNumL(l.amount)
     if (amount == null || amount <= 0) continue
 
+    const limitMonth = toStrOrL(l.month, '2024-01')
+    const limitKey = `${catId}|${limitMonth}`
+    if (seenLimitKeys.has(limitKey)) continue // فهرس فريد (category, month)
+    seenLimitKeys.add(limitKey)
+
     statements.push({
       statement: 'INSERT INTO limits (id, category_id, month, amount) VALUES (?, ?, ?, ?)',
       values: [
         toStrOrL(l.id, `lim_${Math.random().toString(16).slice(2, 14)}`),
         catId,
-        toStrOrL(l.month, '2024-01'),
+        limitMonth,
         Math.round(amount * 100) / 100,
       ],
     })
@@ -575,37 +586,16 @@ export async function importLegacyBudget(legacy) {
 
   console.log(`[Legacy Budget Import] Executing ${statements.length} statements...`)
 
-  // نفذ على chunks
-  const CHUNK = 50
-  let executed = 0
-  const failed = []
-
-  for (let i = 0; i < statements.length; i += CHUNK) {
-    const chunk = statements.slice(i, i + CHUNK)
-    try {
-      await transaction(chunk)
-      executed += chunk.length
-    } catch (err) {
-      console.warn(`[Legacy Budget Import] Chunk ${i} failed, retrying individually`)
-      for (const stmt of chunk) {
-        try {
-          await transaction([stmt])
-          executed++
-        } catch (e) {
-          failed.push({ sql: stmt.statement.substring(0, 50), values: stmt.values, error: e.message })
-          console.error('[Legacy Budget Import] ❌ Skipped:', stmt, e.message)
-        }
-      }
-    }
-  }
-
-  console.log(`[Legacy Budget Import] Done! Imported ${executed}/${statements.length}, Failed: ${failed.length}`)
+  // معاملة واحدة (rollback تلقائي عند الخطأ)
+  await transaction(statements)
+  const executed = statements.length - 3
+  console.log(`[Legacy Budget Import] Done! Imported ${executed} rows`)
 
   return {
     categories: seenCatIds.size,
     transactions: txnCount,
     limits: limitCount,
-    failed: failed.length,
+    failed: 0,
     imported: executed,
   }
 }

@@ -493,16 +493,18 @@ export async function importLegacy(legacy) {
     group_items: (legacy.group_items || []).length,
   })
 
-  await run('DELETE FROM group_items')
-  await run('DELETE FROM groups')
-  await run('DELETE FROM clicks_hourly')
-  await run('DELETE FROM counts')
-  await run('DELETE FROM targets')
-  await run('DELETE FROM adhkar')
-
-  const statements = []
+  // كل شيء (الحذف + الإدراج) داخل معاملة واحدة: عند أي فشل تبقى البيانات القديمة كما هي
+  const statements = [
+    { statement: 'DELETE FROM group_items', values: [] },
+    { statement: 'DELETE FROM groups', values: [] },
+    { statement: 'DELETE FROM clicks_hourly', values: [] },
+    { statement: 'DELETE FROM counts', values: [] },
+    { statement: 'DELETE FROM targets', values: [] },
+    { statement: 'DELETE FROM adhkar', values: [] },
+  ]
   const seenAdhkarIds = new Set()
   const seenGroupIds = new Set()
+  const seenItemIds = new Set()
 
   for (const a of legacy.adhkar || []) {
     const id = toStrOr(a.id, genId('zekr'))
@@ -587,6 +589,8 @@ export async function importLegacy(legacy) {
     if (!seenAdhkarIds.has(zekrId)) continue
 
     const id = gi.id != null ? `gi_${gi.id}` : genId('gi')
+    if (seenItemIds.has(id)) continue
+    seenItemIds.add(id)
 
     statements.push({
       statement:
@@ -603,49 +607,17 @@ export async function importLegacy(legacy) {
 
   console.log(`[Legacy] Total INSERTs: ${statements.length}`)
 
-  const CHUNK_SIZE = 100
-  let executed = 0
-  const failed = []
-
-  for (let i = 0; i < statements.length; i += CHUNK_SIZE) {
-    const chunk = statements.slice(i, i + CHUNK_SIZE)
-    try {
-      await transaction(chunk)
-      executed += chunk.length
-    } catch (err) {
-      console.warn(
-        `[Legacy] Chunk ${i}-${i + chunk.length} failed, retrying individually`
-      )
-      for (const stmt of chunk) {
-        try {
-          await transaction([stmt])
-          executed++
-        } catch (e) {
-          failed.push({
-            sql: stmt.statement.substring(0, 60),
-            values: stmt.values,
-            error: e.message,
-          })
-          console.error('[Legacy] ❌ Skipped:', {
-            sql: stmt.statement.substring(0, 60),
-            values: stmt.values,
-            error: e.message,
-          })
-        }
-      }
-    }
-  }
-
-  console.log(
-    `[Legacy] Done! Imported ${executed}/${statements.length}, Failed: ${failed.length}`
-  )
+  // معاملة واحدة (rollback تلقائي عند الخطأ)
+  await transaction(statements)
+  const insertCount = statements.length - 6
+  console.log(`[Legacy] Done! Imported ${insertCount} rows`)
 
   return {
     adhkar: seenAdhkarIds.size,
     clicks: (legacy.clicks || []).length,
     groups: seenGroupIds.size,
-    failed: failed.length,
-    total: statements.length,
-    imported: executed,
+    failed: 0,
+    total: insertCount,
+    imported: insertCount,
   }
 }
