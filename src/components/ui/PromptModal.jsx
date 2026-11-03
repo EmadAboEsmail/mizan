@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Modal from './Modal.jsx'
+import { normalizeDigits } from '@/utils/numbers.js'
 import styles from './PromptModal.module.scss'
 
 function PromptModal({
@@ -25,7 +26,8 @@ function PromptModal({
   }, [isOpen, defaultValue])
 
   const handleConfirm = () => {
-    const trimmed = String(value).trim()
+    const trimmed =
+      type === 'number' ? normalizeDigits(value).trim() : String(value).trim()
 
     if (trimmed === '') {
       setError('الرجاء إدخال قيمة')
@@ -61,7 +63,8 @@ function PromptModal({
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
       <input
         className={styles.input}
-        type={type}
+        type={type === 'number' ? 'text' : type}
+        inputMode={type === 'number' ? 'numeric' : undefined}
         value={value}
         onChange={(e) => {
           setValue(e.target.value)
@@ -70,17 +73,15 @@ function PromptModal({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         autoFocus
-        min={min}
-        max={max}
       />
 
       {error && <div className={styles.error}>{error}</div>}
 
       <div className={styles.buttons}>
-        <button className={styles.cancel} onClick={onClose}>
+        <button type="button" className={styles.cancel} onClick={onClose}>
           إلغاء
         </button>
-        <button className={styles.confirm} onClick={handleConfirm}>
+        <button type="button" className={styles.confirm} onClick={handleConfirm}>
           تأكيد
         </button>
       </div>

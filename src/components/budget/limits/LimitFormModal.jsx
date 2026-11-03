@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import Modal from '@/components/ui/Modal.jsx'
 import CategoryIcon from '@/components/budget/CategoryIcon.jsx'
+import { normalizeDigits } from '@/utils/numbers.js'
 import styles from './LimitFormModal.module.scss'
 
 function LimitFormModal({
@@ -45,7 +46,7 @@ function LimitFormModal({
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    const trimmed = amount.trim().replace(',', '.')
+    const trimmed = normalizeDigits(amount).trim()
     const num = Number(trimmed)
 
     if (!categoryId) {

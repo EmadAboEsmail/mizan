@@ -1,4 +1,6 @@
 import AppCard from './AppCard.jsx'
+import ContinueCard from './ContinueCard.jsx'
+import QuickStats from './QuickStats.jsx'
 import ThemeToggle from '@/components/ui/ThemeToggle.jsx'
 import styles from './Home.module.scss'
 
@@ -63,7 +65,7 @@ export default function Home() {
         <div className={styles.brand}>
           <div className={styles.logoMark}>۞</div>
           <div className={styles.brandText}>
-            <span className={styles.brandName}>مساحتي</span>
+            <span className={styles.brandName}>ميزان</span>
             <span className={styles.brandTag}>فضاء رقمي هادئ</span>
           </div>
         </div>
@@ -83,6 +85,9 @@ export default function Home() {
             <span className={styles.dividerLine} />
           </div>
         </section>
+
+        <ContinueCard />
+        <QuickStats />
 
         <section className={styles.grid} aria-label="التطبيقات المتاحة">
           {APPS.map((app, i) => (

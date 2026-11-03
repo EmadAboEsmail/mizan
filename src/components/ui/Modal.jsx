@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import styles from './Modal.module.scss'
 import { useModalBackButton } from '@/hooks/useModalBackButton'
 
@@ -56,27 +56,75 @@ function Modal({
 }) {
   useModalBackButton(isOpen && !disableBackButton, onClose)
 
+  const titleId = useId()
+  const dialogRef = useRef(null)
+  const onCloseRef = useRef(onClose)
+  const pressStartedOnOverlay = useRef(false)
+
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
+
   useEffect(() => {
     if (!isOpen) return
     lockBodyScroll()
     return () => unlockBodyScroll()
   }, [isOpen])
 
+  // Escape للإغلاق + نقل التركيز للنافذة وإعادته عند الإغلاق
+  useEffect(() => {
+    if (!isOpen) return
+
+    const previouslyFocused = document.activeElement
+    const dialog = dialogRef.current
+    // لا نسرق التركيز لو عنصر داخل النافذة أخذه بالفعل (autoFocus)
+    if (dialog && !dialog.contains(document.activeElement)) {
+      dialog.focus({ preventScroll: true })
+    }
+
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation()
+        onCloseRef.current?.()
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      if (previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
+        previouslyFocused.focus({ preventScroll: true })
+      }
+    }
+  }, [isOpen])
+
   if (!isOpen) return null
 
+  // الإغلاق بالنقر على الخلفية فقط لو بدأ الضغط وانتهى عليها
+  // (حتى لا تُغلق النافذة عند تحديد نص داخلها وإفلات الماوس خارجها)
+  const handleOverlayMouseDown = (e) => {
+    pressStartedOnOverlay.current = e.target === e.currentTarget
+  }
   const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) onClose()
+    if (e.target === e.currentTarget && pressStartedOnOverlay.current) onClose()
+    pressStartedOnOverlay.current = false
   }
 
   return (
     <div
       className={`${styles.overlay} ${styles[variant]}`}
+      onMouseDown={handleOverlayMouseDown}
       onClick={handleOverlayClick}
-      role="dialog"
-      aria-modal="true"
-      aria-label={title || 'نافذة'}
     >
-      <div className={`${styles.modal} ${styles[variant]}`}>
+      <div
+        ref={dialogRef}
+        className={`${styles.modal} ${styles[variant]}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? titleId : undefined}
+        aria-label={title ? undefined : 'نافذة'}
+        tabIndex={-1}
+      >
         {variant === 'sheet' && (
           <div className={styles.grabber} aria-hidden="true" />
         )}
@@ -94,7 +142,11 @@ function Modal({
           </button>
         )}
 
-        {title && <h3 className={styles.title}>{title}</h3>}
+        {title && (
+          <h3 id={titleId} className={styles.title}>
+            {title}
+          </h3>
+        )}
         <div className={styles.body}>{children}</div>
       </div>
     </div>

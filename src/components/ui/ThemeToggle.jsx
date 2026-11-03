@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useTheme } from '@/contexts/ThemeContext.jsx'
 import styles from './ThemeToggle.module.scss'
 
 const SunIcon = () => (
@@ -33,22 +33,14 @@ const MoonIcon = () => (
 )
 
 export default function ThemeToggle() {
-  const [isDark, setIsDark] = useState(
-    () => document.body.classList.contains('dark')
-  )
-
-  useEffect(() => {
-    document.body.classList.toggle('dark', isDark)
-    try {
-      localStorage.setItem('theme', isDark ? 'dark' : 'light')
-    } catch { }
-  }, [isDark])
+  const { theme, toggleTheme } = useTheme()
+  const isDark = theme === 'dark'
 
   return (
     <button
       type="button"
       className={styles.toggle}
-      onClick={() => setIsDark((v) => !v)}
+      onClick={toggleTheme}
       aria-label={isDark ? 'الوضع الفاتح' : 'الوضع الداكن'}
       title={isDark ? 'الوضع الفاتح' : 'الوضع الداكن'}
     >
