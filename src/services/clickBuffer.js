@@ -1,3 +1,4 @@
+import { App as CapacitorApp } from '@capacitor/app'
 import { transaction } from '@/db/adapter.js'
 
 // ═══════════════════════════════════════
@@ -121,6 +122,16 @@ export function getPendingMap() {
 }
 
 // ═══════════════════════════════════════
+// Drop pending clicks of one zekr (قبل حذف الذكر)
+// ═══════════════════════════════════════
+export function dropPendingForZekr(zekrId) {
+  const prefix = `${zekrId}|`
+  for (const key of Array.from(buffer.keys())) {
+    if (key.startsWith(prefix)) buffer.delete(key)
+  }
+}
+
+// ═══════════════════════════════════════
 // Clear
 // ═══════════════════════════════════════
 export function clearBuffer() {
@@ -153,6 +164,19 @@ export function initClickBuffer() {
   window.addEventListener('pagehide', () => {
     flush().catch(() => { })
   })
+
+  // أندرويد: عند ذهاب التطبيق للخلفية قد يُقتل بدون pagehide
+  try {
+    CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+      if (!isActive) {
+        flush().catch((err) =>
+          console.error('[ClickBuffer] Background flush failed:', err)
+        )
+      }
+    })
+  } catch (err) {
+    console.warn('[ClickBuffer] appStateChange unavailable:', err)
+  }
 
   console.log('[ClickBuffer] Initialized (auto-flush every 60s)')
 }
