@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import GroupSelect from './GroupSelect.jsx'
 import ZekrDisplay from './ZekrDisplay.jsx'
 import ActionButtons from './ActionButtons.jsx'
-import FocusMode from '@/components/zekr/FocusMode.jsx'
+import FocusMode from '@/components/zekr/sabh/FocusMode.jsx'
 import styles from './GroupModeView.module.scss'
 
 const ArrowRightIcon = () => (
@@ -288,10 +288,10 @@ function GroupModeView({
             <div
               key={idx}
               className={`${styles.progressBar} ${idx < currentIndex
-                  ? styles.barCompleted
-                  : idx === currentIndex
-                    ? styles.barActive
-                    : ''
+                ? styles.barCompleted
+                : idx === currentIndex
+                  ? styles.barActive
+                  : ''
                 }`}
             />
           ))}

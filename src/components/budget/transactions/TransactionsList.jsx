@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { VariableSizeList as VirtualList } from 'react-window'
 import TransactionRow from './TransactionRow.jsx'
-import { formatAmount, formatDayHeader } from './transactionsHelpers.js'
+import { formatAmount, formatDayHeader } from './lib/transactionsHelpers.js'
 import styles from './TransactionsList.module.scss'
 import EmptyState from '../../ui/EmptyState.jsx'
 

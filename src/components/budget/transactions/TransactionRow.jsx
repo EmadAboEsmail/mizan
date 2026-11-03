@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import CategoryIcon from '@/components/budget/CategoryIcon.jsx'
-import { formatAmount, formatDayHeader } from './transactionsHelpers.js'
+import { formatAmount, formatDayHeader } from './lib/transactionsHelpers.js'
 import styles from './TransactionRow.module.scss'
 
 const ChevronIcon = () => (
