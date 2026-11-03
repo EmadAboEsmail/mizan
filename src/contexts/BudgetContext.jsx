@@ -629,12 +629,7 @@ export function BudgetProvider({ children }) {
     createOrUpdateLimit,
     updateLimit,
     deleteLimit,
-    // ... الموجود
-    createOrUpdateLimit,
-    updateLimit,
-    deleteLimit,
 
-    // ⬅️ ضيف ده لو مش موجود
     importLegacyBudget: async (legacy) => {
       const res = await apiImportLegacyBudget(legacy)
       await reload()

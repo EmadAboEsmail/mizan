@@ -88,6 +88,22 @@ export async function getStats(period = 'day', zekr_id = null, compare = false) 
     )
   }
 
+  // حساب لكل bucket
+  const countsByBucket = {}
+  const countsByZekr = {}
+
+  for (const row of rows) {
+    const date = new Date(row.hour * 3600000)
+    const label = getBucket(date, period)
+    const count = Number(row.count) || 0
+
+    countsByBucket[label] = (countsByBucket[label] || 0) + count
+
+    if (!zekr_id && row.zekr_id) {
+      countsByZekr[row.zekr_id] = (countsByZekr[row.zekr_id] || 0) + count
+    }
+  }
+
   // ✅ زود الـ pending من Buffer
   const pending = getPendingMap()
 
@@ -105,21 +121,6 @@ export async function getStats(period = 'day', zekr_id = null, compare = false) 
       if (!zekr_id) {
         countsByZekr[zid] = (countsByZekr[zid] || 0) + cnt
       }
-    }
-  }
-  // حساب لكل bucket
-  const countsByBucket = {}
-  const countsByZekr = {}
-
-  for (const row of rows) {
-    const date = new Date(row.hour * 3600000)
-    const label = getBucket(date, period)
-    const count = Number(row.count) || 0
-
-    countsByBucket[label] = (countsByBucket[label] || 0) + count
-
-    if (!zekr_id && row.zekr_id) {
-      countsByZekr[row.zekr_id] = (countsByZekr[row.zekr_id] || 0) + count
     }
   }
 
@@ -219,16 +220,29 @@ export async function getStreak() {
     return { current: 0, longest: 0, total_days: 0, last_date: null }
   }
 
+  const fmt = (d) =>
+    `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
+  // تحليل YYYY-MM-DD كتاريخ محلي (new Date('YYYY-MM-DD') يُفسَّر UTC)
+  const parseLocal = (str) => {
+    const [y, m, d] = str.split('-').map(Number)
+    return new Date(y, m - 1, d)
+  }
+
+  const sortedDesc = Array.from(daysSet).sort().reverse()
+  const todayDate = new Date()
+  const yesterdayDate = new Date(todayDate)
+  yesterdayDate.setDate(yesterdayDate.getDate() - 1)
+  const todayStr = fmt(todayDate)
+  const yesterdayStr = fmt(yesterdayDate)
+
   // Current streak
   let currentStreak = 0
   if (sortedDesc[0] === todayStr || sortedDesc[0] === yesterdayStr) {
     currentStreak = 1
-    let expected = new Date(sortedDesc[0])
+    let expected = parseLocal(sortedDesc[0])
     for (let i = 1; i < sortedDesc.length; i++) {
       expected.setDate(expected.getDate() - 1)
-      const expectedStr = `${expected.getFullYear()}-${pad2(
-        expected.getMonth() + 1
-      )}-${pad2(expected.getDate())}`
+      const expectedStr = fmt(expected)
       if (sortedDesc[i] === expectedStr) {
         currentStreak++
       } else {
@@ -242,8 +256,8 @@ export async function getStreak() {
   const sortedAsc = Array.from(daysSet).sort()
   let current = 1
   for (let i = 1; i < sortedAsc.length; i++) {
-    const prev = new Date(sortedAsc[i - 1])
-    const curr = new Date(sortedAsc[i])
+    const prev = parseLocal(sortedAsc[i - 1])
+    const curr = parseLocal(sortedAsc[i])
     const diffDays = Math.round((curr - prev) / 86400000)
     if (diffDays === 1) {
       current++

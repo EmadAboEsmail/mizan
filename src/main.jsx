@@ -9,6 +9,7 @@ import { ZekrDataProvider } from "./contexts/ZekrDataContext.jsx";
 import { BudgetProvider } from "./contexts/BudgetContext.jsx";
 import { defineCustomElements } from "jeep-sqlite-current-sqljs/loader";
 import { initDB } from "./db/index.js";
+import { initClickBuffer } from "./services/clickBuffer.js";
 import App from "./App.jsx";
 import "./styles/main.scss";
 
@@ -60,6 +61,7 @@ async function bootstrap() {
     console.log("[Bootstrap] Starting...");
     await initWebSQLite();
     await initDB();
+    initClickBuffer();
 
     const Router =
       import.meta.env.VITE_TARGET === "android" ? HashRouter : BrowserRouter;

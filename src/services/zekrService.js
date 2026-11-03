@@ -9,6 +9,7 @@ import {
   getPendingForZekr,
   getPendingMap,
   clearBuffer,
+  dropPendingForZekr,
 } from './clickBuffer.js'
 
 function genId(prefix) {
@@ -66,6 +67,8 @@ export async function updateAdhkar(id, text, default_target = null) {
 export async function deleteAdhkar(id) {
   const existing = await queryOne('SELECT id FROM adhkar WHERE id = ?', [id])
   if (!existing) throw new Error('الذكر غير موجود')
+  // تجاهل الضغطات المعلّقة لهذا الذكر حتى لا يفشل الحفظ لاحقًا
+  dropPendingForZekr(id)
   await run('DELETE FROM adhkar WHERE id = ?', [id])
 }
 
