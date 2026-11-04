@@ -1,11 +1,130 @@
+ assets           favicon.ico            registerSW.js
+ icons            index.html
+ favicon-64.png   manifest.webmanifest                       "dist/sw.js": No such file or directory (os error 2)
+❯ git status --short | head                                    git ls-files                                                   .env.example
+.github/.github/workflows/build-apk.yml
+.github/workflows/build-apk.yml                                .gitignore
+README.md
+android/.gitignore                                             android/app/.gitignore
+android/app/build.gradle                                       android/app/capacitor.build.gradle                             android/app/proguard-rules.pro                                 android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java                                          android/app/src/main/AndroidManifest.xml                       android/app/src/main/java/com/zekr/app/MainActivity.java       android/app/src/main/res/drawable-hdpi/ic_splash.png           android/app/src/main/res/drawable-land-hdpi/splash.png         android/app/src/main/res/drawable-land-ldpi/splash.png         android/app/src/main/res/drawable-land-mdpi/splash.png         android/app/src/main/res/drawable-land-xhdpi/splash.png        android/app/src/main/res/drawable-land-xxhdpi/splash.png       android/app/src/main/res/drawable-land-xxxhdpi/splash.png      android/app/src/main/res/drawable-mdpi/ic_splash.png           android/app/src/main/res/drawable-port-hdpi/splash.png
+android/app/src/main/res/drawable-port-ldpi/splash.png         android/app/src/main/res/drawable-port-mdpi/splash.png         android/app/src/main/res/drawable-port-xhdpi/splash.png        android/app/src/main/res/drawable-port-xxhdpi/splash.png       android/app/src/main/res/drawable-port-xxxhdpi/splash.png      android/app/src/main/res/drawable-v24/ic_launcher_foreground.xml                                                              android/app/src/main/res/drawable-xhdpi/ic_splash.png          android/app/src/main/res/drawable-xxhdpi/ic_splash.png         android/app/src/main/res/drawable/ic_launcher_background.xml   android/app/src/main/res/drawable/splash.png                   android/app/src/main/res/layout/activity_main.xml              android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml     android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml                                                              android/app/src/main/res/mipmap-hdpi/ic_launcher.png
+android/app/src/main/res/mipmap-hdpi/ic_launcher_background.pngandroid/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png
+android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
+android/app/src/main/res/mipmap-ldpi/ic_launcher.png           android/app/src/main/res/mipmap-ldpi/ic_launcher_background.pngandroid/app/src/main/res/mipmap-ldpi/ic_launcher_foreground.pngandroid/app/src/main/res/mipmap-ldpi/ic_launcher_round.png
+android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+android/app/src/main/res/mipmap-mdpi/ic_launcher_background.pngandroid/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png
+android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
+android/app/src/main/res/mipmap-xhdpi/ic_launcher.png          android/app/src/main/res/mipmap-xhdpi/ic_launcher_background.png
+android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png
+android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
+android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+android/app/src/main/res/mipmap-xxhdpi/ic_launcher_background.png
+android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png
+android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
+android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_background.png
+android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
+android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
+android/app/src/main/res/values/colors.xml                     android/app/src/main/res/values/ic_launcher_background.xml     android/app/src/main/res/values/strings.xml                    android/app/src/main/res/values/styles.xml
+android/app/src/main/res/xml/file_paths.xml
+android/app/src/test/java/com/getcapacitor/myapp/ExampleUnitTest.java
+android/build.gradle
+android/capacitor.settings.gradle                              android/gradle.properties                                      android/gradle/wrapper/gradle-wrapper.jar
+android/gradle/wrapper/gradle-wrapper.properties
+android/gradlew
+android/gradlew.bat                                            android/settings.gradle
+android/variables.gradle
+capacitor.config.json                                          eslint.config.js
+index.html
+log.txt
+migrate-structure.mjs
+mizan-icons/android/play_store_512.png
+mizan-icons/android/res/mipmap-anydpi-v26/ic_launcher.xml
+mizan-icons/android/res/mipmap-hdpi/ic_launcher.png
+mizan-icons/android/res/mipmap-hdpi/ic_launcher_background.png
+mizan-icons/android/res/mipmap-hdpi/ic_launcher_foreground.png mizan-icons/android/res/mipmap-hdpi/ic_launcher_monochrome.png
+mizan-icons/android/res/mipmap-mdpi/ic_launcher.png            mizan-icons/android/res/mipmap-mdpi/ic_launcher_background.png
+mizan-icons/android/res/mipmap-mdpi/ic_launcher_foreground.png
+mizan-icons/android/res/mipmap-mdpi/ic_launcher_monochrome.png mizan-icons/android/res/mipmap-xhdpi/ic_launcher.png
+mizan-icons/android/res/mipmap-xhdpi/ic_launcher_background.pngmizan-icons/android/res/mipmap-xhdpi/ic_launcher_foreground.png
+mizan-icons/android/res/mipmap-xhdpi/ic_launcher_monochrome.png
+mizan-icons/android/res/mipmap-xxhdpi/ic_launcher.png          mizan-icons/android/res/mipmap-xxhdpi/ic_launcher_background.png                                                              mizan-icons/android/res/mipmap-xxhdpi/ic_launcher_foreground.png
+mizan-icons/android/res/mipmap-xxhdpi/ic_launcher_monochrome.png
+mizan-icons/android/res/mipmap-xxxhdpi/ic_launcher.png
+mizan-icons/android/res/mipmap-xxxhdpi/ic_launcher_background.png
+mizan-icons/android/res/mipmap-xxxhdpi/ic_launcher_foreground.png
+mizan-icons/android/res/mipmap-xxxhdpi/ic_launcher_monochrome.png                                                             mizan-icons/ios/AppIcon-20@2x.png
+mizan-icons/ios/AppIcon-20@2x~ipad.png
+mizan-icons/ios/AppIcon-20@3x.png
+mizan-icons/ios/AppIcon-20~ipad.png                            mizan-icons/ios/AppIcon-29.png                                 mizan-icons/ios/AppIcon-29@2x.png                              mizan-icons/ios/AppIcon-29@2x~ipad.png
+mizan-icons/ios/AppIcon-29@3x.png
+mizan-icons/ios/AppIcon-29~ipad.png
+mizan-icons/ios/AppIcon-40@2x.png                              mizan-icons/ios/AppIcon-40@2x~ipad.png
+mizan-icons/ios/AppIcon-40@3x.png
+mizan-icons/ios/AppIcon-40~ipad.png                            mizan-icons/ios/AppIcon-60@2x~car.png
+mizan-icons/ios/AppIcon-60@3x~car.png
+mizan-icons/ios/AppIcon-83.5@2x~ipad.png
+mizan-icons/ios/AppIcon@2x.png
+mizan-icons/ios/AppIcon@2x~ipad.png
+mizan-icons/ios/AppIcon@3x.png
+mizan-icons/ios/AppIcon~ios-marketing.png
+mizan-icons/ios/AppIcon~ipad.png                               mizan-icons/ios/Contents.json
+mizan-icons/web/README.txt                                     mizan-icons/web/apple-touch-icon.png                           mizan-icons/web/favicon.ico                                    mizan-icons/web/icon-192-maskable.png                          mizan-icons/web/icon-192.png                                   mizan-icons/web/icon-512-maskable.png                          mizan-icons/web/icon-512.png                                   package-lock.json                                              package.json                                                   public/assets/sql-wasm-browser.wasm                            public/assets/sql-wasm.wasm                                    public/favicon-64.png                                          public/favicon.ico                                             public/icons/apple-touch-icon.png                              public/icons/icon-192.png                                      public/icons/icon-512.png                                      public/icons/icon-96.png                                       public/icons/icon-source.svg
+resources/icon.png                                             src/App.jsx
+src/components/budget/CategoryIcon.jsx                         src/components/budget/CategoryIcon.module.scss                 src/components/budget/TransactionFormModal.jsx                 src/components/budget/TransactionFormModal.module.scss         src/components/budget/charts/DonutChart.jsx                    src/components/budget/charts/DonutChart.module.scss
+src/components/budget/charts/MonthlyBarChart.jsx               src/components/budget/charts/MonthlyBarChart.module.scss
+src/components/budget/icons/transactionsIcons.jsx              src/components/budget/insights/InsightsGrid.jsx                src/components/budget/insights/InsightsGrid.module.scss        src/components/budget/limits/BudgetLimitsSection.jsx
+src/components/budget/limits/BudgetLimitsSection.module.scss   src/components/budget/limits/LimitFormModal.jsx
+src/components/budget/limits/LimitFormModal.module.scss        src/components/budget/limits/LimitProgressCard.jsx
+src/components/budget/limits/LimitProgressCard.module.scss     src/components/budget/limits/LimitsOverview.jsx
+src/components/budget/limits/LimitsOverview.module.scss        src/components/budget/settings/AboutSection.jsx
+src/components/budget/settings/AboutSection.module.scss        src/components/budget/settings/CategoriesSection.jsx           src/components/budget/settings/CategoriesSection.module.scss
+src/components/budget/settings/CategoryFormModal.jsx           src/components/budget/settings/CategoryFormModal.module.scss
+src/components/budget/settings/DataSection.jsx
+src/components/budget/settings/DataSection.module.scss         src/components/budget/transactions/TransactionRow.jsx          src/components/budget/transactions/TransactionRow.module.scss  src/components/budget/transactions/TransactionsFilters.jsx
+src/components/budget/transactions/TransactionsFilters.module.scss                                                            src/components/budget/transactions/TransactionsList.jsx
+src/components/budget/transactions/TransactionsList.module.scss
+src/components/budget/transactions/TransactionsSummary.jsx     src/components/budget/transactions/TransactionsSummary.module.scss
+src/components/budget/transactions/TransactionsTopBar.jsx      src/components/budget/transactions/TransactionsTopBar.module.scss                                                             src/components/budget/transactions/lib/transactionsHelpers.js  src/components/pwa/InstallPrompt.jsx
+src/components/pwa/InstallPrompt.module.scss                   src/components/ui/BottomNav/BottomNav.jsx
+src/components/ui/BottomNav/BottomNav.module.scss              src/components/ui/Button/Button.jsx                            src/components/ui/Button/Button.module.scss                    src/components/ui/ConfirmModal.jsx                             src/components/ui/ConfirmModal.module.scss                     src/components/ui/EmptyState.jsx
+src/components/ui/EmptyState.module.scss                       src/components/ui/Icon.jsx
+src/components/ui/Modal.jsx                                    src/components/ui/Modal.module.scss
+src/components/ui/PromptModal.jsx                              src/components/ui/PromptModal.module.scss                      src/components/ui/Skeleton.jsx                                 src/components/ui/Skeleton.module.scss                         src/components/ui/ThemeToggle.jsx                              src/components/ui/ThemeToggle.module.scss
+src/components/zekr/sabh/ActionButtons.jsx                     src/components/zekr/sabh/ActionButtons.module.scss             src/components/zekr/sabh/AdhkarSelect.jsx                      src/components/zekr/sabh/AdhkarSelect.module.scss
+src/components/zekr/sabh/FocusMode.jsx                         src/components/zekr/sabh/FocusMode.module.scss                 src/components/zekr/sabh/GroupModeView.jsx                     src/components/zekr/sabh/GroupModeView.module.scss
+src/components/zekr/sabh/GroupSelect.jsx                       src/components/zekr/sabh/GroupSelect.module.scss               src/components/zekr/sabh/SabhModeTabs.jsx                      src/components/zekr/sabh/SabhModeTabs.module.scss
+src/components/zekr/sabh/Tabs.jsx                              src/components/zekr/sabh/Tabs.module.scss
+src/components/zekr/sabh/ZekrDisplay.jsx                       src/components/zekr/sabh/ZekrDisplay.module.scss               src/components/zekr/settings/AboutSection.jsx                  src/components/zekr/settings/AboutSection.module.scss
+src/components/zekr/settings/AdhkarFormModal.jsx               src/components/zekr/settings/AdhkarFormModal.module.scss       src/components/zekr/settings/AdhkarSection.jsx                 src/components/zekr/settings/AdhkarSection.module.scss
+src/components/zekr/settings/AppearanceSection.jsx             src/components/zekr/settings/AppearanceSection.module.scss
+src/components/zekr/settings/DataSection.jsx                   src/components/zekr/settings/DataSection.module.scss
+src/components/zekr/settings/GroupEditorModal.jsx              src/components/zekr/settings/GroupEditorModal.module.scss
+src/components/zekr/settings/GroupFormModal.jsx                src/components/zekr/settings/GroupFormModal.module.scss        src/components/zekr/settings/GroupsSection.jsx                 src/components/zekr/settings/GroupsSection.module.scss         src/components/zekr/settings/SettingsAccordionContext.jsx      src/components/zekr/settings/SettingsSection.jsx
+src/components/zekr/settings/SettingsSection.module.scss       src/components/zekr/settings/SettingsSectionNav.jsx            src/components/zekr/settings/SettingsSectionNav.module.scss    src/components/zekr/settings/SettingsTab.jsx
+src/components/zekr/settings/SettingsTab.module.scss           src/components/zekr/stats/BarChart.jsx                         src/components/zekr/stats/BarChart.module.scss                 src/components/zekr/stats/ComparisonCard.jsx
+src/components/zekr/stats/ComparisonCard.module.scss           src/components/zekr/stats/EmptyStats.jsx                       src/components/zekr/stats/EmptyStats.module.scss               src/components/zekr/stats/PeriodTabs.jsx
+src/components/zekr/stats/PeriodTabs.module.scss               src/components/zekr/stats/StatsTab.jsx
+src/components/zekr/stats/StatsTab.module.scss                 src/components/zekr/stats/StreakCard.jsx                       src/components/zekr/stats/StreakCard.module.scss               src/components/zekr/stats/ZekrFilter.jsx
+src/components/zekr/stats/ZekrFilter.module.scss               src/contexts/BudgetContext.jsx                                 src/contexts/ThemeContext.jsx                                  src/contexts/Toast.module.scss
+src/contexts/ToastContext.jsx                                  src/contexts/ZekrDataContext.jsx
+src/db/adapter.js                                              src/db/index.js
+src/db/schema.js                                               src/db/seed.js
+src/hooks/useAnimatedNumber.js                                 src/hooks/useModalBackButton.jsx
+src/main.jsx                                                   src/pages/budget/Layout.jsx                                    src/pages/budget/Layout.module.scss                            src/pages/budget/Reports.jsx                                   src/pages/budget/Reports.module.scss                           src/pages/budget/Settings.jsx                                  src/pages/budget/Settings.module.scss                          src/pages/budget/Transactions.jsx                              src/pages/budget/Transactions.module.scss                      src/pages/home/AppCard.jsx                                     src/pages/home/AppCard.module.scss                             src/pages/home/ContinueCard.jsx                                src/pages/home/ContinueCard.module.scss                        src/pages/home/Home.jsx
+src/pages/home/Home.module.scss                                src/pages/home/QuickStats.jsx
+src/pages/home/QuickStats.module.scss                          src/pages/zekr/Layout.jsx
+src/pages/zekr/Layout.module.scss                              src/pages/zekr/Sabh.jsx
+src/pages/zekr/Sabh.module.scss                                src/pages/zekr/Settings.jsx                                    src/pages/zekr/Stats.jsx                                       src/services/budgetCalculator.js                               src/services/budgetService.js                                  src/services/clickBuffer.js
+src/services/statsCalculator.js                                src/services/zekrService.js                                    src/styles/_global.scss                                        src/styles/_mixins.scss
+src/styles/_tokens.scss                                        src/styles/main.scss                                           src/utils/csv.js                                               vite.config.js
 
 > frontend-react@0.0.0 lint
 > eslint .
 
 
 /data/data/com.termux/files/home/mizan/src/components/budget/TransactionFormModal.jsx
-  26:10  error  'y' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              no-unused-vars
-  51:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+  51:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
 
 Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
 * Update external systems with the latest state from React.
@@ -20,7 +139,7 @@ Calling setState synchronously within an effect body causes cascading renders th
   52 |       setAmount(String(initial.amount ?? ''))
   53 |       setCategoryId(initial.category_id || '')
   54 |       setDate(initial.date || todayISO())                                                     react-hooks/set-state-in-effect
-  78:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+  78:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
 
 Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
 * Update external systems with the latest state from React.
@@ -35,9 +154,6 @@ Calling setState synchronously within an effect body causes cascading renders th
   79 |     }
   80 |     // eslint-disable-next-line react-hooks/exhaustive-deps
   81 |   }, [type, isOpen, categories.length])  react-hooks/set-state-in-effect
-
-/data/data/com.termux/files/home/mizan/src/components/budget/charts/MonthlyBarChart.jsx
-  14:10  error  'formatShort' is defined but never used  no-unused-vars
 
 /data/data/com.termux/files/home/mizan/src/components/budget/limits/LimitFormModal.jsx
   35:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
@@ -56,10 +172,6 @@ Calling setState synchronously within an effect body causes cascading renders th
   37 |     } else {
   38 |       setCategoryId(availableCategories[0]?.id || '')  react-hooks/set-state-in-effect
 
-/data/data/com.termux/files/home/mizan/src/components/budget/limits/LimitsOverview.jsx
-   1:10  error  'useMemo' is defined but never used                   no-unused-vars
-  17:37  error  'total_remaining' is assigned a value but never used  no-unused-vars
-
 /data/data/com.termux/files/home/mizan/src/components/budget/settings/CategoryFormModal.jsx
   19:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
 
@@ -77,21 +189,8 @@ Calling setState synchronously within an effect body causes cascading renders th
   21 |       setIcon(initial.icon || '📦')
   22 |       setColor(initial.color || '#059669')  react-hooks/set-state-in-effect
 
-/data/data/com.termux/files/home/mizan/src/components/budget/settings/DataSection.jsx
-   43:14  error  'err' is defined but never used  no-unused-vars
-   79:16  error  'err' is defined but never used  no-unused-vars
-  194:14  error  'err' is defined but never used  no-unused-vars
-
 /data/data/com.termux/files/home/mizan/src/components/budget/transactions/TransactionsList.jsx
-  71:3  error  'catMap' is defined but never used      no-unused-vars
-  72:3  error  'expandedId' is defined but never used  no-unused-vars
-  73:3  error  'onToggle' is defined but never used    no-unused-vars
-  74:3  error  'onEdit' is defined but never used      no-unused-vars
-  75:3  error  'onDelete' is defined but never used    no-unused-vars
-
-/data/data/com.termux/files/home/mizan/src/components/budget/transactions/TransactionsTopBar.jsx
-  31:9   error  'isTodayMonth' is assigned a value but never used  no-unused-vars
-  72:14  error  'err' is defined but never used                    no-unused-vars
+  98:43  error  'onAdd' is not defined  no-undef
 
 /data/data/com.termux/files/home/mizan/src/components/ui/PromptModal.jsx
   22:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
@@ -110,11 +209,7 @@ Calling setState synchronously within an effect body causes cascading renders th
   24 |     }
   25 |   }, [isOpen, defaultValue])  react-hooks/set-state-in-effect
 
-/data/data/com.termux/files/home/mizan/src/components/ui/ThemeToggle.jsx
-  44:13  error  Empty block statement  no-empty
-
 /data/data/com.termux/files/home/mizan/src/components/zekr/sabh/FocusMode.jsx
-   51:11  error  Empty block statement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  no-empty
    63:3   error  Error: Cannot access refs during render
 
 React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
@@ -156,12 +251,10 @@ Calling setState synchronously within an effect body causes cascading renders th
   112 |
   113 |     return () => {
   114 |       document.removeEventListener('fullscreenchange', handleFullscreenChange)  react-hooks/set-state-in-effect
-  144:15  error  Empty block statement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  no-empty
   240:10  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-refresh/only-export-components
 
 /data/data/com.termux/files/home/mizan/src/components/zekr/sabh/GroupModeView.jsx
-   39:11  error  Empty block statement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              no-empty
-   65:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+   65:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
 
 Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
 * Update external systems with the latest state from React.
@@ -176,7 +269,7 @@ Calling setState synchronously within an effect body causes cascading renders th
   66 |       setLocalCount(0)
   67 |       setShowTransition(false)
   68 |     }  react-hooks/set-state-in-effect
-  130:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+  130:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
 
 Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
 * Update external systems with the latest state from React.
@@ -191,9 +284,6 @@ Calling setState synchronously within an effect body causes cascading renders th
   131 |     } else {
   132 |       setShowTransition(true)
   133 |     }                react-hooks/set-state-in-effect
-
-/data/data/com.termux/files/home/mizan/src/components/zekr/settings/AboutSection.jsx
-  19:16  error  'err' is defined but never used  no-unused-vars
 
 /data/data/com.termux/files/home/mizan/src/components/zekr/settings/AdhkarFormModal.jsx
   21:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
@@ -211,9 +301,6 @@ Calling setState synchronously within an effect body causes cascading renders th
   22 |       setTarget(initial?.default_target ? String(initial.default_target) : '')
   23 |       setError('')
   24 |       setIsSubmitting(false)  react-hooks/set-state-in-effect
-
-/data/data/com.termux/files/home/mizan/src/components/zekr/settings/DataSection.jsx
-  138:14  error  'err' is defined but never used  no-unused-vars
 
 /data/data/com.termux/files/home/mizan/src/components/zekr/settings/GroupEditorModal.jsx
   55:7  error    Error: Calling setState synchronously within an effect can trigger cascading renders
@@ -455,17 +542,8 @@ Calling setState synchronously within an effect body causes cascading renders th
   117 |  react-hooks/set-state-in-effect
   435:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             react-refresh/only-export-components
 
-/data/data/com.termux/files/home/mizan/src/db/adapter.js
-  66:7   error  The value assigned to 'existing' is not used in subsequent statements  no-useless-assignment
-  70:12  error  'e' is defined but never used                                          no-unused-vars
-
-/data/data/com.termux/files/home/mizan/src/db/index.js
-  12:7  error  The value assigned to 'currentVersion' is not used in subsequent statements  no-useless-assignment
-
 /data/data/com.termux/files/home/mizan/src/pages/budget/Reports.jsx
-  52:5  error  'compareMonth' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          no-unused-vars
-  55:5  error  'loading' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
-  85:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+  83:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
 
 Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
 * Update external systems with the latest state from React.
@@ -473,13 +551,13 @@ Effects are intended to synchronize state between React and external systems suc
 
 Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
 
-  83 |   useEffect(() => {
-  84 |     let cancelled = false
-> 85 |     setTrendLoading(true)
+  81 |   useEffect(() => {
+  82 |     let cancelled = false
+> 83 |     setTrendLoading(true)
      |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
-  86 |
-  87 |     getMonthlyTrend(trendMonths, currentMonth)
-  88 |       .then((data) => {  react-hooks/set-state-in-effect
+  84 |
+  85 |     getMonthlyTrend(trendMonths, currentMonth)
+  86 |       .then((data) => {  react-hooks/set-state-in-effect
 
 /data/data/com.termux/files/home/mizan/src/pages/budget/Transactions.jsx
   224:23  error  Error: Calling setState synchronously within an effect can trigger cascading renders
@@ -498,17 +576,5 @@ Calling setState synchronously within an effect body causes cascading renders th
   226 |
   227 |   // ─── Render ───  react-hooks/set-state-in-effect
 
-/data/data/com.termux/files/home/mizan/src/pages/zekr/Sabh.jsx
-  253:15  error  Empty block statement  no-empty
-
-/data/data/com.termux/files/home/mizan/src/services/budgetCalculator.js
-  3:10  error  'nowMs' is defined but never used  no-unused-vars
-
-/data/data/com.termux/files/home/mizan/src/services/budgetService.js
-  588:14  error  'err' is defined but never used  no-unused-vars
-
-/data/data/com.termux/files/home/mizan/src/services/zekrService.js
-  615:14  error  'err' is defined but never used  no-unused-vars
-
-✖ 63 problems (62 errors, 1 warning)
+✖ 35 problems (34 errors, 1 warning)
 
