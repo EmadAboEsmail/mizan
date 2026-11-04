@@ -3,9 +3,6 @@ import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import { fileURLToPath, URL } from "node:url";
 
-// ═══════════════════════════════════════
-// نسخ الـ wasm يدوياً + force-exit
-// ═══════════════════════════════════════
 
 export default defineConfig({
   plugins: [
