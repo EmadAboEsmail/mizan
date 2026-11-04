@@ -23,7 +23,7 @@ function yesterdayISO() {
 function formatDateLabel(iso) {
   if (iso === todayISO()) return 'اليوم'
   if (iso === yesterdayISO()) return 'أمس'
-  const [y, m, d] = iso.split('-')
+  const [m, d] = iso.split('-')
   return `${d}/${m}`
 }
 

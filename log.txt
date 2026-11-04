@@ -1,181 +1,514 @@
-src
-├── App.jsx
-├── components
-│   ├── budget
-│   │   ├── CategoryIcon.jsx
-│   │   ├── CategoryIcon.module.scss
-│   │   ├── TransactionFormModal.jsx
-│   │   ├── TransactionFormModal.module.scss
-│   │   ├── charts
-│   │   │   ├── DonutChart.jsx
-│   │   │   ├── DonutChart.module.scss
-│   │   │   ├── MonthlyBarChart.jsx
-│   │   │   └── MonthlyBarChart.module.scss
-│   │   ├── insights
-│   │   │   ├── InsightsGrid.jsx
-│   │   │   └── InsightsGrid.module.scss
-│   │   ├── limits
-│   │   │   ├── BudgetLimitsSection.jsx
-│   │   │   ├── BudgetLimitsSection.module.scss
-│   │   │   ├── LimitFormModal.jsx
-│   │   │   ├── LimitFormModal.module.scss
-│   │   │   ├── LimitProgressCard.jsx
-│   │   │   ├── LimitProgressCard.module.scss
-│   │   │   ├── LimitsOverview.jsx
-│   │   │   └── LimitsOverview.module.scss
-│   │   ├── settings
-│   │   │   ├── AboutSection.jsx
-│   │   │   ├── AboutSection.module.scss
-│   │   │   ├── CategoriesSection.jsx
-│   │   │   ├── CategoriesSection.module.scss
-│   │   │   ├── CategoryFormModal.jsx
-│   │   │   ├── CategoryFormModal.module.scss
-│   │   │   ├── DataSection.jsx
-│   │   │   └── DataSection.module.scss
-│   │   └── transactions
-│   │       ├── TransactionRow.jsx
-│   │       ├── TransactionRow.module.scss
-│   │       ├── TransactionsFilters.jsx
-│   │       ├── TransactionsFilters.module.scss
-│   │       ├── TransactionsList.jsx
-│   │       ├── TransactionsList.module.scss
-│   │       ├── TransactionsSummary.jsx
-│   │       ├── TransactionsSummary.module.scss
-│   │       ├── TransactionsTopBar.jsx
-│   │       ├── TransactionsTopBar.module.scss
-│   │       ├── transactionsHelpers.js
-│   │       └── transactionsIcons.jsx
-│   ├── pwa
-│   │   ├── InstallPrompt.jsx
-│   │   └── InstallPrompt.module.scss
-│   ├── ui
-│   │   ├── BottomNav
-│   │   │   ├── BottomNav.jsx
-│   │   │   └── BottomNav.module.scss
-│   │   ├── Botton
-│   │   │   ├── Bottom.jsx
-│   │   │   └── Botton.module.scss
-│   │   ├── ConfirmModal.jsx
-│   │   ├── ConfirmModal.module.scss
-│   │   ├── EmptyState.jsx
-│   │   ├── EmptyState.module.scss
-│   │   ├── Icon.jsx
-│   │   ├── Modal.jsx
-│   │   ├── Modal.module.scss
-│   │   ├── PromptModal.jsx
-│   │   ├── PromptModal.module.scss
-│   │   ├── Skeleton.jsx
-│   │   ├── Skeleton.module.scss
-│   │   ├── ThemeToggle.jsx
-│   │   └── ThemeToggle.module.scss
-│   └── zekr
-│       ├── ActionButtons.jsx
-│       ├── ActionButtons.module.scss
-│       ├── AdhkarSelect.jsx
-│       ├── AdhkarSelect.module.scss
-│       ├── FocusMode.jsx
-│       ├── FocusMode.module.scss
-│       ├── GroupModeView.jsx
-│       ├── GroupModeView.module.scss
-│       ├── GroupSelect.jsx
-│       ├── GroupSelect.module.scss
-│       ├── SabhModeTabs.jsx
-│       ├── SabhModeTabs.module.scss
-│       ├── Tabs.jsx
-│       ├── Tabs.module.scss
-│       ├── ZekrDisplay.jsx
-│       ├── ZekrDisplay.module.scss
-│       ├── settings
-│       │   ├── AboutSection.jsx
-│       │   ├── AboutSection.module.scss
-│       │   ├── AdhkarFormModal.jsx
-│       │   ├── AdhkarFormModal.module.scss
-│       │   ├── AdhkarSection.jsx
-│       │   ├── AdhkarSection.module.scss
-│       │   ├── AppearanceSection.jsx
-│       │   ├── AppearanceSection.module.scss
-│       │   ├── DataSection.jsx
-│       │   ├── DataSection.module.scss
-│       │   ├── GroupEditorModal.jsx
-│       │   ├── GroupEditorModal.module.scss
-│       │   ├── GroupFormModal.jsx
-│       │   ├── GroupFormModal.module.scss
-│       │   ├── GroupsSection.jsx
-│       │   ├── GroupsSection.module.scss
-│       │   ├── SettingsAccordionContext.jsx
-│       │   ├── SettingsSection.jsx
-│       │   ├── SettingsSection.module.scss
-│       │   ├── SettingsSectionNav.jsx
-│       │   ├── SettingsSectionNav.module.scss
-│       │   ├── SettingsTab.jsx
-│       │   └── SettingsTab.module.scss
-│       └── stats
-│           ├── BarChart.jsx
-│           ├── BarChart.module.scss
-│           ├── ComparisonCard.jsx
-│           ├── ComparisonCard.module.scss
-│           ├── EmptyStats.jsx
-│           ├── EmptyStats.module.scss
-│           ├── PeriodTabs.jsx
-│           ├── PeriodTabs.module.scss
-│           ├── StatsTab.jsx
-│           ├── StatsTab.module.scss
-│           ├── StreakCard.jsx
-│           ├── StreakCard.module.scss
-│           ├── ZekrFilter.jsx
-│           └── ZekrFilter.module.scss
-├── contexts
-│   ├── BudgetContext.jsx
-│   ├── ThemeContext.jsx
-│   ├── Toast.module.scss
-│   ├── ToastContext.jsx
-│   └── ZekrDataContext.jsx
-├── db
-│   ├── adapter.js
-│   ├── index.js
-│   ├── schema.js
-│   └── seed.js
-├── hooks
-│   ├── useAnimatedNumber.js
-│   └── useModalBackButton.jsx
-├── main.jsx
-├── pages
-│   ├── AppCard.jsx
-│   ├── AppCard.module.scss
-│   ├── ContinueCard.jsx
-│   ├── ContinueCard.module.scss
-│   ├── Home.jsx
-│   ├── Home.module.scss
-│   ├── QuickStats.jsx
-│   ├── QuickStats.module.scss
-│   ├── budget
-│   │   ├── Layout.jsx
-│   │   ├── Layout.module.scss
-│   │   ├── Reports.jsx
-│   │   ├── Reports.module.scss
-│   │   ├── Settings.jsx
-│   │   ├── Settings.module.scss
-│   │   ├── Transactions.jsx
-│   │   └── Transactions.module.scss
-│   └── zekr
-│       ├── Layout.jsx
-│       ├── Layout.module.scss
-│       ├── Sabh.jsx
-│       ├── Sabh.module.scss
-│       ├── Settings.jsx
-│       └── Stats.jsx
-├── services
-│   ├── budgetCalculator.js
-│   ├── budgetService.js
-│   ├── clickBuffer.js
-│   ├── statsCalculator.js
-│   └── zekrService.js
-├── styles
-│   ├── _global.scss
-│   ├── _mixins.scss
-│   ├── _tokens.scss
-│   └── main.scss
-└── utils
-    └── csv.js
 
-24 directories, 155 files
+> frontend-react@0.0.0 lint
+> eslint .
+
+
+/data/data/com.termux/files/home/mizan/src/components/budget/TransactionFormModal.jsx
+  26:10  error  'y' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              no-unused-vars
+  51:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  49 |     if (!isOpen) return
+  50 |     if (initial) {
+> 51 |       setType(initial.type || 'expense')
+     |       ^^^^^^^ Avoid calling setState() directly within an effect
+  52 |       setAmount(String(initial.amount ?? ''))
+  53 |       setCategoryId(initial.category_id || '')
+  54 |       setDate(initial.date || todayISO())                                                     react-hooks/set-state-in-effect
+  78:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  76 |     if (filteredCategories.length === 0) return
+  77 |     if (!filteredCategories.some((c) => c.id === categoryId)) {
+> 78 |       setCategoryId(filteredCategories[0].id)
+     |       ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  79 |     }
+  80 |     // eslint-disable-next-line react-hooks/exhaustive-deps
+  81 |   }, [type, isOpen, categories.length])  react-hooks/set-state-in-effect
+
+/data/data/com.termux/files/home/mizan/src/components/budget/charts/MonthlyBarChart.jsx
+  14:10  error  'formatShort' is defined but never used  no-unused-vars
+
+/data/data/com.termux/files/home/mizan/src/components/budget/limits/LimitFormModal.jsx
+  35:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  33 |
+  34 |     if (initial) {
+> 35 |       setCategoryId(initial.category_id || '')
+     |       ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  36 |       setAmount(String(initial.amount ?? ''))
+  37 |     } else {
+  38 |       setCategoryId(availableCategories[0]?.id || '')  react-hooks/set-state-in-effect
+
+/data/data/com.termux/files/home/mizan/src/components/budget/limits/LimitsOverview.jsx
+   1:10  error  'useMemo' is defined but never used                   no-unused-vars
+  17:37  error  'total_remaining' is assigned a value but never used  no-unused-vars
+
+/data/data/com.termux/files/home/mizan/src/components/budget/settings/CategoryFormModal.jsx
+  19:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  17 |     if (!isOpen) return
+  18 |     if (initial) {
+> 19 |       setName(initial.name || '')
+     |       ^^^^^^^ Avoid calling setState() directly within an effect
+  20 |       setType(initial.type || 'expense')
+  21 |       setIcon(initial.icon || '📦')
+  22 |       setColor(initial.color || '#059669')  react-hooks/set-state-in-effect
+
+/data/data/com.termux/files/home/mizan/src/components/budget/settings/DataSection.jsx
+   43:14  error  'err' is defined but never used  no-unused-vars
+   79:16  error  'err' is defined but never used  no-unused-vars
+  194:14  error  'err' is defined but never used  no-unused-vars
+
+/data/data/com.termux/files/home/mizan/src/components/budget/transactions/TransactionsList.jsx
+  71:3  error  'catMap' is defined but never used      no-unused-vars
+  72:3  error  'expandedId' is defined but never used  no-unused-vars
+  73:3  error  'onToggle' is defined but never used    no-unused-vars
+  74:3  error  'onEdit' is defined but never used      no-unused-vars
+  75:3  error  'onDelete' is defined but never used    no-unused-vars
+
+/data/data/com.termux/files/home/mizan/src/components/budget/transactions/TransactionsTopBar.jsx
+  31:9   error  'isTodayMonth' is assigned a value but never used  no-unused-vars
+  72:14  error  'err' is defined but never used                    no-unused-vars
+
+/data/data/com.termux/files/home/mizan/src/components/ui/PromptModal.jsx
+  22:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  20 |   useEffect(() => {
+  21 |     if (isOpen) {
+> 22 |       setValue(defaultValue)
+     |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  23 |       setError('')
+  24 |     }
+  25 |   }, [isOpen, defaultValue])  react-hooks/set-state-in-effect
+
+/data/data/com.termux/files/home/mizan/src/components/ui/ThemeToggle.jsx
+  44:13  error  Empty block statement  no-empty
+
+/data/data/com.termux/files/home/mizan/src/components/zekr/sabh/FocusMode.jsx
+   51:11  error  Empty block statement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  no-empty
+   63:3   error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+  61 | function FocusMode({ isOpen = true, onClose, onCount, children }) {
+  62 |   const onCloseRef = useRef(onClose)
+> 63 |   onCloseRef.current = onClose
+     |   ^^^^^^^^^^^^^^^^^^ Cannot update ref during render
+  64 |
+  65 |   const isClosingRef = useRef(false)
+  66 |   const hasTriedFullscreenRef = useRef(false)  // ✅ محاولة fullscreen مرة واحدة                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/refs
+   75:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  73 |   useEffect(() => {
+  74 |     if (!isOpen) {
+> 75 |       setSessionTime(0)
+     |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  76 |       startTimeRef.current = null
+  77 |       return
+  78 |     }                                                                                                                                                                                                                                        react-hooks/set-state-in-effect
+  111:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  109 |     document.addEventListener('fullscreenchange', handleFullscreenChange)
+  110 |     document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
+> 111 |     setIsFullscreen(!!(document.fullscreenElement || document.webkitFullscreenElement))
+      |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  112 |
+  113 |     return () => {
+  114 |       document.removeEventListener('fullscreenchange', handleFullscreenChange)  react-hooks/set-state-in-effect
+  144:15  error  Empty block statement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  no-empty
+  240:10  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-refresh/only-export-components
+
+/data/data/com.termux/files/home/mizan/src/components/zekr/sabh/GroupModeView.jsx
+   39:11  error  Empty block statement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              no-empty
+   65:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  63 |   useEffect(() => {
+  64 |     if (items.length > 0 && currentIndex >= items.length) {
+> 65 |       setCurrentIndex(0)
+     |       ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  66 |       setLocalCount(0)
+  67 |       setShowTransition(false)
+  68 |     }  react-hooks/set-state-in-effect
+  130:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  128 |     const isLast = currentIndex === items.length - 1
+  129 |     if (isLast) {
+> 130 |       setIsComplete(true)
+      |       ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  131 |     } else {
+  132 |       setShowTransition(true)
+  133 |     }                react-hooks/set-state-in-effect
+
+/data/data/com.termux/files/home/mizan/src/components/zekr/settings/AboutSection.jsx
+  19:16  error  'err' is defined but never used  no-unused-vars
+
+/data/data/com.termux/files/home/mizan/src/components/zekr/settings/AdhkarFormModal.jsx
+  21:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  19 |   useEffect(() => {
+  20 |     if (isOpen) {
+> 21 |       setText(initial?.text ?? '')
+     |       ^^^^^^^ Avoid calling setState() directly within an effect
+  22 |       setTarget(initial?.default_target ? String(initial.default_target) : '')
+  23 |       setError('')
+  24 |       setIsSubmitting(false)  react-hooks/set-state-in-effect
+
+/data/data/com.termux/files/home/mizan/src/components/zekr/settings/DataSection.jsx
+  138:14  error  'err' is defined but never used  no-unused-vars
+
+/data/data/com.termux/files/home/mizan/src/components/zekr/settings/GroupEditorModal.jsx
+  55:7  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  53 |   useEffect(() => {
+  54 |     if (!isOpen) {
+> 55 |       setEditingTargetId(null)
+     |       ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  56 |       setTempTarget('')
+  57 |       setTargetError('')
+  58 |       setSearchAvailable('')  react-hooks/set-state-in-effect
+  64:9  warning  The 'items' logical expression could make the dependencies of useMemo Hook (at line 67) change on every render. To fix this, wrap the initialization of 'items' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            react-hooks/exhaustive-deps
+
+/data/data/com.termux/files/home/mizan/src/components/zekr/settings/GroupFormModal.jsx
+  22:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  20 |   useEffect(() => {
+  21 |     if (isOpen) {
+> 22 |       setName(initial?.name ?? '')
+     |       ^^^^^^^ Avoid calling setState() directly within an effect
+  23 |       setDescription(initial?.description ?? '')
+  24 |       setError('')
+  25 |       setIsSubmitting(false)  react-hooks/set-state-in-effect
+
+/data/data/com.termux/files/home/mizan/src/components/zekr/settings/GroupsSection.jsx
+  66:22  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  64 |
+  65 |   useEffect(() => {
+> 66 |     if (editorGroup) setLastKnownGroup(editorGroup)
+     |                      ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  67 |   }, [editorGroup])
+  68 |
+  69 |   // لو editorGroupId موجود لكن editorGroup مؤقتاً null → استخدم lastKnown  react-hooks/set-state-in-effect
+
+/data/data/com.termux/files/home/mizan/src/components/zekr/settings/SettingsAccordionContext.jsx
+   4:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  67:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/data/data/com.termux/files/home/mizan/src/components/zekr/stats/StatsTab.jsx
+  100:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+   98 |   useEffect(() => {
+   99 |     let isCurrent = true
+> 100 |     setLoading(true)
+      |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  101 |     setError(null)
+  102 |
+  103 |     getStats(period, zekrId, true)                                                                                                                                                                                                                                                                                                                                                                                                      react-hooks/set-state-in-effect
+  125:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  123 |   useEffect(() => {
+  124 |     let isCurrent = true
+> 125 |     setStreakLoading(true)
+      |     ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  126 |
+  127 |     getStreak()
+  128 |       .then((data) => {                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/set-state-in-effect
+  158:27  error  Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `stats.breakdown`, but the source dependencies were [stats?.breakdown]. Inferred different dependency than source.
+
+  156 |     typeof num === 'number' ? num.toLocaleString('en') : num || 0
+  157 |
+> 158 |   const topZekr = useMemo(() => {
+      |                           ^^^^^^^
+> 159 |     if (!stats?.breakdown?.length) return null
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 160 |     return stats.breakdown.reduce(
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 161 |       (prev, curr) => (curr.count > prev.count ? curr : prev),
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 162 |       stats.breakdown[0]
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 163 |     )
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 164 |   }, [stats?.breakdown])
+      | ^^^^ Could not preserve existing manual memoization
+  165 |
+  166 |   const animatedTopCount = useAnimatedNumber(topZekr?.count ?? 0)
+  167 |  react-hooks/preserve-manual-memoization
+  168:37  error  Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `stats.breakdown`, but the source dependencies were [stats?.breakdown]. Inferred different dependency than source.
+
+  166 |   const animatedTopCount = useAnimatedNumber(topZekr?.count ?? 0)
+  167 |
+> 168 |   const maxBreakdownCount = useMemo(() => {
+      |                                     ^^^^^^^
+> 169 |     if (!stats?.breakdown?.length) return 1
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 170 |     return Math.max(...stats.breakdown.map((i) => i.count), 1)
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 171 |   }, [stats?.breakdown])
+      | ^^^^ Could not preserve existing manual memoization
+  172 |
+  173 |   // ✅ أفضل/أسوأ فترة (من labels/values)
+  174 |   const bestPeriod = useMemo(() => {                                                                                                                                                                                                                                          react-hooks/preserve-manual-memoization
+  174:30  error  Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `stats`, but the source dependencies were [stats?.labels, stats?.values]. Inferred less specific property than source.
+
+  172 |
+  173 |   // ✅ أفضل/أسوأ فترة (من labels/values)
+> 174 |   const bestPeriod = useMemo(() => {
+      |                              ^^^^^^^
+> 175 |     if (!stats?.labels?.length || !stats?.values?.length) return null
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 176 |     let bestIdx = -1
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 185 |     return { label: stats.labels[bestIdx], value: bestVal }
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 186 |   }, [stats?.labels, stats?.values])
+      | ^^^^ Could not preserve existing manual memoization
+  187 |
+  188 |   const worstPeriod = useMemo(() => {
+  189 |     if (!stats?.labels?.length || !stats?.values?.length) return null                                     react-hooks/preserve-manual-memoization
+  188:31  error  Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `stats.values`, but the source dependencies were [stats?.labels, stats?.values]. Inferred different dependency than source.
+
+  186 |   }, [stats?.labels, stats?.values])
+  187 |
+> 188 |   const worstPeriod = useMemo(() => {
+      |                               ^^^^^^^
+> 189 |     if (!stats?.labels?.length || !stats?.values?.length) return null
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 190 |     // نبحث عن أقل قيمة > 0 (تجاهل الأيام اللي مفيش فيها تسبيح)
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 200 |     return { label: stats.labels[worstIdx], value: worstVal }
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 201 |   }, [stats?.labels, stats?.values])
+      | ^^^^ Could not preserve existing manual memoization
+  202 |
+  203 |   const animatedBestValue = useAnimatedNumber(bestPeriod?.value ?? 0)
+  204 |                           react-hooks/preserve-manual-memoization
+
+/data/data/com.termux/files/home/mizan/src/contexts/BudgetContext.jsx
+  196:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  194 |   useEffect(() => {
+  195 |     let cancelled = false
+> 196 |     setLoading(true)
+      |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  197 |     setError(null)
+  198 |
+  199 |       ; (async () => {  react-hooks/set-state-in-effect
+  263:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  261 |     }
+  262 |     if (!currentMonth) {
+> 263 |       setInsights(null)
+      |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  264 |       return
+  265 |     }
+  266 |     let cancelled = false        react-hooks/set-state-in-effect
+  645:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             react-refresh/only-export-components
+
+/data/data/com.termux/files/home/mizan/src/contexts/ThemeContext.jsx
+  30:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/data/data/com.termux/files/home/mizan/src/contexts/ToastContext.jsx
+  35:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/data/data/com.termux/files/home/mizan/src/contexts/ZekrDataContext.jsx
+  108:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  106 |
+  107 |   useEffect(() => {
+> 108 |     loadInitialData()
+      |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  109 |   }, [loadInitialData])
+  110 |
+  111 |   // اختيار أول ذكر تلقائياً عند حذف الذكر الحالي                                                                      react-hooks/set-state-in-effect
+  114:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  112 |   useEffect(() => {
+  113 |     if (allAdhkar.length > 0 && !allAdhkar.some((z) => z.id === currentZekrId)) {
+> 114 |       setCurrentZekrId(allAdhkar[0].id)
+      |       ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  115 |     }
+  116 |   }, [allAdhkar, currentZekrId])
+  117 |  react-hooks/set-state-in-effect
+  435:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             react-refresh/only-export-components
+
+/data/data/com.termux/files/home/mizan/src/db/adapter.js
+  66:7   error  The value assigned to 'existing' is not used in subsequent statements  no-useless-assignment
+  70:12  error  'e' is defined but never used                                          no-unused-vars
+
+/data/data/com.termux/files/home/mizan/src/db/index.js
+  12:7  error  The value assigned to 'currentVersion' is not used in subsequent statements  no-useless-assignment
+
+/data/data/com.termux/files/home/mizan/src/pages/budget/Reports.jsx
+  52:5  error  'compareMonth' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          no-unused-vars
+  55:5  error  'loading' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
+  85:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  83 |   useEffect(() => {
+  84 |     let cancelled = false
+> 85 |     setTrendLoading(true)
+     |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  86 |
+  87 |     getMonthlyTrend(trendMonths, currentMonth)
+  88 |       .then((data) => {  react-hooks/set-state-in-effect
+
+/data/data/com.termux/files/home/mizan/src/pages/budget/Transactions.jsx
+  224:23  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  222 |     if (!expandedId) return
+  223 |     const stillExists = filteredTxns.some((t) => t.id === expandedId)
+> 224 |     if (!stillExists) setExpandedId(null)
+      |                       ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  225 |   }, [filteredTxns, expandedId])
+  226 |
+  227 |   // ─── Render ───  react-hooks/set-state-in-effect
+
+/data/data/com.termux/files/home/mizan/src/pages/zekr/Sabh.jsx
+  253:15  error  Empty block statement  no-empty
+
+/data/data/com.termux/files/home/mizan/src/services/budgetCalculator.js
+  3:10  error  'nowMs' is defined but never used  no-unused-vars
+
+/data/data/com.termux/files/home/mizan/src/services/budgetService.js
+  588:14  error  'err' is defined but never used  no-unused-vars
+
+/data/data/com.termux/files/home/mizan/src/services/zekrService.js
+  615:14  error  'err' is defined but never used  no-unused-vars
+
+✖ 63 problems (62 errors, 1 warning)
+

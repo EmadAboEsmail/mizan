@@ -48,7 +48,7 @@ function exitFullscreenSilent() {
       if (document.exitFullscreen) document.exitFullscreen().catch(() => { })
       else if (document.webkitExitFullscreen) document.webkitExitFullscreen()
     }
-  } catch { }
+ }catch (e){console.log(e)}
 }
 
 // ✅ تنسيق الوقت mm:ss
@@ -141,7 +141,7 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
           wakeLock?.release().catch(() => { })
           wakeLock = null
         }
-      } catch { }
+     }catch (e){console.log(e)}
     }
     acquire()
 

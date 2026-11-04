@@ -9,7 +9,7 @@ export async function initDB() {
 
   await initAdapter()
 
-  let currentVersion = 0
+  let currentVersion
   try {
     const row = await queryOne("SELECT value FROM meta WHERE key = 'schema_version'")
     currentVersion = parseInt(row?.value, 10) || 0

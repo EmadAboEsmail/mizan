@@ -135,7 +135,7 @@ function DataSection() {
     try {
       await handleExportBackup()
       showToast('تم تصدير النسخة الاحتياطية بنجاح!')
-    } catch (err) {
+    } catch {
       // الـ context already shows a toast on error
     }
   }

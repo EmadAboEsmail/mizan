@@ -36,7 +36,7 @@ function vibrate(ms = 12) {
   if (!('vibrate' in navigator)) return
   try {
     navigator.vibrate(ms)
-  } catch { }
+ }catch (e){console.log(e)}
 }
 
 function GroupModeView({

@@ -63,11 +63,11 @@ export async function initAdapter() {
   }
 
   // 5. تحقق من اتصال موجود أو أنشئ واحد
-  let existing = false
+  let existing
   try {
     const isConnResult = await sqlite.isConnection(DB_NAME, false)
     existing = isConnResult.result
-  } catch (e) {
+  } catch {
     existing = false
   }
 

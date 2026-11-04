@@ -49,10 +49,8 @@ function BudgetReports() {
     limits,
     insights,
     currentMonth,
-    compareMonth,
     setCurrentMonth,
     setCompareMonth,   // ✅ تصحيح typo
-    loading,
   } = useBudget()
 
   const [compareMode, setCompareMode] = useState('prev')

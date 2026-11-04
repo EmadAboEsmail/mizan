@@ -254,11 +254,6 @@ function BudgetTransactions() {
 
       <TransactionsList
         items={flatItems}
-        catMap={catMap}
-        expandedId={expandedId}
-        onToggle={handleToggleExpanded}
-        onEdit={handleOpenEdit}
-        onDelete={handleDeleteClick}
         onAdd={handleOpenAdd}
         listHeight={listHeight}
         listWidth={listWidth}

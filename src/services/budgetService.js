@@ -585,7 +585,7 @@ export async function importLegacyBudget(legacy) {
     try {
       await transaction(chunk)
       executed += chunk.length
-    } catch (err) {
+    } catch {
       console.warn(`[Legacy Budget Import] Chunk ${i} failed, retrying individually`)
       for (const stmt of chunk) {
         try {

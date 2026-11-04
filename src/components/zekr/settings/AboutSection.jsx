@@ -16,7 +16,7 @@ function AboutSection() {
     if (navigator.share) {
       try {
         await navigator.share(shareData)
-      } catch (err) {
+      } catch {
         // تم إلغاء المشاركة بواسطة المستخدم — تجاهل بصمت
       }
     } else {
