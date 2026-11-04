@@ -36,7 +36,9 @@ function vibrate(ms = 12) {
   if (!('vibrate' in navigator)) return
   try {
     navigator.vibrate(ms)
- }catch (e){console.log(e)}
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 function GroupModeView({
@@ -55,24 +57,30 @@ function GroupModeView({
 
   const selectedGroup = groups.find((g) => g.id === selectedGroupId)
   const items = selectedGroup?.items ?? []
-  const currentItem = items[currentIndex]
 
-  const completedCount = showTransition ? currentIndex + 1 : currentIndex
-
-  // حماية الفهرس
-  useEffect(() => {
+  // ═══════════════════════════════════════════════════════════
+  // ✅ Adjust during render — بدل الـ useEffect الأول
+  // ═══════════════════════════════════════════════════════════
+  const [prevItemsLength, setPrevItemsLength] = useState(items.length)
+  if (items.length !== prevItemsLength) {
+    setPrevItemsLength(items.length)
     if (items.length > 0 && currentIndex >= items.length) {
       setCurrentIndex(0)
       setLocalCount(0)
       setShowTransition(false)
     }
-  }, [items.length, currentIndex])
+  }
+
+  // ✅ وصول آمن — يمنع الكراش حتى في أول render
+  const currentItem = items[currentIndex] ?? items[0] ?? null
+
+  const completedCount = showTransition ? currentIndex + 1 : currentIndex
 
   const currentTarget = currentItem
     ? currentItem.target ?? currentItem.default_target ?? null
     : null
 
-  // الخروج من وضع التركيز عند الاكتمال
+  // الخروج من وضع التركيز عند الاكتمال (setState داخل setTimeout — مسموح)
   useEffect(() => {
     if (isFocusMode && isComplete) {
       const timer = setTimeout(() => setIsFocusMode(false), 3200)
@@ -115,35 +123,9 @@ function GroupModeView({
     setIsFocusMode(false)
   }
 
-  // ═══════════════════════════════════════
-  // Effect 1: كشف اكتمال الهدف
-  // ═══════════════════════════════════════
-  useEffect(() => {
-    if (!currentItem || !currentTarget) return
-    if (localCount < currentTarget) return
-    if (showTransition || isComplete) return
-
-    vibrate([15, 30, 15])
-
-    const isLast = currentIndex === items.length - 1
-    if (isLast) {
-      setIsComplete(true)
-    } else {
-      setShowTransition(true)
-    }
-  }, [
-    localCount,
-    currentTarget,
-    currentIndex,
-    items.length,
-    showTransition,
-    isComplete,
-    currentItem,
-  ])
-
-  // ═══════════════════════════════════════
-  // Effect 2: انتقال تلقائي من Transition
-  // ═══════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════
+  // ✅ Effect 2: انتقال تلقائي (setState داخل setTimeout — مسموح)
+  // ═══════════════════════════════════════════════════════════
   useEffect(() => {
     if (!showTransition) return
     const timer = setTimeout(() => {
@@ -159,9 +141,9 @@ function GroupModeView({
     return () => clearTimeout(timer)
   }, [showTransition, currentIndex, items.length])
 
-  // ═══════════════════════════════════════
-  // Effect 3: إعادة تلقائية بعد الاكتمال
-  // ═══════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════
+  // ✅ Effect 3: إعادة تلقائية بعد الاكتمال (setState داخل setTimeout)
+  // ═══════════════════════════════════════════════════════════
   useEffect(() => {
     if (!isComplete) return
     const timer = setTimeout(() => {
@@ -173,12 +155,33 @@ function GroupModeView({
     return () => clearTimeout(timer)
   }, [isComplete])
 
+  // ═══════════════════════════════════════════════════════════
+  // ✅ handleAddClick: كشف الاكتمال انتقل هنا (بدل الـ effect)
+  // ═══════════════════════════════════════════════════════════
   const handleAddClick = () => {
     if (!currentItem) return
     if (currentTarget && localCount >= currentTarget) return
+
     vibrate(10)
-    setLocalCount((prev) => prev + 1)
+    const newCount = localCount + 1
+    setLocalCount(newCount)
     onAddClick(currentItem.zekr_id)
+
+    // فحص الاكتمال مباشرة بعد الزيادة
+    if (
+      currentTarget &&
+      newCount >= currentTarget &&
+      !showTransition &&
+      !isComplete
+    ) {
+      vibrate([15, 30, 15])
+      const isLast = currentIndex === items.length - 1
+      if (isLast) {
+        setIsComplete(true)
+      } else {
+        setShowTransition(true)
+      }
+    }
   }
 
   const handleReset = () => {
