@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Modal from './Modal.jsx'
 import styles from './PromptModal.module.scss'
 
-function PromptModal({
-  isOpen,
+// النموذج الداخلي: حالته تُبنى من جديد عند كل فتح لأنه لا يُعرض إلا والنافذة مفتوحة
+function PromptForm({
   onClose,
   onConfirm,
-  title,
   defaultValue = '',
   type = 'text',
   placeholder = '',
@@ -15,14 +14,6 @@ function PromptModal({
 }) {
   const [value, setValue] = useState(defaultValue)
   const [error, setError] = useState('')
-
-  // إعادة تعيين عند الفتح
-  useEffect(() => {
-    if (isOpen) {
-      setValue(defaultValue)
-      setError('')
-    }
-  }, [isOpen, defaultValue])
 
   const handleConfirm = () => {
     const trimmed = String(value).trim()
@@ -58,7 +49,7 @@ function PromptModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title}>
+    <>
       <input
         className={styles.input}
         type={type}
@@ -84,6 +75,14 @@ function PromptModal({
           تأكيد
         </button>
       </div>
+    </>
+  )
+}
+
+function PromptModal({ isOpen, onClose, title, ...formProps }) {
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={title}>
+      {isOpen && <PromptForm onClose={onClose} {...formProps} />}
     </Modal>
   )
 }
