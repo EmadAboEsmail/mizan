@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'   // ← useEffect اتشال
 import Modal from '@/components/ui/Modal.jsx'
 import CategoryIcon from './CategoryIcon.jsx'
 import styles from './TransactionFormModal.module.scss'
@@ -27,6 +27,35 @@ function formatDateLabel(iso) {
   return `${d}/${m}`
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 🆕 دالة نقية لبناء الحالة الابتدائية للفورم
+//     - مصدر واحد لشكل الحالة
+//     - سهلة الاختبار
+//     - تُستخدم في useState وفي reset
+// ═══════════════════════════════════════════════════════════════
+function buildFormState(initial) {
+  if (initial) {
+    return {
+      type: initial.type || 'expense',
+      amount: String(initial.amount ?? ''),
+      categoryId: initial.category_id || '',
+      date: initial.date || todayISO(),
+      details: initial.details || '',
+      description: initial.description || '',
+      showExtras: !!(initial.details || initial.description),
+    }
+  }
+  return {
+    type: 'expense',
+    amount: '',
+    categoryId: '',
+    date: todayISO(),
+    details: '',
+    description: '',
+    showExtras: false,
+  }
+}
+
 function TransactionFormModal({
   isOpen,
   onClose,
@@ -34,51 +63,60 @@ function TransactionFormModal({
   initial = null,
   categories = [],
 }) {
-  const [type, setType] = useState('expense')
-  const [amount, setAmount] = useState('')
-  const [categoryId, setCategoryId] = useState('')
-  const [date, setDate] = useState(todayISO())
-  const [details, setDetails] = useState('')
-  const [description, setDescription] = useState('')
+  // ─────────────────────────────────────────────────────────────
+  // 1) الحالة الابتدائية (تُستخدم عند أول mount فقط)
+  // ─────────────────────────────────────────────────────────────
+  const [type, setType] = useState(() => buildFormState(initial).type)
+  const [amount, setAmount] = useState(() => buildFormState(initial).amount)
+  const [categoryId, setCategoryId] = useState(() => buildFormState(initial).categoryId)
+  const [date, setDate] = useState(() => buildFormState(initial).date)
+  const [details, setDetails] = useState(() => buildFormState(initial).details)
+  const [description, setDescription] = useState(() => buildFormState(initial).description)
+  const [showExtras, setShowExtras] = useState(() => buildFormState(initial).showExtras)
+
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showExtras, setShowExtras] = useState(false)
   const [showDatePicker, setShowDatePicker] = useState(false)
 
-  useEffect(() => {
-    if (!isOpen) return
-    if (initial) {
-      setType(initial.type || 'expense')
-      setAmount(String(initial.amount ?? ''))
-      setCategoryId(initial.category_id || '')
-      setDate(initial.date || todayISO())
-      setDetails(initial.details || '')
-      setDescription(initial.description || '')
-      setShowExtras(!!(initial.details || initial.description))
-    } else {
-      setType('expense')
-      setAmount('')
-      setCategoryId('')
-      setDate(todayISO())
-      setDetails('')
-      setDescription('')
-      setShowExtras(false)
-    }
-    setShowDatePicker(false)
-    setError('')
-    setIsSubmitting(false)
-  }, [isOpen, initial])
+  // ─────────────────────────────────────────────────────────────
+  // 2) Session Key — مفتاح الجلسة
+  //    بيتغيّر لما نحتاج reset (فتح/قفل/تغيير txn)
+  // ─────────────────────────────────────────────────────────────
+  const sessionKey = isOpen ? (initial?.id ?? 'new') : 'closed'
+  const [lastSessionKey, setLastSessionKey] = useState(sessionKey)
 
+  // ─────────────────────────────────────────────────────────────
+  // 3) Adjust state during render
+  //    ⚠️ مش useEffect — كود عادي أثناء الرسم
+  //    React بيعيد الرسم فوراً بدون flash ولا cascading renders
+  // ─────────────────────────────────────────────────────────────
+  if (sessionKey !== lastSessionKey) {
+    setLastSessionKey(sessionKey)
+    if (isOpen) {
+      const fresh = buildFormState(initial)
+      setType(fresh.type)
+      setAmount(fresh.amount)
+      setCategoryId(fresh.categoryId)
+      setDate(fresh.date)
+      setDetails(fresh.details)
+      setDescription(fresh.description)
+      setShowExtras(fresh.showExtras)
+
+      setShowDatePicker(false)
+      setError('')
+      setIsSubmitting(false)
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // 4) Derived category — بدل الـ useEffect التاني
+  //    لو categoryId الحالي مش موجود ضمن الـ filtered، خُد الأول
+  // ─────────────────────────────────────────────────────────────
   const filteredCategories = categories.filter((c) => c.type === type)
-
-  useEffect(() => {
-    if (!isOpen) return
-    if (filteredCategories.length === 0) return
-    if (!filteredCategories.some((c) => c.id === categoryId)) {
-      setCategoryId(filteredCategories[0].id)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type, isOpen, categories.length])
+  const effectiveCategoryId =
+    categoryId && filteredCategories.some((c) => c.id === categoryId)
+      ? categoryId
+      : filteredCategories[0]?.id ?? ''
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -93,7 +131,7 @@ function TransactionFormModal({
       setError('المبلغ يجب أن يكون رقماً موجباً')
       return
     }
-    if (!categoryId) {
+    if (!effectiveCategoryId) {          // ← تعديل
       setError('الرجاء اختيار تصنيف')
       return
     }
@@ -105,7 +143,7 @@ function TransactionFormModal({
     const payload = {
       amount: Math.round(numAmount * 100) / 100,
       type,
-      category_id: categoryId,
+      category_id: effectiveCategoryId,   // ← تعديل
       date,
       details: details.trim() || null,
       description: description.trim() || null,
@@ -130,19 +168,15 @@ function TransactionFormModal({
       onClose={onClose}
       title={initial ? 'تعديل المعاملة' : 'إضافة معاملة'}
       variant="sheet"
-    >      <form className={styles.form} onSubmit={handleSubmit} noValidate>
+    >
+      <form className={styles.form} onSubmit={handleSubmit} noValidate>
         {/* ─── 1. Segmented Toggle ─── */}
-        <div
-          className={styles.segmented}
-          role="tablist"
-          aria-label="نوع المعاملة"
-        >
+        <div className={styles.segmented} role="tablist" aria-label="نوع المعاملة">
           <button
             type="button"
             role="tab"
             aria-selected={type === 'expense'}
-            className={`${styles.segment} ${type === 'expense' ? styles.segmentExpense : ''
-              }`}
+            className={`${styles.segment} ${type === 'expense' ? styles.segmentExpense : ''}`}
             onClick={() => setType('expense')}
           >
             <span className={styles.segmentIcon}>💸</span>
@@ -152,8 +186,7 @@ function TransactionFormModal({
             type="button"
             role="tab"
             aria-selected={type === 'income'}
-            className={`${styles.segment} ${type === 'income' ? styles.segmentIncome : ''
-              }`}
+            className={`${styles.segment} ${type === 'income' ? styles.segmentIncome : ''}`}
             onClick={() => setType('income')}
           >
             <span className={styles.segmentIcon}>💰</span>
@@ -196,13 +229,12 @@ function TransactionFormModal({
           ) : (
             <div className={styles.categoryGrid}>
               {filteredCategories.map((cat) => {
-                const isSelected = cat.id === categoryId
+                const isSelected = cat.id === effectiveCategoryId  // ← تعديل
                 return (
                   <button
                     key={cat.id}
                     type="button"
-                    className={`${styles.catChip} ${isSelected ? styles.catSelected : ''
-                      }`}
+                    className={`${styles.catChip} ${isSelected ? styles.catSelected : ''}`}
                     onClick={() => {
                       setCategoryId(cat.id)
                       if (error) setError('')
@@ -226,24 +258,21 @@ function TransactionFormModal({
           <div className={styles.dateQuickActions}>
             <button
               type="button"
-              className={`${styles.dateChip} ${isToday ? styles.dateChipActive : ''
-                }`}
+              className={`${styles.dateChip} ${isToday ? styles.dateChipActive : ''}`}
               onClick={() => setDate(todayISO())}
             >
               اليوم
             </button>
             <button
               type="button"
-              className={`${styles.dateChip} ${isYesterday ? styles.dateChipActive : ''
-                }`}
+              className={`${styles.dateChip} ${isYesterday ? styles.dateChipActive : ''}`}
               onClick={() => setDate(yesterdayISO())}
             >
               أمس
             </button>
             <button
               type="button"
-              className={`${styles.dateChip} ${!isToday && !isYesterday ? styles.dateChipActive : ''
-                }`}
+              className={`${styles.dateChip} ${!isToday && !isYesterday ? styles.dateChipActive : ''}`}
               onClick={() => setShowDatePicker(!showDatePicker)}
             >
               {!isToday && !isYesterday ? formatDateLabel(date) : '📅 تاريخ آخر'}
@@ -272,9 +301,7 @@ function TransactionFormModal({
             onClick={() => setShowExtras(!showExtras)}
             aria-expanded={showExtras}
           >
-            <span className={styles.extrasChevron}>
-              {showExtras ? '▼' : '◀'}
-            </span>
+            <span className={styles.extrasChevron}>{showExtras ? '▼' : '◀'}</span>
             <span>تفاصيل إضافية (اختياري)</span>
           </button>
 
@@ -331,11 +358,7 @@ function TransactionFormModal({
           >
             إلغاء
           </button>
-          <button
-            type="submit"
-            className={styles.confirm}
-            disabled={isSubmitting}
-          >
+          <button type="submit" className={styles.confirm} disabled={isSubmitting}>
             {isSubmitting
               ? 'جاري الحفظ...'
               : initial

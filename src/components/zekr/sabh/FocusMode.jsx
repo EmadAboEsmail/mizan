@@ -48,7 +48,7 @@ function exitFullscreenSilent() {
       if (document.exitFullscreen) document.exitFullscreen().catch(() => { })
       else if (document.webkitExitFullscreen) document.webkitExitFullscreen()
     }
- }catch (e){console.log(e)}
+  } catch (e) { console.log(e) }
 }
 
 // ✅ تنسيق الوقت mm:ss
@@ -59,9 +59,11 @@ function formatTime(seconds) {
 }
 
 function FocusMode({ isOpen = true, onClose, onCount, children }) {
-  const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
 
+  const onCloseRef = useRef(onClose)
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
   const isClosingRef = useRef(false)
   const hasTriedFullscreenRef = useRef(false)  // ✅ محاولة fullscreen مرة واحدة
   const startTimeRef = useRef(null)
@@ -69,22 +71,14 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [sessionTime, setSessionTime] = useState(0)
 
-  // ✅ عدّاد وقت الجلسة
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen)
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen)
     if (!isOpen) {
       setSessionTime(0)
       startTimeRef.current = null
-      return
     }
-    startTimeRef.current = Date.now()
-    const interval = setInterval(() => {
-      if (startTimeRef.current) {
-        setSessionTime(Math.floor((Date.now() - startTimeRef.current) / 1000))
-      }
-    }, 1000)
-    return () => clearInterval(interval)
-  }, [isOpen])
-
+  }
   const handleClose = useCallback(() => {
     if (isClosingRef.current) return
     isClosingRef.current = true
@@ -141,7 +135,7 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
           wakeLock?.release().catch(() => { })
           wakeLock = null
         }
-     }catch (e){console.log(e)}
+      } catch (e) { console.log(e) }
     }
     acquire()
 

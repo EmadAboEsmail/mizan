@@ -1,48 +1,4 @@
 
-> frontend-react@0.0.0 build
-> vite build
-
-vite v8.3.4 building client environment for production...
-transforming...
-✓ 180 modules transformed.
-rendering chunks...
-computing gzip size...
-dist/registerSW.js                            0.13 kB
-dist/manifest.webmanifest                     1.03 kB
-dist/index.html                               1.79 kB │ gzip:   0.84 kB
-dist/assets/BottomNav-DHiq3E7n.css            1.90 kB │ gzip:   0.76 kB
-dist/assets/CategoryIcon-B-o93h4T.css         7.50 kB │ gzip:   2.33 kB
-dist/assets/Layout-BBIRSPES.css              10.80 kB │ gzip:   3.09 kB
-dist/assets/Layout-Cemvi197.css              10.99 kB │ gzip:   3.15 kB
-dist/assets/LimitProgressCard-BP9NqvVR.css   11.22 kB │ gzip:   3.21 kB
-dist/assets/ConfirmModal-DPT91lIA.css        11.56 kB │ gzip:   3.32 kB
-dist/assets/index-BwcNu7A-.css               24.85 kB │ gzip:   5.31 kB
-dist/assets/Reports-D3mGtU7i.css             31.24 kB │ gzip:   5.53 kB
-dist/assets/Stats-CWohC4LK.css               38.33 kB │ gzip:   5.83 kB
-dist/assets/Sabh-RvGHCtOu.css                44.28 kB │ gzip:   7.71 kB
-dist/assets/Settings-BD0qRBfg.css            50.49 kB │ gzip:   6.89 kB
-dist/assets/Transactions-DyGeUggh.css        55.47 kB │ gzip:   7.50 kB
-dist/assets/Settings-DEhOvBWQ.css            73.25 kB │ gzip:   8.90 kB
-dist/assets/CategoryIcon-BdZiPXny.js          0.44 kB │ gzip:   0.33 kB
-dist/assets/useAnimatedNumber-doorxONM.js     0.52 kB │ gzip:   0.34 kB
-dist/assets/BottomNav-C1a9Upnv.js             0.64 kB │ gzip:   0.40 kB
-dist/assets/web-DuhME_Rc.js                   0.84 kB │ gzip:   0.40 kB
-dist/assets/Layout-4pwLSqP0.js                2.09 kB │ gzip:   0.88 kB
-dist/assets/Layout-DSG0mRq1.js                2.20 kB │ gzip:   0.91 kB
-dist/assets/ConfirmModal-Chr49u9l.js          3.53 kB │ gzip:   1.49 kB
-dist/assets/LimitProgressCard-BYHl_3qP.js     3.65 kB │ gzip:   1.39 kB
-dist/assets/web-3Q9e53Io.js                   9.46 kB │ gzip:   1.31 kB
-dist/assets/Stats-Cx4fUV0j.js                17.68 kB │ gzip:   5.75 kB
-dist/assets/Reports-CrzimDOn.js              18.60 kB │ gzip:   5.45 kB
-dist/assets/Settings-BL80uoxE.js             28.04 kB │ gzip:   7.94 kB
-dist/assets/Sabh-B0KnoM_z.js                 31.43 kB │ gzip:   9.40 kB
-dist/assets/Transactions-D2vlXahi.js         37.53 kB │ gzip:  11.76 kB
-dist/assets/Settings-BvHO5aJq.js             42.79 kB │ gzip:  11.17 kB
-dist/assets/jeep-sqlite.entry-DS036nf-.js   285.31 kB │ gzip:  77.93 kB
-dist/assets/index-K8tSdbCi.js               373.27 kB │ gzip: 115.37 kB
-
-✓ built in 7.07s
-
 > frontend-react@0.0.0 lint
 > eslint .
 
@@ -96,53 +52,19 @@ Calling setState synchronously within an effect body causes cascading renders th
   37 |     } else {
   38 |       setCategoryId(availableCategories[0]?.id || '')  react-hooks/set-state-in-effect
 
-/data/data/com.termux/files/home/mizan/src/components/budget/settings/CategoryFormModal.jsx
-  19:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
-
-Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
-* Update external systems with the latest state from React.
-* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
-
-Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
-
-  17 |     if (!isOpen) return
-  18 |     if (initial) {
-> 19 |       setName(initial.name || '')
-     |       ^^^^^^^ Avoid calling setState() directly within an effect
-  20 |       setType(initial.type || 'expense')
-  21 |       setIcon(initial.icon || '📦')
-  22 |       setColor(initial.color || '#059669')  react-hooks/set-state-in-effect
-
-/data/data/com.termux/files/home/mizan/src/components/ui/PromptModal.jsx
-  22:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
-
-Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
-* Update external systems with the latest state from React.
-* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
-
-Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
-
-  20 |   useEffect(() => {
-  21 |     if (isOpen) {
-> 22 |       setValue(defaultValue)
-     |       ^^^^^^^^ Avoid calling setState() directly within an effect
-  23 |       setError('')
-  24 |     }
-  25 |   }, [isOpen, defaultValue])  react-hooks/set-state-in-effect
-
 /data/data/com.termux/files/home/mizan/src/components/zekr/sabh/FocusMode.jsx
-   63:3   error  Error: Cannot access refs during render
+   79:7   error  Error: Cannot access refs during render
 
 React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
 
-  61 | function FocusMode({ isOpen = true, onClose, onCount, children }) {
-  62 |   const onCloseRef = useRef(onClose)
-> 63 |   onCloseRef.current = onClose
-     |   ^^^^^^^^^^^^^^^^^^ Cannot update ref during render
-  64 |
-  65 |   const isClosingRef = useRef(false)
-  66 |   const hasTriedFullscreenRef = useRef(false)  // ✅ محاولة fullscreen مرة واحدة                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/refs
-   75:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+  77 |     if (!isOpen) {
+  78 |       setSessionTime(0)
+> 79 |       startTimeRef.current = null
+     |       ^^^^^^^^^^^^^^^^^^^^ Cannot update ref during render
+  80 |     }
+  81 |   }
+  82 |   const handleClose = useCallback(() => {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react-hooks/refs
+  105:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
 
 Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
 * Update external systems with the latest state from React.
@@ -150,29 +72,14 @@ Effects are intended to synchronize state between React and external systems suc
 
 Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
 
-  73 |   useEffect(() => {
-  74 |     if (!isOpen) {
-> 75 |       setSessionTime(0)
-     |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
-  76 |       startTimeRef.current = null
-  77 |       return
-  78 |     }                                                                                                                                                                                                                                        react-hooks/set-state-in-effect
-  111:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
-
-Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
-* Update external systems with the latest state from React.
-* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
-
-Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
-
-  109 |     document.addEventListener('fullscreenchange', handleFullscreenChange)
-  110 |     document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
-> 111 |     setIsFullscreen(!!(document.fullscreenElement || document.webkitFullscreenElement))
+  103 |     document.addEventListener('fullscreenchange', handleFullscreenChange)
+  104 |     document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
+> 105 |     setIsFullscreen(!!(document.fullscreenElement || document.webkitFullscreenElement))
       |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
-  112 |
-  113 |     return () => {
-  114 |       document.removeEventListener('fullscreenchange', handleFullscreenChange)  react-hooks/set-state-in-effect
-  240:10  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-refresh/only-export-components
+  106 |
+  107 |     return () => {
+  108 |       document.removeEventListener('fullscreenchange', handleFullscreenChange)  react-hooks/set-state-in-effect
+  234:10  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-refresh/only-export-components
 
 /data/data/com.termux/files/home/mizan/src/components/zekr/sabh/GroupModeView.jsx
    65:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
@@ -206,23 +113,6 @@ Calling setState synchronously within an effect body causes cascading renders th
   132 |       setShowTransition(true)
   133 |     }                react-hooks/set-state-in-effect
 
-/data/data/com.termux/files/home/mizan/src/components/zekr/settings/AdhkarFormModal.jsx
-  21:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
-
-Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
-* Update external systems with the latest state from React.
-* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
-
-Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
-
-  19 |   useEffect(() => {
-  20 |     if (isOpen) {
-> 21 |       setText(initial?.text ?? '')
-     |       ^^^^^^^ Avoid calling setState() directly within an effect
-  22 |       setTarget(initial?.default_target ? String(initial.default_target) : '')
-  23 |       setError('')
-  24 |       setIsSubmitting(false)  react-hooks/set-state-in-effect
-
 /data/data/com.termux/files/home/mizan/src/components/zekr/settings/GroupEditorModal.jsx
   55:7  error    Error: Calling setState synchronously within an effect can trigger cascading renders
 
@@ -240,23 +130,6 @@ Calling setState synchronously within an effect body causes cascading renders th
   57 |       setTargetError('')
   58 |       setSearchAvailable('')  react-hooks/set-state-in-effect
   64:9  warning  The 'items' logical expression could make the dependencies of useMemo Hook (at line 67) change on every render. To fix this, wrap the initialization of 'items' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            react-hooks/exhaustive-deps
-
-/data/data/com.termux/files/home/mizan/src/components/zekr/settings/GroupFormModal.jsx
-  22:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
-
-Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
-* Update external systems with the latest state from React.
-* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
-
-Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
-
-  20 |   useEffect(() => {
-  21 |     if (isOpen) {
-> 22 |       setName(initial?.name ?? '')
-     |       ^^^^^^^ Avoid calling setState() directly within an effect
-  23 |       setDescription(initial?.description ?? '')
-  24 |       setError('')
-  25 |       setIsSubmitting(false)  react-hooks/set-state-in-effect
 
 /data/data/com.termux/files/home/mizan/src/components/zekr/settings/GroupsSection.jsx
   66:22  error  Error: Calling setState synchronously within an effect can trigger cascading renders
@@ -497,5 +370,8 @@ Calling setState synchronously within an effect body causes cascading renders th
   226 |
   227 |   // ─── Render ───  react-hooks/set-state-in-effect
 
-✖ 34 problems (33 errors, 1 warning)
+/data/data/com.termux/files/home/mizan/vite.config.js
+  67:11  error  Duplicate key 'globPatterns'  no-dupe-keys
+
+✖ 30 problems (29 errors, 1 warning)
 

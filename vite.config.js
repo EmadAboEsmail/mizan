@@ -61,11 +61,10 @@ export default defineConfig({
         ],
       },
       workbox: {
-        disableDevLogs: true, mode: "development",   // ← أضفه: يتخطى تصغير terser (تجربة تشخيصية)
+        mode: "development",   // ← أضفه: يتخطى تصغير terser (تجربة تشخيصية)
         disableDevLogs: true,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2,wasm}"]
-        , globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2,wasm}"],
-        navigateFallback: "/index.html",
+        , navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
           {

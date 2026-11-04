@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Modal from '@/components/ui/Modal.jsx'
 import styles from './AdhkarFormModal.module.scss'
 
@@ -10,21 +10,13 @@ const PRESET_TARGETS = [
   { label: '1000', value: '1000' },
 ]
 
-function AdhkarFormModal({ isOpen, onClose, onConfirm, initial = null }) {
-  const [text, setText] = useState('')
-  const [target, setTarget] = useState('')
+function AdhkarFormModalBody({ isOpen, onClose, onConfirm, initial = null }) {
+  const [text, setText] = useState(initial?.text ?? '')
+  const [target, setTarget] = useState(
+    initial?.default_target ? String(initial.default_target) : ''
+  )
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  useEffect(() => {
-    if (isOpen) {
-      setText(initial?.text ?? '')
-      setTarget(initial?.default_target ? String(initial.default_target) : '')
-      setError('')
-      setIsSubmitting(false)
-    }
-  }, [isOpen, initial])
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     const trimmedText = text.trim()
@@ -155,6 +147,10 @@ function AdhkarFormModal({ isOpen, onClose, onConfirm, initial = null }) {
       </form>
     </Modal>
   )
+}
+
+function AdhkarFormModal(props) {
+  return props.isOpen ? <AdhkarFormModalBody {...props} /> : null
 }
 
 export default AdhkarFormModal
