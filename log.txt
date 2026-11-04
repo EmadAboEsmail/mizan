@@ -1,123 +1,47 @@
- assets           favicon.ico            registerSW.js
- icons            index.html
- favicon-64.png   manifest.webmanifest                       "dist/sw.js": No such file or directory (os error 2)
-❯ git status --short | head                                    git ls-files                                                   .env.example
-.github/.github/workflows/build-apk.yml
-.github/workflows/build-apk.yml                                .gitignore
-README.md
-android/.gitignore                                             android/app/.gitignore
-android/app/build.gradle                                       android/app/capacitor.build.gradle                             android/app/proguard-rules.pro                                 android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java                                          android/app/src/main/AndroidManifest.xml                       android/app/src/main/java/com/zekr/app/MainActivity.java       android/app/src/main/res/drawable-hdpi/ic_splash.png           android/app/src/main/res/drawable-land-hdpi/splash.png         android/app/src/main/res/drawable-land-ldpi/splash.png         android/app/src/main/res/drawable-land-mdpi/splash.png         android/app/src/main/res/drawable-land-xhdpi/splash.png        android/app/src/main/res/drawable-land-xxhdpi/splash.png       android/app/src/main/res/drawable-land-xxxhdpi/splash.png      android/app/src/main/res/drawable-mdpi/ic_splash.png           android/app/src/main/res/drawable-port-hdpi/splash.png
-android/app/src/main/res/drawable-port-ldpi/splash.png         android/app/src/main/res/drawable-port-mdpi/splash.png         android/app/src/main/res/drawable-port-xhdpi/splash.png        android/app/src/main/res/drawable-port-xxhdpi/splash.png       android/app/src/main/res/drawable-port-xxxhdpi/splash.png      android/app/src/main/res/drawable-v24/ic_launcher_foreground.xml                                                              android/app/src/main/res/drawable-xhdpi/ic_splash.png          android/app/src/main/res/drawable-xxhdpi/ic_splash.png         android/app/src/main/res/drawable/ic_launcher_background.xml   android/app/src/main/res/drawable/splash.png                   android/app/src/main/res/layout/activity_main.xml              android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml     android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml                                                              android/app/src/main/res/mipmap-hdpi/ic_launcher.png
-android/app/src/main/res/mipmap-hdpi/ic_launcher_background.pngandroid/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png
-android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
-android/app/src/main/res/mipmap-ldpi/ic_launcher.png           android/app/src/main/res/mipmap-ldpi/ic_launcher_background.pngandroid/app/src/main/res/mipmap-ldpi/ic_launcher_foreground.pngandroid/app/src/main/res/mipmap-ldpi/ic_launcher_round.png
-android/app/src/main/res/mipmap-mdpi/ic_launcher.png
-android/app/src/main/res/mipmap-mdpi/ic_launcher_background.pngandroid/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png
-android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
-android/app/src/main/res/mipmap-xhdpi/ic_launcher.png          android/app/src/main/res/mipmap-xhdpi/ic_launcher_background.png
-android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png
-android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
-android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-android/app/src/main/res/mipmap-xxhdpi/ic_launcher_background.png
-android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png
-android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
-android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_background.png
-android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
-android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
-android/app/src/main/res/values/colors.xml                     android/app/src/main/res/values/ic_launcher_background.xml     android/app/src/main/res/values/strings.xml                    android/app/src/main/res/values/styles.xml
-android/app/src/main/res/xml/file_paths.xml
-android/app/src/test/java/com/getcapacitor/myapp/ExampleUnitTest.java
-android/build.gradle
-android/capacitor.settings.gradle                              android/gradle.properties                                      android/gradle/wrapper/gradle-wrapper.jar
-android/gradle/wrapper/gradle-wrapper.properties
-android/gradlew
-android/gradlew.bat                                            android/settings.gradle
-android/variables.gradle
-capacitor.config.json                                          eslint.config.js
-index.html
-log.txt
-migrate-structure.mjs
-mizan-icons/android/play_store_512.png
-mizan-icons/android/res/mipmap-anydpi-v26/ic_launcher.xml
-mizan-icons/android/res/mipmap-hdpi/ic_launcher.png
-mizan-icons/android/res/mipmap-hdpi/ic_launcher_background.png
-mizan-icons/android/res/mipmap-hdpi/ic_launcher_foreground.png mizan-icons/android/res/mipmap-hdpi/ic_launcher_monochrome.png
-mizan-icons/android/res/mipmap-mdpi/ic_launcher.png            mizan-icons/android/res/mipmap-mdpi/ic_launcher_background.png
-mizan-icons/android/res/mipmap-mdpi/ic_launcher_foreground.png
-mizan-icons/android/res/mipmap-mdpi/ic_launcher_monochrome.png mizan-icons/android/res/mipmap-xhdpi/ic_launcher.png
-mizan-icons/android/res/mipmap-xhdpi/ic_launcher_background.pngmizan-icons/android/res/mipmap-xhdpi/ic_launcher_foreground.png
-mizan-icons/android/res/mipmap-xhdpi/ic_launcher_monochrome.png
-mizan-icons/android/res/mipmap-xxhdpi/ic_launcher.png          mizan-icons/android/res/mipmap-xxhdpi/ic_launcher_background.png                                                              mizan-icons/android/res/mipmap-xxhdpi/ic_launcher_foreground.png
-mizan-icons/android/res/mipmap-xxhdpi/ic_launcher_monochrome.png
-mizan-icons/android/res/mipmap-xxxhdpi/ic_launcher.png
-mizan-icons/android/res/mipmap-xxxhdpi/ic_launcher_background.png
-mizan-icons/android/res/mipmap-xxxhdpi/ic_launcher_foreground.png
-mizan-icons/android/res/mipmap-xxxhdpi/ic_launcher_monochrome.png                                                             mizan-icons/ios/AppIcon-20@2x.png
-mizan-icons/ios/AppIcon-20@2x~ipad.png
-mizan-icons/ios/AppIcon-20@3x.png
-mizan-icons/ios/AppIcon-20~ipad.png                            mizan-icons/ios/AppIcon-29.png                                 mizan-icons/ios/AppIcon-29@2x.png                              mizan-icons/ios/AppIcon-29@2x~ipad.png
-mizan-icons/ios/AppIcon-29@3x.png
-mizan-icons/ios/AppIcon-29~ipad.png
-mizan-icons/ios/AppIcon-40@2x.png                              mizan-icons/ios/AppIcon-40@2x~ipad.png
-mizan-icons/ios/AppIcon-40@3x.png
-mizan-icons/ios/AppIcon-40~ipad.png                            mizan-icons/ios/AppIcon-60@2x~car.png
-mizan-icons/ios/AppIcon-60@3x~car.png
-mizan-icons/ios/AppIcon-83.5@2x~ipad.png
-mizan-icons/ios/AppIcon@2x.png
-mizan-icons/ios/AppIcon@2x~ipad.png
-mizan-icons/ios/AppIcon@3x.png
-mizan-icons/ios/AppIcon~ios-marketing.png
-mizan-icons/ios/AppIcon~ipad.png                               mizan-icons/ios/Contents.json
-mizan-icons/web/README.txt                                     mizan-icons/web/apple-touch-icon.png                           mizan-icons/web/favicon.ico                                    mizan-icons/web/icon-192-maskable.png                          mizan-icons/web/icon-192.png                                   mizan-icons/web/icon-512-maskable.png                          mizan-icons/web/icon-512.png                                   package-lock.json                                              package.json                                                   public/assets/sql-wasm-browser.wasm                            public/assets/sql-wasm.wasm                                    public/favicon-64.png                                          public/favicon.ico                                             public/icons/apple-touch-icon.png                              public/icons/icon-192.png                                      public/icons/icon-512.png                                      public/icons/icon-96.png                                       public/icons/icon-source.svg
-resources/icon.png                                             src/App.jsx
-src/components/budget/CategoryIcon.jsx                         src/components/budget/CategoryIcon.module.scss                 src/components/budget/TransactionFormModal.jsx                 src/components/budget/TransactionFormModal.module.scss         src/components/budget/charts/DonutChart.jsx                    src/components/budget/charts/DonutChart.module.scss
-src/components/budget/charts/MonthlyBarChart.jsx               src/components/budget/charts/MonthlyBarChart.module.scss
-src/components/budget/icons/transactionsIcons.jsx              src/components/budget/insights/InsightsGrid.jsx                src/components/budget/insights/InsightsGrid.module.scss        src/components/budget/limits/BudgetLimitsSection.jsx
-src/components/budget/limits/BudgetLimitsSection.module.scss   src/components/budget/limits/LimitFormModal.jsx
-src/components/budget/limits/LimitFormModal.module.scss        src/components/budget/limits/LimitProgressCard.jsx
-src/components/budget/limits/LimitProgressCard.module.scss     src/components/budget/limits/LimitsOverview.jsx
-src/components/budget/limits/LimitsOverview.module.scss        src/components/budget/settings/AboutSection.jsx
-src/components/budget/settings/AboutSection.module.scss        src/components/budget/settings/CategoriesSection.jsx           src/components/budget/settings/CategoriesSection.module.scss
-src/components/budget/settings/CategoryFormModal.jsx           src/components/budget/settings/CategoryFormModal.module.scss
-src/components/budget/settings/DataSection.jsx
-src/components/budget/settings/DataSection.module.scss         src/components/budget/transactions/TransactionRow.jsx          src/components/budget/transactions/TransactionRow.module.scss  src/components/budget/transactions/TransactionsFilters.jsx
-src/components/budget/transactions/TransactionsFilters.module.scss                                                            src/components/budget/transactions/TransactionsList.jsx
-src/components/budget/transactions/TransactionsList.module.scss
-src/components/budget/transactions/TransactionsSummary.jsx     src/components/budget/transactions/TransactionsSummary.module.scss
-src/components/budget/transactions/TransactionsTopBar.jsx      src/components/budget/transactions/TransactionsTopBar.module.scss                                                             src/components/budget/transactions/lib/transactionsHelpers.js  src/components/pwa/InstallPrompt.jsx
-src/components/pwa/InstallPrompt.module.scss                   src/components/ui/BottomNav/BottomNav.jsx
-src/components/ui/BottomNav/BottomNav.module.scss              src/components/ui/Button/Button.jsx                            src/components/ui/Button/Button.module.scss                    src/components/ui/ConfirmModal.jsx                             src/components/ui/ConfirmModal.module.scss                     src/components/ui/EmptyState.jsx
-src/components/ui/EmptyState.module.scss                       src/components/ui/Icon.jsx
-src/components/ui/Modal.jsx                                    src/components/ui/Modal.module.scss
-src/components/ui/PromptModal.jsx                              src/components/ui/PromptModal.module.scss                      src/components/ui/Skeleton.jsx                                 src/components/ui/Skeleton.module.scss                         src/components/ui/ThemeToggle.jsx                              src/components/ui/ThemeToggle.module.scss
-src/components/zekr/sabh/ActionButtons.jsx                     src/components/zekr/sabh/ActionButtons.module.scss             src/components/zekr/sabh/AdhkarSelect.jsx                      src/components/zekr/sabh/AdhkarSelect.module.scss
-src/components/zekr/sabh/FocusMode.jsx                         src/components/zekr/sabh/FocusMode.module.scss                 src/components/zekr/sabh/GroupModeView.jsx                     src/components/zekr/sabh/GroupModeView.module.scss
-src/components/zekr/sabh/GroupSelect.jsx                       src/components/zekr/sabh/GroupSelect.module.scss               src/components/zekr/sabh/SabhModeTabs.jsx                      src/components/zekr/sabh/SabhModeTabs.module.scss
-src/components/zekr/sabh/Tabs.jsx                              src/components/zekr/sabh/Tabs.module.scss
-src/components/zekr/sabh/ZekrDisplay.jsx                       src/components/zekr/sabh/ZekrDisplay.module.scss               src/components/zekr/settings/AboutSection.jsx                  src/components/zekr/settings/AboutSection.module.scss
-src/components/zekr/settings/AdhkarFormModal.jsx               src/components/zekr/settings/AdhkarFormModal.module.scss       src/components/zekr/settings/AdhkarSection.jsx                 src/components/zekr/settings/AdhkarSection.module.scss
-src/components/zekr/settings/AppearanceSection.jsx             src/components/zekr/settings/AppearanceSection.module.scss
-src/components/zekr/settings/DataSection.jsx                   src/components/zekr/settings/DataSection.module.scss
-src/components/zekr/settings/GroupEditorModal.jsx              src/components/zekr/settings/GroupEditorModal.module.scss
-src/components/zekr/settings/GroupFormModal.jsx                src/components/zekr/settings/GroupFormModal.module.scss        src/components/zekr/settings/GroupsSection.jsx                 src/components/zekr/settings/GroupsSection.module.scss         src/components/zekr/settings/SettingsAccordionContext.jsx      src/components/zekr/settings/SettingsSection.jsx
-src/components/zekr/settings/SettingsSection.module.scss       src/components/zekr/settings/SettingsSectionNav.jsx            src/components/zekr/settings/SettingsSectionNav.module.scss    src/components/zekr/settings/SettingsTab.jsx
-src/components/zekr/settings/SettingsTab.module.scss           src/components/zekr/stats/BarChart.jsx                         src/components/zekr/stats/BarChart.module.scss                 src/components/zekr/stats/ComparisonCard.jsx
-src/components/zekr/stats/ComparisonCard.module.scss           src/components/zekr/stats/EmptyStats.jsx                       src/components/zekr/stats/EmptyStats.module.scss               src/components/zekr/stats/PeriodTabs.jsx
-src/components/zekr/stats/PeriodTabs.module.scss               src/components/zekr/stats/StatsTab.jsx
-src/components/zekr/stats/StatsTab.module.scss                 src/components/zekr/stats/StreakCard.jsx                       src/components/zekr/stats/StreakCard.module.scss               src/components/zekr/stats/ZekrFilter.jsx
-src/components/zekr/stats/ZekrFilter.module.scss               src/contexts/BudgetContext.jsx                                 src/contexts/ThemeContext.jsx                                  src/contexts/Toast.module.scss
-src/contexts/ToastContext.jsx                                  src/contexts/ZekrDataContext.jsx
-src/db/adapter.js                                              src/db/index.js
-src/db/schema.js                                               src/db/seed.js
-src/hooks/useAnimatedNumber.js                                 src/hooks/useModalBackButton.jsx
-src/main.jsx                                                   src/pages/budget/Layout.jsx                                    src/pages/budget/Layout.module.scss                            src/pages/budget/Reports.jsx                                   src/pages/budget/Reports.module.scss                           src/pages/budget/Settings.jsx                                  src/pages/budget/Settings.module.scss                          src/pages/budget/Transactions.jsx                              src/pages/budget/Transactions.module.scss                      src/pages/home/AppCard.jsx                                     src/pages/home/AppCard.module.scss                             src/pages/home/ContinueCard.jsx                                src/pages/home/ContinueCard.module.scss                        src/pages/home/Home.jsx
-src/pages/home/Home.module.scss                                src/pages/home/QuickStats.jsx
-src/pages/home/QuickStats.module.scss                          src/pages/zekr/Layout.jsx
-src/pages/zekr/Layout.module.scss                              src/pages/zekr/Sabh.jsx
-src/pages/zekr/Sabh.module.scss                                src/pages/zekr/Settings.jsx                                    src/pages/zekr/Stats.jsx                                       src/services/budgetCalculator.js                               src/services/budgetService.js                                  src/services/clickBuffer.js
-src/services/statsCalculator.js                                src/services/zekrService.js                                    src/styles/_global.scss                                        src/styles/_mixins.scss
-src/styles/_tokens.scss                                        src/styles/main.scss                                           src/utils/csv.js                                               vite.config.js
+
+> frontend-react@0.0.0 build
+> vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 180 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/registerSW.js                            0.13 kB
+dist/manifest.webmanifest                     1.03 kB
+dist/index.html                               1.79 kB │ gzip:   0.84 kB
+dist/assets/BottomNav-DHiq3E7n.css            1.90 kB │ gzip:   0.76 kB
+dist/assets/CategoryIcon-B-o93h4T.css         7.50 kB │ gzip:   2.33 kB
+dist/assets/Layout-BBIRSPES.css              10.80 kB │ gzip:   3.09 kB
+dist/assets/Layout-Cemvi197.css              10.99 kB │ gzip:   3.15 kB
+dist/assets/LimitProgressCard-BP9NqvVR.css   11.22 kB │ gzip:   3.21 kB
+dist/assets/ConfirmModal-DPT91lIA.css        11.56 kB │ gzip:   3.32 kB
+dist/assets/index-BwcNu7A-.css               24.85 kB │ gzip:   5.31 kB
+dist/assets/Reports-D3mGtU7i.css             31.24 kB │ gzip:   5.53 kB
+dist/assets/Stats-CWohC4LK.css               38.33 kB │ gzip:   5.83 kB
+dist/assets/Sabh-RvGHCtOu.css                44.28 kB │ gzip:   7.71 kB
+dist/assets/Settings-BD0qRBfg.css            50.49 kB │ gzip:   6.89 kB
+dist/assets/Transactions-DyGeUggh.css        55.47 kB │ gzip:   7.50 kB
+dist/assets/Settings-DEhOvBWQ.css            73.25 kB │ gzip:   8.90 kB
+dist/assets/CategoryIcon-BdZiPXny.js          0.44 kB │ gzip:   0.33 kB
+dist/assets/useAnimatedNumber-doorxONM.js     0.52 kB │ gzip:   0.34 kB
+dist/assets/BottomNav-C1a9Upnv.js             0.64 kB │ gzip:   0.40 kB
+dist/assets/web-DuhME_Rc.js                   0.84 kB │ gzip:   0.40 kB
+dist/assets/Layout-4pwLSqP0.js                2.09 kB │ gzip:   0.88 kB
+dist/assets/Layout-DSG0mRq1.js                2.20 kB │ gzip:   0.91 kB
+dist/assets/ConfirmModal-Chr49u9l.js          3.53 kB │ gzip:   1.49 kB
+dist/assets/LimitProgressCard-BYHl_3qP.js     3.65 kB │ gzip:   1.39 kB
+dist/assets/web-3Q9e53Io.js                   9.46 kB │ gzip:   1.31 kB
+dist/assets/Stats-Cx4fUV0j.js                17.68 kB │ gzip:   5.75 kB
+dist/assets/Reports-CrzimDOn.js              18.60 kB │ gzip:   5.45 kB
+dist/assets/Settings-BL80uoxE.js             28.04 kB │ gzip:   7.94 kB
+dist/assets/Sabh-B0KnoM_z.js                 31.43 kB │ gzip:   9.40 kB
+dist/assets/Transactions-D2vlXahi.js         37.53 kB │ gzip:  11.76 kB
+dist/assets/Settings-BvHO5aJq.js             42.79 kB │ gzip:  11.17 kB
+dist/assets/jeep-sqlite.entry-DS036nf-.js   285.31 kB │ gzip:  77.93 kB
+dist/assets/index-K8tSdbCi.js               373.27 kB │ gzip: 115.37 kB
+
+✓ built in 7.07s
 
 > frontend-react@0.0.0 lint
 > eslint .
@@ -188,9 +112,6 @@ Calling setState synchronously within an effect body causes cascading renders th
   20 |       setType(initial.type || 'expense')
   21 |       setIcon(initial.icon || '📦')
   22 |       setColor(initial.color || '#059669')  react-hooks/set-state-in-effect
-
-/data/data/com.termux/files/home/mizan/src/components/budget/transactions/TransactionsList.jsx
-  98:43  error  'onAdd' is not defined  no-undef
 
 /data/data/com.termux/files/home/mizan/src/components/ui/PromptModal.jsx
   22:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
@@ -576,5 +497,5 @@ Calling setState synchronously within an effect body causes cascading renders th
   226 |
   227 |   // ─── Render ───  react-hooks/set-state-in-effect
 
-✖ 35 problems (34 errors, 1 warning)
+✖ 34 problems (33 errors, 1 warning)
 
