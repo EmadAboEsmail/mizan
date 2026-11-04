@@ -64,7 +64,9 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2,wasm}"],
+        mode: "development",   // ← أضفه: يتخطى تصغير terser (تجربة تشخيصية)
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2,wasm}"]
+        , globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2,wasm}"],
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
