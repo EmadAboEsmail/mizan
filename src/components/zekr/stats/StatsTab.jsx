@@ -11,9 +11,9 @@ import EmptyStats from './EmptyStats.jsx'
 import StreakCard from './StreakCard.jsx'
 import ComparisonCard from './ComparisonCard.jsx'
 import styles from './StatsTab.module.scss'
+
 const VALID_PERIODS = ['day', 'week', 'month', 'year']
 
-// تسمية الفترة حسب الـ period
 const PERIOD_LABELS = {
   day: 'ساعة',
   week: 'يوم',
@@ -42,9 +42,11 @@ const DownloadIcon = () => (
 function StatsTab() {
   const { allAdhkar } = useZekrData()
   const [searchParams, setSearchParams] = useSearchParams()
+
   // Streak state
   const [streak, setStreak] = useState(null)
   const [streakLoading, setStreakLoading] = useState(true)
+
   // ===========================
   // URL state
   // ===========================
@@ -97,6 +99,7 @@ function StatsTab() {
   // Fetch stats
   useEffect(() => {
     let isCurrent = true
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     setError(null)
 
@@ -119,9 +122,11 @@ function StatsTab() {
       isCurrent = false
     }
   }, [period, zekrId, refreshTick])
+
   // Fetch streak
   useEffect(() => {
     let isCurrent = true
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStreakLoading(true)
 
     getStreak()
@@ -141,7 +146,8 @@ function StatsTab() {
     return () => {
       isCurrent = false
     }
-  }, [refreshTick]) // ✅ يتحدث مع كل retry
+  }, [refreshTick])
+
   const retry = () => setRefreshTick((t) => t + 1)
 
   // ===========================
@@ -150,55 +156,57 @@ function StatsTab() {
   const animatedTotal = useAnimatedNumber(stats?.total ?? 0)
 
   // ===========================
-  // Derived data
+  // Derived data — memoized for stable references
   // ===========================
+  const breakdown = useMemo(() => stats?.breakdown ?? [], [stats?.breakdown])
+  const labels = useMemo(() => stats?.labels ?? [], [stats?.labels])
+  const values = useMemo(() => stats?.values ?? [], [stats?.values])
+
   const formatNumber = (num) =>
     typeof num === 'number' ? num.toLocaleString('en') : num || 0
 
   const topZekr = useMemo(() => {
-    if (!stats?.breakdown?.length) return null
-    return stats.breakdown.reduce(
+    if (!breakdown.length) return null
+    return breakdown.reduce(
       (prev, curr) => (curr.count > prev.count ? curr : prev),
-      stats.breakdown[0]
+      breakdown[0]
     )
-  }, [stats?.breakdown])
+  }, [breakdown])
 
   const animatedTopCount = useAnimatedNumber(topZekr?.count ?? 0)
 
   const maxBreakdownCount = useMemo(() => {
-    if (!stats?.breakdown?.length) return 1
-    return Math.max(...stats.breakdown.map((i) => i.count), 1)
-  }, [stats?.breakdown])
+    if (!breakdown.length) return 1
+    return Math.max(...breakdown.map((i) => i.count), 1)
+  }, [breakdown])
 
-  // ✅ أفضل/أسوأ فترة (من labels/values)
   const bestPeriod = useMemo(() => {
-    if (!stats?.labels?.length || !stats?.values?.length) return null
+    if (!labels.length || !values.length) return null
     let bestIdx = -1
     let bestVal = -1
-    stats.values.forEach((val, i) => {
+    values.forEach((val, i) => {
       if (val > bestVal) {
         bestVal = val
         bestIdx = i
       }
     })
     if (bestIdx === -1 || bestVal <= 0) return null
-    return { label: stats.labels[bestIdx], value: bestVal }
-  }, [stats?.labels, stats?.values])
+    return { label: labels[bestIdx], value: bestVal }
+  }, [labels, values])
 
   const worstPeriod = useMemo(() => {
-    if (!stats?.labels?.length || !stats?.values?.length) return null
-    // نبحث عن أقل قيمة > 0 (تجاهل الأيام اللي مفيش فيها تسبيح)
+    if (!labels.length || !values.length) return null
     let worstIdx = -1
     let worstVal = Infinity
-    stats.values.forEach((val, i) => {
+    values.forEach((val, i) => {
       if (val > 0 && val < worstVal) {
         worstVal = val
         worstIdx = i
       }
     })
     if (worstIdx === -1) return null
-    return { label: stats.labels[worstIdx], value: worstVal }
-  }, [stats?.labels, stats?.values])
+    return { label: labels[worstIdx], value: worstVal }
+  }, [labels, values])
 
   const animatedBestValue = useAnimatedNumber(bestPeriod?.value ?? 0)
 
@@ -219,19 +227,14 @@ function StatsTab() {
 
     const rows = []
 
-    // 1. صفوف الفترات (labels/values)
-    const labels = stats.labels ?? []
-    const values = stats.values ?? []
     labels.forEach((label, i) => {
       rows.push(['فترة', label, values[i] ?? 0, ''])
     })
 
-      // 2. صفوف تفاصيل الأذكار
       ; (stats.breakdown ?? []).forEach((item) => {
         rows.push(['ذكر', '', item.count, item.text])
       })
 
-    // لو مفيش بيانات
     if (rows.length === 0) {
       rows.push(['—', 'لا توجد بيانات', 0, ''])
     }
@@ -261,7 +264,6 @@ function StatsTab() {
       <PeriodTabs value={period} onChange={setPeriod} />
       <ZekrFilter adhkar={allAdhkar} value={zekrId} onChange={setZekrId} />
 
-      {/* شريط الأدوات */}
       {stats && stats.total > 0 && (
         <div className={styles.toolbar}>
           <button
@@ -285,7 +287,6 @@ function StatsTab() {
         </div>
       )}
 
-      {/* Skeleton */}
       {loading && !stats && (
         <div className={styles.skeletonContainer}>
           <div className={styles.skeletonCards}>
@@ -328,7 +329,6 @@ function StatsTab() {
         </div>
       )}
 
-      {/* Content */}
       {stats && (
         <div className={`${styles.content} ${loading ? styles.updating : ''}`}>
           <div className={styles.metricsGrid}>
@@ -337,12 +337,10 @@ function StatsTab() {
               <span className={styles.metricValue}>
                 {formatNumber(animatedTotal)}
               </span>
-              {/* 🔥 Streak */}
               {streak && (streak.current > 0 || streak.longest > 0) && (
                 <StreakCard streak={streak} loading={streakLoading} />
               )}
 
-              {/* 📈 Comparison */}
               {stats.comparison && (
                 <ComparisonCard
                   comparison={stats.comparison}
@@ -392,7 +390,7 @@ function StatsTab() {
             )}
           </div>
 
-          <BarChart labels={stats.labels ?? []} values={stats.values ?? []} />
+          <BarChart labels={labels} values={values} />
 
           {stats.breakdown && stats.breakdown.length > 0 ? (
             <div className={styles.breakdownSection}>
