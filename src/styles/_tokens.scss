@@ -56,6 +56,7 @@
   // 4. Brand — Zekr (Forest)
   // ═══════════════════════════════════════════════════════
   --zekr: #2D6A4F;
+  --zekr-text: #2D6A4F;
   --zekr-soft: rgba(45, 106, 79, 0.10);
   --zekr-border: rgba(45, 106, 79, 0.25);
   --zekr-glow: rgba(45, 106, 79, 0.18);
@@ -66,6 +67,7 @@
   // 5. Brand — Budget (Terracotta)
   // ═══════════════════════════════════════════════════════
   --budget: #C68B3C;
+  --budget-text: #94682D;
   --budget-soft: rgba(198, 139, 60, 0.10);
   --budget-border: rgba(198, 139, 60, 0.28);
   --budget-glow: rgba(198, 139, 60, 0.20);
@@ -358,6 +360,7 @@ body.dark {
 
   // Zekr
   --zekr: #4A9A75;
+  --zekr-text: #4A9A75;
   --zekr-soft: rgba(74, 154, 117, 0.14);
   --zekr-border: rgba(74, 154, 117, 0.30);
   --zekr-glow: rgba(74, 154, 117, 0.22);
@@ -366,6 +369,7 @@ body.dark {
 
   // Budget
   --budget: #E5A552;
+  --budget-text: #E5A552;
   --budget-soft: rgba(229, 165, 82, 0.14);
   --budget-border: rgba(229, 165, 82, 0.30);
   --budget-glow: rgba(229, 165, 82, 0.22);

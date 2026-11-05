@@ -145,8 +145,8 @@
 .tagline {
   font-size: 0.78rem;
   font-weight: 600;
-  color: var(--accent);
   letter-spacing: 0.2px;
+color: var(--accent-text);   // كان var(--accent)
 }
 
 .description {
