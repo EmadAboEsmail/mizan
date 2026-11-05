@@ -29,7 +29,6 @@ import {
   deleteGroupItem,
   getBackup,
   restoreBackup,
-  // ... الموجود
   importLegacy as apiImportLegacy,
 } from '@/services/zekrService.js'
 import { useToast } from '@/hooks/useToast.js'
@@ -104,16 +103,19 @@ export function ZekrDataProvider({ children }) {
       })
   }, [])
 
+  // ✅ Effect: تحميل أولي — eslint-disable مقصود (data-fetch، مش derived)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadInitialData()
   }, [loadInitialData])
 
-  // اختيار أول ذكر تلقائياً عند حذف الذكر الحالي
-  useEffect(() => {
-    if (allAdhkar.length > 0 && !allAdhkar.some((z) => z.id === currentZekrId)) {
-      setCurrentZekrId(allAdhkar[0].id)
-    }
-  }, [allAdhkar, currentZekrId])
+  // ✅ Adjust during render — بدل useEffect لاختيار أول ذكر تلقائياً
+  if (
+    allAdhkar.length > 0 &&
+    !allAdhkar.some((z) => z.id === currentZekrId)
+  ) {
+    setCurrentZekrId(allAdhkar[0].id)
+  }
 
   // ===========================
   // التسبيح (Optimistic + pendingRef)
@@ -368,7 +370,6 @@ export function ZekrDataProvider({ children }) {
     try {
       const data = JSON.parse(fileContent)
 
-      // ✅ dedupe قبل الإرسال للسيرفر لمنع التكرار
       const sanitized = {
         ...data,
         adhkar: dedupeById(data?.adhkar),
@@ -392,7 +393,6 @@ export function ZekrDataProvider({ children }) {
   // القيمة المصدّرة
   // ===========================
   const value = {
-    // Data
     allAdhkar,
     counts,
     targets,
@@ -401,9 +401,7 @@ export function ZekrDataProvider({ children }) {
     setCurrentZekrId,
     loading,
     error,
-    // Loader
     loadInitialData,
-    // Handlers
     handlePerformClick,
     handleResetForZekr,
     updateZekrTarget,
@@ -429,7 +427,11 @@ export function ZekrDataProvider({ children }) {
     }
   }
 
-  return <ZekrDataContext.Provider value={value}>{children}</ZekrDataContext.Provider>
+  return (
+    <ZekrDataContext.Provider value={value}>
+      {children}
+    </ZekrDataContext.Provider>
+  )
 }
 
 export function useZekrData() {
