@@ -1,7 +1,20 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import Modal from '@/components/ui/Modal.jsx'
 import CategoryIcon from '@/components/budget/CategoryIcon.jsx'
 import styles from './LimitFormModal.module.scss'
+
+function buildFormState(initial, availableCategories) {
+  if (initial) {
+    return {
+      categoryId: initial.category_id || '',
+      amount: String(initial.amount ?? ''),
+    }
+  }
+  return {
+    categoryId: availableCategories?.[0]?.id || '',
+    amount: '',
+  }
+}
 
 function LimitFormModal({
   isOpen,
@@ -12,43 +25,65 @@ function LimitFormModal({
   existingLimits = [],
   currentMonth,
 }) {
-  const [categoryId, setCategoryId] = useState('')
-  const [amount, setAmount] = useState('')
-  const [error, setError] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  // التصنيفات المتاحة (مصاريف فقط + مش عليها ميزانية بالفعل)
+  // ═══════════════════════════════════════════════════════════
+  // 1) الأوّل: التصنيفات المتاحة (قبل أي useState بيستخدمها)
+  // ═══════════════════════════════════════════════════════════
   const availableCategories = useMemo(() => {
     const usedCatIds = existingLimits
       .filter((l) => l.id !== initial?.id)
       .map((l) => l.category_id)
-
     return categories.filter(
       (c) => c.type === 'expense' && !usedCatIds.includes(c.id)
     )
-  }, [categories, existingLimits, initial])
+  }, [categories, existingLimits, initial?.id])
 
-  useEffect(() => {
-    if (!isOpen) return
+  // ═══════════════════════════════════════════════════════════
+  // 2) الحالة الابتدائية — lazy init
+  // ═══════════════════════════════════════════════════════════
+  const [categoryId, setCategoryId] = useState(
+    () => buildFormState(initial, availableCategories).categoryId
+  )
+  const [amount, setAmount] = useState(
+    () => buildFormState(initial, availableCategories).amount
+  )
+  const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-    if (initial) {
-      setCategoryId(initial.category_id || '')
-      setAmount(String(initial.amount ?? ''))
-    } else {
-      setCategoryId(availableCategories[0]?.id || '')
-      setAmount('')
+  // ═══════════════════════════════════════════════════════════
+  // 3) Session key + Adjust during render
+  // ═══════════════════════════════════════════════════════════
+  const sessionKey = isOpen ? (initial?.id ?? 'new') : 'closed'
+  const [lastSessionKey, setLastSessionKey] = useState(sessionKey)
+
+  if (sessionKey !== lastSessionKey) {
+    setLastSessionKey(sessionKey)
+    if (isOpen) {
+      const fresh = buildFormState(initial, availableCategories)
+      setCategoryId(fresh.categoryId)
+      setAmount(fresh.amount)
+      setError('')            // ← جديد
+      setIsSubmitting(false)  // ← جديد
     }
-    setError('')
-    setIsSubmitting(false)
-  }, [isOpen, initial, availableCategories])
+  }
 
+  // ═══════════════════════════════════════════════════════════
+  // 4) Derived category — حماية من التصنيف المحذوف/غير المتاح
+  // ═══════════════════════════════════════════════════════════
+  const effectiveCategoryId =
+    categoryId && availableCategories.some((c) => c.id === categoryId)
+      ? categoryId
+      : availableCategories[0]?.id ?? ''
+
+  // ═══════════════════════════════════════════════════════════
+  // 5) Submit
+  // ═══════════════════════════════════════════════════════════
   const handleSubmit = async (e) => {
     e.preventDefault()
 
     const trimmed = amount.trim().replace(',', '.')
     const num = Number(trimmed)
 
-    if (!categoryId) {
+    if (!effectiveCategoryId) {                    // ← تعديل
       setError('الرجاء اختيار تصنيف')
       return
     }
@@ -69,7 +104,7 @@ function LimitFormModal({
         await onConfirm(initial.id, roundedAmount)
       } else {
         await onConfirm({
-          category_id: categoryId,
+          category_id: effectiveCategoryId,        // ← تعديل
           month: currentMonth,
           amount: roundedAmount,
         })
@@ -115,13 +150,12 @@ function LimitFormModal({
             ) : (
               <div className={styles.categoryGrid}>
                 {availableCategories.map((cat) => {
-                  const isSelected = cat.id === categoryId
+                  const isSelected = cat.id === effectiveCategoryId  // ← تعديل
                   return (
                     <button
                       key={cat.id}
                       type="button"
-                      className={`${styles.catChip} ${isSelected ? styles.catSelected : ''
-                        }`}
+                      className={`${styles.catChip} ${isSelected ? styles.catSelected : ''}`}
                       onClick={() => {
                         setCategoryId(cat.id)
                         if (error) setError('')

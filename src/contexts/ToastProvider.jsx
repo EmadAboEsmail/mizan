@@ -1,26 +1,38 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
+import { ToastContext } from '@/contexts/toastContext.js'
 import styles from './Toast.module.scss'
 
-const ToastContext = createContext(null)
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
+  const counterRef = useRef(0)
+  const timeoutsRef = useRef(new Set())
 
   const showToast = useCallback((message, type = 'success') => {
-    const id = Date.now()
+    counterRef.current += 1
+    const id = counterRef.current
+
     setToasts((prev) => [...prev, { id, message, type }])
 
-    // إخفاء الإشعار بعد 3 ثواني
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id))
+      timeoutsRef.current.delete(timeoutId)
     }, 3000)
+    timeoutsRef.current.add(timeoutId)
+  }, [])
+
+  useEffect(() => {
+    const pending = timeoutsRef.current
+    return () => {
+      pending.forEach(clearTimeout)
+      pending.clear()
+    }
   }, [])
 
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
 
-      {/* حاوية الإشعارات */}
       <div className={styles.toastContainer}>
         {toasts.map((toast) => (
           <div key={toast.id} className={`${styles.toast} ${styles[toast.type]}`}>
@@ -32,8 +44,3 @@ export function ToastProvider({ children }) {
   )
 }
 
-export function useToast() {
-  const context = useContext(ToastContext)
-  if (!context) throw new Error('useToast must be used within ToastProvider')
-  return context
-}

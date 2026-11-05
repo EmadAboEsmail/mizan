@@ -6,7 +6,7 @@ import {
   exportBudgetCsv,
   importBudgetCsv,
 } from '@/services/budgetService.js'
-import { useToast } from '@/contexts/ToastContext'
+import { useToast } from '@/hooks/useToast.js'
 import { useBudget } from '@/contexts/BudgetContext'
 import Modal from '@/components/ui/Modal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
@@ -40,7 +40,7 @@ function DataSection() {
       })
       triggerDownload(blob, `budget-backup-${todayStr()}.json`)
       showToast('تم تصدير النسخة الاحتياطية')
-    } catch (err) {
+    } catch {
       showToast('فشل التصدير')
     } finally {
       setLoading(false)
@@ -76,7 +76,7 @@ function DataSection() {
         const data = JSON.parse(event.target.result)
         setPendingRestore(data)
         setConfirmType('restore')
-      } catch (err) {
+      } catch {
         showToast('ملف JSON غير صالح')
       }
     }
@@ -191,7 +191,7 @@ function DataSection() {
       )
       await reload()
       setConfirmType(null)
-    } catch (err) {
+    } catch {
       showToast('فشل المسح')
     } finally {
       setLoading(false)

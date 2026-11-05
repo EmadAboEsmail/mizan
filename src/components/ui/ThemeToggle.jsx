@@ -41,7 +41,7 @@ export default function ThemeToggle() {
     document.body.classList.toggle('dark', isDark)
     try {
       localStorage.setItem('theme', isDark ? 'dark' : 'light')
-    } catch { }
+   }catch (e){console.log(e)}
   }, [isDark])
 
   return (

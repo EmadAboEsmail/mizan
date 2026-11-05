@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { useZekrData } from '@/contexts/ZekrDataContext'
-import { useToast } from '@/contexts/ToastContext'
+import { useToast } from '@/hooks/useToast.js'
 import SettingsSection from './SettingsSection.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import styles from './DataSection.module.scss'
@@ -135,7 +135,7 @@ function DataSection() {
     try {
       await handleExportBackup()
       showToast('تم تصدير النسخة الاحتياطية بنجاح!')
-    } catch (err) {
+    } catch {
       // الـ context already shows a toast on error
     }
   }

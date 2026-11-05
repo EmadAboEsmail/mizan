@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useBudget } from '@/contexts/BudgetContext'
 import styles from './LimitsOverview.module.scss'
@@ -14,7 +13,7 @@ function LimitsOverview() {
 
   if (!currentMonth || !limits || limits.limits.length === 0) return null
 
-  const { total_limit, total_spent, total_remaining, total_percent } = limits
+  const { total_limit, total_spent, total_percent } = limits
   const status =
     total_percent >= 100 ? 'over' : total_percent >= 75 ? 'warning' : 'safe'
 

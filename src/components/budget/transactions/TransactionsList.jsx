@@ -68,11 +68,6 @@ const VirtualTransactionRow = memo(function VirtualTransactionRow({
 // ═══════════════════════════════════════
 export default function TransactionsList({
   items,
-  catMap,
-  expandedId,
-  onToggle,
-  onEdit,
-  onDelete,
   onAdd,
   listHeight,
   listWidth,

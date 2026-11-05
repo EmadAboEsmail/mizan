@@ -1,6 +1,6 @@
 import SettingsSection from './SettingsSection.jsx'
 import styles from './AboutSection.module.scss'
-import { useToast } from '@/contexts/ToastContext.jsx'
+import { useToast } from '@/hooks/useToast.js'
 
 function AboutSection() {
   // ✅ الـ hook في top-level (مش جوّه دالة)
@@ -16,7 +16,7 @@ function AboutSection() {
     if (navigator.share) {
       try {
         await navigator.share(shareData)
-      } catch (err) {
+      } catch {
         // تم إلغاء المشاركة بواسطة المستخدم — تجاهل بصمت
       }
     } else {

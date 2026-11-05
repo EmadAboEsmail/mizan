@@ -1,8 +1,7 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'   // ← useEffect اتشال
 import Modal from '@/components/ui/Modal.jsx'
 import styles from './GroupEditorModal.module.scss'
 
-// أيقونات SVG خفيفة
 const ArrowUpIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="18 15 12 9 6 15" />
@@ -50,18 +49,28 @@ function GroupEditorModal({
   const [searchAvailable, setSearchAvailable] = useState('')
   const [busyId, setBusyId] = useState(null)
 
-  useEffect(() => {
-    if (!isOpen) {
+  // ═══════════════════════════════════════════════════════════
+  // ✅ Session key + Adjust during render
+  //    بدل useEffect: reset الحالة عند كل فتحة جديدة
+  // ═══════════════════════════════════════════════════════════
+  const sessionKey = isOpen ? (group?.id ?? 'open') : 'closed'
+  const [lastSessionKey, setLastSessionKey] = useState(sessionKey)
+
+  if (sessionKey !== lastSessionKey) {
+    setLastSessionKey(sessionKey)
+    if (isOpen) {
       setEditingTargetId(null)
       setTempTarget('')
       setTargetError('')
       setSearchAvailable('')
       setBusyId(null)
     }
-  }, [isOpen])
+  }
 
-  // حماية آمنة لعناصر المجموعة
-  const items = group?.items ?? []
+  // ═══════════════════════════════════════════════════════════
+  // ✅ items في useMemo — مرجع مستقر عبر الـ renders
+  // ═══════════════════════════════════════════════════════════
+  const items = useMemo(() => group?.items ?? [], [group?.items])
 
   // استخراج الأذكار المتاحة وفلترتها بالبحث
   const usedIds = useMemo(() => new Set(items.map((i) => i.zekr_id)), [items])
@@ -166,7 +175,8 @@ function GroupEditorModal({
       title={group.name}
       variant="center"
       disableBackButton
-    >      <div className={styles.body}>
+    >
+      <div className={styles.body}>
         {group.description && (
           <p className={styles.description}>{group.description}</p>
         )}
@@ -192,13 +202,11 @@ function GroupEditorModal({
                     key={item.id}
                     className={`${styles.item} ${isCurrentBusy ? styles.isBusy : ''}`}
                   >
-                    {/* رقم الترتيب */}
                     <div className={styles.positionBadge}>{index + 1}</div>
 
                     <div className={styles.itemInfo}>
                       <span className={styles.itemText}>{item.text}</span>
 
-                      {/* تعديل الهدف أو عرضه */}
                       {editingTargetId === item.id ? (
                         <div className={styles.targetEditGroup}>
                           <input
@@ -250,7 +258,6 @@ function GroupEditorModal({
                       )}
                     </div>
 
-                    {/* أزرار الترتيب والحذف */}
                     <div className={styles.itemActions}>
                       <button
                         type="button"
@@ -295,7 +302,6 @@ function GroupEditorModal({
             </h4>
           </div>
 
-          {/* شريط البحث في الأذكار المتاحة */}
           {allAdhkar.length > 5 && (
             <input
               type="text"
@@ -336,4 +342,3 @@ function GroupEditorModal({
 }
 
 export default GroupEditorModal
-

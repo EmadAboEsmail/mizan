@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Modal from '@/components/ui/Modal.jsx'
 import styles from './GroupFormModal.module.scss'
 
@@ -11,21 +11,11 @@ const SUGGESTED_GROUPS = [
   'الورد اليومي',
 ]
 
-function GroupFormModal({ isOpen, onClose, onConfirm, initial = null }) {
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
+function GroupFormModalBody({ isOpen, onClose, onConfirm, initial = null }) {
+  const [name, setName] = useState(initial?.name ?? '')
+  const [description, setDescription] = useState(initial?.description ?? '')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  useEffect(() => {
-    if (isOpen) {
-      setName(initial?.name ?? '')
-      setDescription(initial?.description ?? '')
-      setError('')
-      setIsSubmitting(false)
-    }
-  }, [isOpen, initial])
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     const trimmedName = name.trim()
@@ -146,6 +136,9 @@ function GroupFormModal({ isOpen, onClose, onConfirm, initial = null }) {
   )
 }
 
+function GroupFormModal(props) {
+  // لا نركّب النموذج إلا والنافذة مفتوحة، فتبدأ حالته جديدة عند كل فتح
+  return props.isOpen ? <GroupFormModalBody {...props} /> : null
+}
+
 export default GroupFormModal
-
-

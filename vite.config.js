@@ -2,61 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import { fileURLToPath, URL } from "node:url";
-import fs from "node:fs";
-import path from "node:path";
 
-// ═══════════════════════════════════════
-// نسخ الـ wasm يدوياً + force-exit
-// ═══════════════════════════════════════
-function copyWasmAndExitPlugin() {
-  let exited = false;
-
-  const doCopyAndExit = () => {
-    if (exited) return;
-    exited = true;
-
-    const src = path.resolve(
-      process.cwd(),
-      "node_modules/sql.js/dist/sql-wasm.wasm",
-    );
-    const dest = path.resolve(process.cwd(), "dist/assets/sql-wasm.wasm");
-
-    try {
-      fs.mkdirSync(path.dirname(dest), { recursive: true });
-      fs.copyFileSync(src, dest);
-      const stats = fs.statSync(dest);
-      const kb = Math.round(stats.size / 1024);
-      console.log(
-        `\n[wasm-copy] ✓ Copied sql-wasm.wasm (${kb}KB) → dist/assets/`,
-      );
-    } catch (err) {
-      console.error(`\n[wasm-copy] ✗ Failed: ${err.message}`);
-      process.exit(1);
-    }
-
-    console.log("[wasm-copy] Build complete, exiting...");
-    process.exit(0);
-  };
-
-  return {
-    name: "copy-wasm-and-exit",
-    apply: "build",
-    enforce: "post",
-
-    buildStart() {
-      setTimeout(() => {
-        if (!exited) {
-          console.error("\n[wasm-copy] HARD TIMEOUT (60s)");
-          doCopyAndExit();
-        }
-      }, 60000);
-    },
-
-    writeBundle() {
-      doCopyAndExit();
-    },
-  };
-}
 
 export default defineConfig({
   plugins: [
@@ -115,8 +61,10 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2,wasm}"],
-        navigateFallback: "/index.html",
+        mode: "development",   // ← أضفه: يتخطى تصغير terser (تجربة تشخيصية)
+        disableDevLogs: true,
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2,wasm}"]
+        , navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
           {
@@ -141,7 +89,6 @@ export default defineConfig({
       },
       devOptions: { enabled: false },
     }),
-    copyWasmAndExitPlugin(),
   ],
   base: process.env.VITE_TARGET === "android" ? "./" : "/",
   resolve: {

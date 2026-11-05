@@ -1,6 +1,5 @@
 import { query, queryOne } from '@/db/adapter.js'
 function pad2(n) { return String(n).padStart(2, '0') }
-function nowMs() { return Date.now() }
 
 function pctChange(curr, prev) {
   if (prev === 0) return curr === 0 ? 0 : 100.0

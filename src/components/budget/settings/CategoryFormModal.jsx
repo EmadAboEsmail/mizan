@@ -1,35 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Modal from '@/components/ui/Modal.jsx'
 import styles from './CategoryFormModal.module.scss'
 
 const PRESET_ICONS = ['🍔', '🚗', '🏠', '💼', '🎁', '📱', '💊', '🎮', '🛍️', '📚', '💰', '🌾', '🪨', '❓']
 const PRESET_COLORS = ['#059669', '#0ea5e9', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#84cc16', '#64748b']
 
-function CategoryFormModal({ isOpen, onClose, onConfirm, initial = null, defaultType = 'expense' }) {
-  const [name, setName] = useState('')
-  const [type, setType] = useState('expense')
-  const [icon, setIcon] = useState('📦')
-  const [color, setColor] = useState('#059669')
+function CategoryFormModalBody({ isOpen, onClose, onConfirm, initial = null, defaultType = 'expense' }) {
+  const [name, setName] = useState(initial?.name || '')
+  const [type, setType] = useState(initial ? initial.type || 'expense' : defaultType)
+  const [icon, setIcon] = useState(initial?.icon || '📦')
+  const [color, setColor] = useState(initial?.color || '#059669')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
-
-  useEffect(() => {
-    if (!isOpen) return
-    if (initial) {
-      setName(initial.name || '')
-      setType(initial.type || 'expense')
-      setIcon(initial.icon || '📦')
-      setColor(initial.color || '#059669')
-    } else {
-      setName('')
-      setType(defaultType)
-      setIcon('📦')
-      setColor('#059669')
-    }
-    setError('')
-    setSubmitting(false)
-  }, [isOpen, initial, defaultType])
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!name.trim()) {
@@ -172,6 +154,10 @@ function CategoryFormModal({ isOpen, onClose, onConfirm, initial = null, default
       </form>
     </Modal>
   )
+}
+
+function CategoryFormModal(props) {
+  return props.isOpen ? <CategoryFormModalBody {...props} /> : null
 }
 
 export default CategoryFormModal

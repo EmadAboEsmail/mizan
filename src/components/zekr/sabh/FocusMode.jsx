@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'   // ✅ إضافة
 import { createPortal } from 'react-dom'
 import styles from './FocusMode.module.scss'
 
@@ -48,10 +48,9 @@ function exitFullscreenSilent() {
       if (document.exitFullscreen) document.exitFullscreen().catch(() => { })
       else if (document.webkitExitFullscreen) document.webkitExitFullscreen()
     }
-  } catch { }
+  } catch (e) { console.log(e) }
 }
 
-// ✅ تنسيق الوقت mm:ss
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60)
   const s = seconds % 60
@@ -60,29 +59,31 @@ function formatTime(seconds) {
 
 function FocusMode({ isOpen = true, onClose, onCount, children }) {
   const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
 
   const isClosingRef = useRef(false)
-  const hasTriedFullscreenRef = useRef(false)  // ✅ محاولة fullscreen مرة واحدة
+  const hasTriedFullscreenRef = useRef(false)
   const startTimeRef = useRef(null)
 
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [sessionTime, setSessionTime] = useState(0)
 
-  // ✅ عدّاد وقت الجلسة
-  useEffect(() => {
+  // ✅ Adjust during render — لإعادة ضبط sessionTime فقط
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen)
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen)
     if (!isOpen) {
       setSessionTime(0)
-      startTimeRef.current = null
-      return
     }
-    startTimeRef.current = Date.now()
-    const interval = setInterval(() => {
-      if (startTimeRef.current) {
-        setSessionTime(Math.floor((Date.now() - startTimeRef.current) / 1000))
-      }
-    }, 1000)
-    return () => clearInterval(interval)
+  }
+
+  // ✅ Reset startTimeRef via effect (refs في effects مسموحة)
+  useEffect(() => {
+    if (!isOpen) {
+      startTimeRef.current = null
+    }
   }, [isOpen])
 
   const handleClose = useCallback(() => {
@@ -92,7 +93,7 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
     onCloseRef.current?.()
   }, [])
 
-  // ✅ Fullscreen monitoring (بدون تغييرات عن نسختك)
+  // ✅ Fullscreen monitoring
   useEffect(() => {
     if (!isOpen) return
     isClosingRef.current = false
@@ -108,6 +109,8 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
 
     document.addEventListener('fullscreenchange', handleFullscreenChange)
     document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
+    // ✅ مزامنة مع external API — استخدام شرعي للـ effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsFullscreen(!!(document.fullscreenElement || document.webkitFullscreenElement))
 
     return () => {
@@ -141,7 +144,7 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
           wakeLock?.release().catch(() => { })
           wakeLock = null
         }
-      } catch { }
+      } catch (e) { console.log(e) }
     }
     acquire()
 
@@ -175,8 +178,6 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
 
   if (!isOpen) return null
 
-  // ✅ Tap على أي مكان = تسبيح (بدون اهتزاز هنا — ZekrSabh مسؤول)
-  // ✅ Fullscreen-on-tap يشتغل مرة واحدة بس
   const handleTapScreen = async () => {
     if (!isFullscreen && !hasTriedFullscreenRef.current) {
       hasTriedFullscreenRef.current = true
@@ -226,7 +227,6 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
         </button>
       )}
 
-      {/* ✅ مؤقّت الجلسة في الركن السفلي */}
       <div className={styles.sessionTime} aria-hidden="true">
         {formatTime(sessionTime)}
       </div>
@@ -237,5 +237,6 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { attemptFullscreen }
 export default FocusMode

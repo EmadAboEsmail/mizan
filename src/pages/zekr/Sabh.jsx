@@ -250,7 +250,7 @@ function ZekrSabh() {
     if (vibrationEnabled && 'vibrate' in navigator) {
       try {
         navigator.vibrate(10)
-      } catch { }
+     }catch (e){console.log(e)}
     }
     handlePerformClick(currentZekrId)
   }, [currentZekrId, handlePerformClick, vibrationEnabled])

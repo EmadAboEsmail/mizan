@@ -31,11 +31,10 @@ export default function AppCard({ app, index = 0 }) {
       style={{
         animationDelay: `${index * 0.08 + 0.15}s`,
         '--accent': accentVar,
+        '--accent-text': `var(--${app.accent}-text)`,   // ← أضف هذا
         '--accent-soft': `var(--${app.accent}-soft)`,
-        '--accent-border': `var(--${app.accent}-border)`,
       }}
       aria-disabled={!isAvailable}
-      aria-label={`${app.name} — ${isAvailable ? 'افتح' : 'قريباً'}`}
     >
       <div className={styles.accentStrip} aria-hidden="true" />
 

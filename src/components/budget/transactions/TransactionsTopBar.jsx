@@ -28,7 +28,6 @@ export default function TransactionsTopBar({
 
   const monthLabel = getMonthLabel(currentMonth)
   const todayKey = getMonthKey(new Date())
-  const isTodayMonth = currentMonth === todayKey
   const isAllMode = !currentMonth
 
   const handlePrev = () => {
@@ -69,7 +68,7 @@ export default function TransactionsTopBar({
       } else {
         input.click()
       }
-    } catch (err) {
+    } catch {
       try {
         input.click()
       } catch (e) {

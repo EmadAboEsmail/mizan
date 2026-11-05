@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'   // ← useEffect اتشال
 import { useZekrData } from '@/contexts/ZekrDataContext'
 import SettingsSection from './SettingsSection.jsx'
 import GroupFormModal from './GroupFormModal.jsx'
@@ -47,7 +46,7 @@ function GroupsSection() {
     handleDeleteGroupItem,
   } = useZekrData()
 
-  const [formMode, setFormMode] = useState(null) // null | 'add' | { editing: group }
+  const [formMode, setFormMode] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [editorGroupId, setEditorGroupId] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -62,9 +61,12 @@ function GroupsSection() {
     )
   }, [editorGroupId, groups])
 
-  useEffect(() => {
-    if (editorGroup) setLastKnownGroup(editorGroup)
-  }, [editorGroup])
+  // ═══════════════════════════════════════════════════════════
+  // ✅ بدل useEffect — Adjust during render
+  // ═══════════════════════════════════════════════════════════
+  if (editorGroup && editorGroup !== lastKnownGroup) {
+    setLastKnownGroup(editorGroup)
+  }
 
   // لو editorGroupId موجود لكن editorGroup مؤقتاً null → استخدم lastKnown
   const effectiveGroup =
@@ -93,7 +95,6 @@ function GroupsSection() {
     }
   }
 
-  // ✅ دالة موحدة لإغلاق الـ editor (مع تنظيف lastKnownGroup)
   const closeEditor = () => {
     setEditorGroupId(null)
     setLastKnownGroup(null)
@@ -102,7 +103,6 @@ function GroupsSection() {
   return (
     <SettingsSection id="groups" title={`المجموعات (${groups.length})`}>
       <div className={styles.container}>
-        {/* شريط الإجراءات العلوي */}
         <div className={styles.topBar}>
           <p className={styles.hint}>
             رتّب أذكارك في مجموعات (مثل: أذكار الصباح، بعد الصلاة) لتكرارها تلقائياً.
@@ -117,7 +117,6 @@ function GroupsSection() {
           </button>
         </div>
 
-        {/* عرض المجموعات */}
         {groups.length === 0 ? (
           <div className={styles.emptyCard}>
             <div className={styles.emptyIcon}>📂</div>
@@ -216,7 +215,6 @@ function GroupsSection() {
         )}
       </div>
 
-      {/* نافذة إضافة / تعديل الاسم والوصف */}
       <GroupFormModal
         isOpen={formMode === 'add' || formMode?.editing != null}
         onClose={() => setFormMode(null)}
@@ -224,7 +222,6 @@ function GroupsSection() {
         initial={formMode?.editing ?? null}
       />
 
-      {/* نافذة تأكيد الحذف */}
       <ConfirmModal
         isOpen={deleteTarget !== null}
         onClose={() => setDeleteTarget(null)}
@@ -236,7 +233,6 @@ function GroupsSection() {
         danger
       />
 
-      {/* ✅ نافذة تحرير محتوى وترتيب الأذكار (اللي كانت مفقودة!) */}
       <GroupEditorModal
         isOpen={editorGroupId !== null}
         onClose={closeEditor}

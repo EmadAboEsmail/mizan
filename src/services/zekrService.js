@@ -612,7 +612,7 @@ export async function importLegacy(legacy) {
     try {
       await transaction(chunk)
       executed += chunk.length
-    } catch (err) {
+    } catch {
       console.warn(
         `[Legacy] Chunk ${i}-${i + chunk.length} failed, retrying individually`
       )

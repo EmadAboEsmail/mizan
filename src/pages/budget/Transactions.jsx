@@ -21,7 +21,6 @@ import {
 } from '@/components/budget/transactions/lib/transactionsHelpers.js'
 import styles from './Transactions.module.scss'
 
-// ✅ برة الـ component (ثابت)
 const DATE_HEADER_HEIGHT = 48
 
 function BudgetTransactions() {
@@ -93,6 +92,14 @@ function BudgetTransactions() {
     })
   }, [transactions, filterType, filterCategory, deferredSearch])
 
+  // ═══════════════════════════════════════════════════════════
+  // ✅ الحالة المشتقة — بدل useEffect
+  // ═══════════════════════════════════════════════════════════
+  const effectiveExpandedId =
+    expandedId && filteredTxns.some((t) => t.id === expandedId)
+      ? expandedId
+      : null
+
   // ─── Handlers ───
   const handleOpenAdd = useCallback(() => {
     setEditingTxn(null)
@@ -156,7 +163,7 @@ function BudgetTransactions() {
     setExpandedId((prev) => (prev === id ? null : id))
   }, [])
 
-  // ─── Flat items (headers + transactions) ───
+  // ─── Flat items ───
   const flatItems = useMemo(
     () => groupTransactionsByDate(filteredTxns),
     [filteredTxns]
@@ -171,24 +178,24 @@ function BudgetTransactions() {
       if (item.type === 'header') return DATE_HEADER_HEIGHT
 
       const { txn } = item
-      if (expandedId !== txn.id) return ROW_HEIGHT
+      if (effectiveExpandedId !== txn.id) return ROW_HEIGHT   // ← تعديل
 
-      // ✅ ارتفاع الأزرار + padding الإضافي
-      let extra = 70 // padding top + bottom + button row
+      let extra = 70
       if (txn.details) extra += 50
       if (txn.description) extra += 55
       return ROW_HEIGHT + extra
     },
-    [flatItems, expandedId]
+    [flatItems, effectiveExpandedId]                          // ← تعديل
   )
-  // ✅ virtualData — كان ناقص!
+
+  // ✅ virtualData
   const virtualData = useMemo(
     () => ({
       items: flatItems,
       catMap,
       onEdit: handleOpenEdit,
       onDelete: handleDeleteClick,
-      expandedId,
+      expandedId: effectiveExpandedId,                        // ← تعديل
       onToggle: handleToggleExpanded,
     }),
     [
@@ -196,12 +203,12 @@ function BudgetTransactions() {
       catMap,
       handleOpenEdit,
       handleDeleteClick,
-      expandedId,
+      effectiveExpandedId,                                    // ← تعديل
       handleToggleExpanded,
     ]
   )
 
-  // ─── List height (approx) ───
+  // ─── List height ───
   const listHeight = useMemo(() => {
     let total = 0
     for (let i = 0; i < flatItems.length; i++) {
@@ -210,19 +217,12 @@ function BudgetTransactions() {
     return Math.min(600, Math.max(ROW_HEIGHT * 2, total))
   }, [flatItems, getItemSize])
 
-  // ✅ effect واحد بس — بيتعامل مع expand + filter
+  // ✅ effect واحد بس
   useEffect(() => {
     if (listRef.current) {
       listRef.current.resetAfterIndex(0, true)
     }
-  }, [expandedId, flatItems.length])
-
-  // ─── Auto-close expanded row if filtered out ───
-  useEffect(() => {
-    if (!expandedId) return
-    const stillExists = filteredTxns.some((t) => t.id === expandedId)
-    if (!stillExists) setExpandedId(null)
-  }, [filteredTxns, expandedId])
+  }, [effectiveExpandedId, flatItems.length])                 // ← تعديل
 
   // ─── Render ───
   return (
@@ -254,11 +254,6 @@ function BudgetTransactions() {
 
       <TransactionsList
         items={flatItems}
-        catMap={catMap}
-        expandedId={expandedId}
-        onToggle={handleToggleExpanded}
-        onEdit={handleOpenEdit}
-        onDelete={handleDeleteClick}
         onAdd={handleOpenAdd}
         listHeight={listHeight}
         listWidth={listWidth}
