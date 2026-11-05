@@ -1,3 +1,7 @@
+/* eslint-disable react-refresh/only-export-components --
+   Context file: co-locates SETTINGS_SECTIONS constant,
+   useSettingsAccordion hook, and SettingsAccordionProvider component.
+   Splitting would require touching 12+ import sites for negligible DX gain. */
 import { createContext, useContext, useState, useEffect } from 'react'
 
 // سجل الأقسام — مصدر واحد للحقيقة
@@ -43,10 +47,8 @@ export function SettingsAccordionProvider({ children }) {
   }
 
   const scrollTo = (id) => {
-    // افتح القسم لو مقفول
     setOpenIds((prev) => (prev.includes(id) ? prev : [...prev, id]))
 
-    // استنى الـ DOM يترسم، بعدين اعمل scroll
     requestAnimationFrame(() => {
       setTimeout(() => {
         const el = document.getElementById(`settings-section-${id}`)
@@ -73,4 +75,3 @@ export function useSettingsAccordion() {
   }
   return ctx
 }
-

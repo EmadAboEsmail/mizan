@@ -1,10 +1,18 @@
+/* eslint-disable react-refresh/only-export-components */
+// Context file: co-locates ThemeProvider component + useTheme hook.
+// Splitting would require touching every import site for negligible DX gain.
 import { createContext, useContext, useEffect, useState } from 'react'
 
 const ThemeContext = createContext()
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'light'
+    try {
+      return localStorage.getItem('theme') || 'light'
+    } catch {
+      // private mode أو storage محظور — نرجع للافتراضي
+      return 'light'
+    }
   })
 
   useEffect(() => {
@@ -13,7 +21,11 @@ export function ThemeProvider({ children }) {
     } else {
       document.body.classList.remove('dark')
     }
-    localStorage.setItem('theme', theme)
+    try {
+      localStorage.setItem('theme', theme)
+    } catch {
+      // تجاهل — التخزين غير متاح
+    }
   }, [theme])
 
   const toggleTheme = () => {
