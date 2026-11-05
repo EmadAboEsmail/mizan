@@ -1,6 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
-// Context file: co-locates ThemeProvider component + useTheme hook.
-// Splitting would require touching every import site for negligible DX gain.
 import { createContext, useContext, useEffect, useState } from 'react'
 
 const ThemeContext = createContext()

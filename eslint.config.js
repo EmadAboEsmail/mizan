@@ -27,4 +27,11 @@ export default defineConfig([
     files: ['*.config.js'],
     languageOptions: { globals: globals.node },
   },
+  {
+    files: ['src/contexts/**/*.{js,jsx}'],
+    rules: {
+      // الـ Provider والـ hook في ملف واحد تفضيل واعٍ: الثمن إعادة تحميل كاملة أثناء التطوير فقط
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])
