@@ -32,7 +32,7 @@ import {
   // ... الموجود
   importLegacy as apiImportLegacy,
 } from '@/services/zekrService.js'
-import { useToast } from './ToastContext'
+import { useToast } from '@/hooks/useToast.js'
 
 const ZekrDataContext = createContext(null)
 

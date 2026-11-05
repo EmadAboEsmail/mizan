@@ -1,10 +1,7 @@
-/* eslint-disable react-refresh/only-export-components --
-   Context file: co-locates ToastProvider component + useToast hook.
-   Splitting would require touching every import site for negligible DX gain. */
-import { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
+import { ToastContext } from '@/contexts/toastContext.js'
 import styles from './Toast.module.scss'
 
-const ToastContext = createContext(null)
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
@@ -47,8 +44,3 @@ export function ToastProvider({ children }) {
   )
 }
 
-export function useToast() {
-  const context = useContext(ToastContext)
-  if (!context) throw new Error('useToast must be used within ToastProvider')
-  return context
-}

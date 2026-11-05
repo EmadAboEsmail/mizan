@@ -6,7 +6,7 @@ import {
   exportBudgetCsv,
   importBudgetCsv,
 } from '@/services/budgetService.js'
-import { useToast } from '@/contexts/ToastContext'
+import { useToast } from '@/hooks/useToast.js'
 import { useBudget } from '@/contexts/BudgetContext'
 import Modal from '@/components/ui/Modal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'

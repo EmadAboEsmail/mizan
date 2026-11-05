@@ -4,7 +4,7 @@ import { BrowserRouter, HashRouter } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
 
 import { ThemeProvider } from "./contexts/ThemeContext.jsx";
-import { ToastProvider } from "./contexts/ToastContext.jsx";
+import { ToastProvider } from "./contexts/ToastProvider.jsx";
 import { ZekrDataProvider } from "./contexts/ZekrDataContext.jsx";
 import { BudgetProvider } from "./contexts/BudgetContext.jsx";
 import { defineCustomElements } from "jeep-sqlite-current-sqljs/loader";
