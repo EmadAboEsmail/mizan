@@ -626,7 +626,6 @@ export function BudgetProvider({ children }) {
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function useBudget() {
   const ctx = useContext(BudgetContext)
   if (!ctx) throw new Error('useBudget must be inside BudgetProvider')
