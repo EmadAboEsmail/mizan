@@ -21,7 +21,7 @@ import {
   createCategory as apiCreateCat,
   updateCategory as apiUpdateCat,
   deleteCategory as apiDeleteCat,
-  importLegacyBudget as apiImportLegacyBudget,  // ⬅️ تأكد إنها موجودة
+  importLegacyBudget as apiImportLegacyBudget,
 } from '@/services/budgetService.js'
 import { useToast } from '@/hooks/useToast.js'
 
@@ -32,7 +32,6 @@ function getCurrentMonth() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
-// ✅ ترتيب موحد: الأحدث أولاً (تاريخ ثم created_at)
 function sortTxns(list) {
   return [...list].sort((a, b) => {
     if (a.date !== b.date) return a.date < b.date ? 1 : -1
@@ -40,7 +39,6 @@ function sortTxns(list) {
   })
 }
 
-// ✅ مساعد: إعادة حساب إجماليات limits بعد تغيير محلي
 function recomputeLimitTotals(prev) {
   if (!prev) return prev
   const total_limit = prev.limits.reduce((s, l) => s + l.amount, 0)
@@ -61,9 +59,6 @@ function recomputeLimitTotals(prev) {
 export function BudgetProvider({ children }) {
   const { showToast } = useToast()
 
-  // ===========================
-  // States
-  // ===========================
   const [categories, setCategories] = useState([])
   const [transactions, setTransactions] = useState([])
   const [summary, setSummary] = useState(null)
@@ -139,7 +134,6 @@ export function BudgetProvider({ children }) {
     [showToast]
   )
 
-  // ✅ helper: إعادة تحميل insights فقط (بعد كل CRUD)
   const refreshInsights = useCallback(
     async (monthOverride, compareOverride) => {
       const m = monthOverride !== undefined ? monthOverride : currentMonth
@@ -189,12 +183,11 @@ export function BudgetProvider({ children }) {
   )
 
   // ===========================
-  // Initial Load (مرة واحدة فقط)
+  // Initial Load — Effect 1
+  // ✅ REMOVED: setLoading(true) / setError(null) — both already initial values
   // ===========================
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
-    setError(null)
 
       ; (async () => {
         try {
@@ -232,7 +225,7 @@ export function BudgetProvider({ children }) {
   }, [])
 
   // ===========================
-  // ✅ Effect 1: تغيير الشهر → إعادة تحميل كل البيانات
+  // Effect 2: تغيير الشهر → إعادة تحميل كل البيانات
   // ===========================
   const isFirstMonthRef = useRef(true)
   useEffect(() => {
@@ -251,7 +244,8 @@ export function BudgetProvider({ children }) {
   }, [currentMonth])
 
   // ===========================
-  // ✅ Effect 2: تغيير المقارنة → إعادة تحميل insights فقط
+  // Effect 3: تغيير المقارنة → إعادة تحميل insights فقط
+  // ✅ REMOVED: setInsights(null) — unreachable branch (loadMonthData handles it)
   // ===========================
   const isFirstCompareRef = useRef(true)
   useEffect(() => {
@@ -260,7 +254,6 @@ export function BudgetProvider({ children }) {
       return
     }
     if (!currentMonth) {
-      setInsights(null)
       return
     }
     let cancelled = false
@@ -305,7 +298,6 @@ export function BudgetProvider({ children }) {
         created_at: Date.now(),
       })
 
-      // 1. Optimistic add
       setTransactions((prev) => sortTxns([optimistic, ...prev]))
       adjustSummary({
         income: data.type === 'income' ? data.amount : 0,
@@ -321,7 +313,6 @@ export function BudgetProvider({ children }) {
         )
         showToast('تمت إضافة المعاملة')
 
-        // ✅ تحديث limits + insights
         if (currentMonth) {
           try {
             const prevLimits = limitsRef.current
@@ -336,7 +327,6 @@ export function BudgetProvider({ children }) {
 
         return enriched
       } catch (err) {
-        // rollback
         setTransactions((prev) => prev.filter((t) => t.id !== tempId))
         adjustSummary({
           income: data.type === 'income' ? -data.amount : 0,
@@ -602,7 +592,6 @@ export function BudgetProvider({ children }) {
   // Value
   // ===========================
   const value = {
-    // Data
     categories,
     transactions,
     summary,
@@ -612,20 +601,15 @@ export function BudgetProvider({ children }) {
     compareMonth,
     loading,
     error,
-    // Setters
     setCurrentMonth,
     setCompareMonth,
-    // Reload
     reload,
-    // Transactions CRUD
     createTransaction,
     updateTransaction,
     deleteTransaction,
-    // Categories CRUD
     createCategory,
     updateCategory,
     deleteCategory,
-    // Limits CRUD
     createOrUpdateLimit,
     updateLimit,
     deleteLimit,
@@ -642,6 +626,7 @@ export function BudgetProvider({ children }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useBudget() {
   const ctx = useContext(BudgetContext)
   if (!ctx) throw new Error('useBudget must be inside BudgetProvider')

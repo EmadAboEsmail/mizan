@@ -50,7 +50,7 @@ function BudgetReports() {
     insights,
     currentMonth,
     setCurrentMonth,
-    setCompareMonth,   // ✅ تصحيح typo
+    setCompareMonth,
   } = useBudget()
 
   const [compareMode, setCompareMode] = useState('prev')
@@ -77,9 +77,11 @@ function BudgetReports() {
 
   // ===========================
   // Load trend
+  // ✅ eslint-disable for legitimate data-fetch loading state
   // ===========================
   useEffect(() => {
     let cancelled = false
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTrendLoading(true)
 
     getMonthlyTrend(trendMonths, currentMonth)
@@ -174,9 +176,7 @@ function BudgetReports() {
   // ===========================
   return (
     <div className={styles.container}>
-      {/* ===========================
-          شريط اختيار الشهر
-      =========================== */}
+      {/* شريط اختيار الشهر */}
       <div className={styles.periodBar}>
         <div className={styles.monthControls}>
           <input
@@ -207,9 +207,7 @@ function BudgetReports() {
         </span>
       </div>
 
-      {/* ===========================
-          شريط اختيار فترة المقارنة
-      =========================== */}
+      {/* شريط اختيار فترة المقارنة */}
       {currentMonth && (
         <div className={styles.compareBar}>
           <label className={styles.compareLabel}>
@@ -247,9 +245,7 @@ function BudgetReports() {
         </div>
       )}
 
-      {/* ===========================
-          Empty state للفترة
-      =========================== */}
+      {/* Empty state للفترة */}
       {!hasData ? (
         <div className={styles.empty}>
           <div className={styles.emptyIcon}>📊</div>
@@ -262,9 +258,7 @@ function BudgetReports() {
         </div>
       ) : (
         <>
-          {/* ===========================
-              Summary Cards
-          =========================== */}
+          {/* Summary Cards */}
           <div className={styles.summaryCards}>
             <div className={`${styles.card} ${styles.income}`}>
               <span className={styles.cardLabel}>إجمالي الدخل</span>
@@ -290,9 +284,7 @@ function BudgetReports() {
             </div>
           </div>
 
-          {/* ===========================
-              KPIs
-          =========================== */}
+          {/* KPIs */}
           {insights && (
             <InsightsGrid
               insights={insights}
@@ -304,9 +296,7 @@ function BudgetReports() {
             />
           )}
 
-          {/* ===========================
-              توزيع المصاريف (Donut)
-          =========================== */}
+          {/* توزيع المصاريف (Donut) */}
           <section className={styles.section}>
             <div className={styles.sectionHeader}>
               <h3 className={styles.sectionTitle}>توزيع المصاريف</h3>
@@ -329,9 +319,7 @@ function BudgetReports() {
             )}
           </section>
 
-          {/* ===========================
-              تقدم الميزانية
-          =========================== */}
+          {/* تقدم الميزانية */}
           {limits && limits.limits.length > 0 && (
             <section className={styles.section}>
               <div className={styles.sectionHeader}>
@@ -355,9 +343,7 @@ function BudgetReports() {
             </section>
           )}
 
-          {/* ===========================
-              أعلى التصنيفات
-          =========================== */}
+          {/* أعلى التصنيفات */}
           {topCategories.length > 0 && (
             <section className={styles.section}>
               <div className={styles.sectionHeader}>
@@ -403,9 +389,7 @@ function BudgetReports() {
         </>
       )}
 
-      {/* ===========================
-          الاتجاه الشهري (Trend)
-      =========================== */}
+      {/* الاتجاه الشهري (Trend) */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
           <h3 className={styles.sectionTitle}>
@@ -436,7 +420,7 @@ function BudgetReports() {
         ) : (
           <MonthlyBarChart
             data={trend}
-            highlightMonth={currentMonth}   // ✅ تصحيح highLightMonth
+            highlightMonth={currentMonth}
           />
         )}
       </section>
