@@ -1,4 +1,4 @@
-package com.zekr.app;
+package app.mizan;
 
 import com.getcapacitor.BridgeActivity;
 
