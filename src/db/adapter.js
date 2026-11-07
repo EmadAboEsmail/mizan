@@ -107,7 +107,6 @@ export async function initAdapter() {
     existing = !!res.result
   } catch (err) {
     console.warn('[DB] isConnection failed:', err?.message)
-    existing = false
   }
 
   // 6. retrieve أو create
