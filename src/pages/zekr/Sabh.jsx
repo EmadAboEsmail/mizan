@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useZekrData } from '@/contexts/ZekrDataContext'
 import ZekrDisplay from '@/components/zekr/sabh/ZekrDisplay.jsx'
@@ -12,18 +12,9 @@ import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import FocusMode, {
   attemptFullscreen,
 } from '@/components/zekr/sabh/FocusMode.jsx'
+import { useVibrationEnabled } from '@/hooks/useVibrationEnabled'
 import styles from './Sabh.module.scss'
 
-// هل الاهتزاز مفعل؟ (افتراضي: نعم)
-function useVibrationEnabled() {
-  return useMemo(() => {
-    try {
-      return localStorage.getItem('zekr:vibration') !== 'off'
-    } catch {
-      return true
-    }
-  }, [])
-}
 
 // Wake Lock Hook — يمنع إطفاء الشاشة في وضع التركيز
 function useWakeLock(active) {
@@ -250,7 +241,7 @@ function ZekrSabh() {
     if (vibrationEnabled && 'vibrate' in navigator) {
       try {
         navigator.vibrate(10)
-     }catch (e){console.log(e)}
+      } catch (e) { console.log(e) }
     }
     handlePerformClick(currentZekrId)
   }, [currentZekrId, handlePerformClick, vibrationEnabled])
@@ -258,6 +249,9 @@ function ZekrSabh() {
   const handleConfirmReset = async () => {
     if (!currentZekrId) return
     await handleResetForZekr(currentZekrId)
+    if (isFocusMode) {
+      setFocusSessionStart(0)
+    }
     setIsResetModalOpen(false)
   }
 

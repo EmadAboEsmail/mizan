@@ -18,6 +18,7 @@
     "@capacitor/app": "^8.1.2",
     "@capacitor/cli": "^8.5.3",
     "@capacitor/core": "^8.5.3",
+    "@capacitor/haptics": "^8.0.2",
     "@capacitor/status-bar": "^8.0.4",
     "@img/sharp-wasm32": "^0.35.5",
     "jeep-sqlite-current-sqljs": "^2.9.2",

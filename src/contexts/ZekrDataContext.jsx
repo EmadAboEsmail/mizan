@@ -32,7 +32,7 @@ import {
   importLegacy as apiImportLegacy,
 } from '@/services/zekrService.js'
 import { useToast } from '@/hooks/useToast.js'
-
+import { Haptics, ImpactStyle } from '@capacitor/haptics'
 const ZekrDataContext = createContext(null)
 
 // ===========================
@@ -135,6 +135,7 @@ export function ZekrDataProvider({ children }) {
         0,
         (pendingRef.current[zekrId] || 1) - 1
       )
+      Haptics.impact({ style: ImpactStyle.Light })  // بدون await
 
       if (
         pendingRef.current[zekrId] === 0 &&
