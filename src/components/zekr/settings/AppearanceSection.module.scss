@@ -213,3 +213,118 @@
     opacity: 1;
   }
 }
+// ═══════════════════════════════════════
+// 🆕 الاهتزاز عند التسبيح (Vibration toggle)
+// ═══════════════════════════════════════
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding: 0.95rem 1.1rem;
+  background: var(--surface-2, var(--surface));
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.toggleRow:hover {
+  border-color: var(--border-strong, var(--border));
+}
+
+.toggleInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.toggleIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.6rem;
+  background: var(--primary-soft, rgba(5, 150, 105, 0.1));
+  color: var(--primary, #059669);
+  flex-shrink: 0;
+}
+
+.toggleText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.toggleLabel {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.toggleHint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+// ─── Switch ───
+.switch {
+  position: relative;
+  width: 2.75rem;
+  height: 1.55rem;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: var(--switch-bg, rgba(120, 120, 120, 0.35));
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.22s ease;
+}
+
+.switch:hover {
+  background: var(--switch-bg-hover, rgba(120, 120, 120, 0.5));
+}
+
+.switchOn,
+.switchOn:hover {
+  background: var(--primary, #059669);
+}
+
+.switchThumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: calc(1.55rem - 4px);
+  height: calc(1.55rem - 4px);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.switchOn .switchThumb {
+  transform: translateX(calc(2.75rem - 1.55rem));
+}
+
+// RTL: اقلب اتجاه الانزلاق
+[dir='rtl'] .switchOn .switchThumb {
+  transform: translateX(calc(-2.75rem + 1.55rem));
+  right: 2px;
+  left: auto;
+}
+
+// Dark mode adjustments
+@media (prefers-color-scheme: dark) {
+  .toggleRow {
+    background: var(--surface-2, rgba(255, 255, 255, 0.03));
+  }
+  .switch {
+    background: var(--switch-bg, rgba(255, 255, 255, 0.18));
+  }
+}

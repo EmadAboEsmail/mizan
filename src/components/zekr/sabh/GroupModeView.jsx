@@ -3,6 +3,7 @@ import GroupSelect from './GroupSelect.jsx'
 import ZekrDisplay from './ZekrDisplay.jsx'
 import ActionButtons from './ActionButtons.jsx'
 import FocusMode from '@/components/zekr/sabh/FocusMode.jsx'
+import { useVibrationEnabled } from "../../../hooks/useVibrationEnabled.js"
 import styles from './GroupModeView.module.scss'
 
 const ArrowRightIcon = () => (
@@ -23,22 +24,12 @@ const CheckIcon = () => (
   </svg>
 )
 
-function getVibrationEnabled() {
-  try {
-    return localStorage.getItem('zekr:vibration') !== 'off'
-  } catch {
-    return true
-  }
-}
 
-function vibrate(ms = 12) {
-  if (!getVibrationEnabled()) return
-  if (!('vibrate' in navigator)) return
-  try {
-    navigator.vibrate(ms)
-  } catch (e) {
-    console.log(e)
-  }
+import { triggerHapticFeedback } from '@/utils/haptics.js'
+
+function vibrate(enabled, type = 'light') {
+  if (!enabled) return
+  triggerHapticFeedback(type)
 }
 
 function GroupModeView({
@@ -54,7 +45,7 @@ function GroupModeView({
   const [showTransition, setShowTransition] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
   const [isFocusMode, setIsFocusMode] = useState(false)
-
+  const vibrationEnabled = useVibrationEnabled()
   const selectedGroup = groups.find((g) => g.id === selectedGroupId)
   const items = selectedGroup?.items ?? []
 
@@ -95,7 +86,7 @@ function GroupModeView({
       setLocalCount(0)
     } else {
       setIsComplete(true)
-      vibrate([20, 40, 20])
+      vibrate(vibrationEnabled, 'medium')
     }
   }
 
@@ -135,11 +126,11 @@ function GroupModeView({
         setLocalCount(0)
       } else {
         setIsComplete(true)
-        vibrate([20, 40, 20])
+        vibrate(vibrationEnabled, 'medium')
       }
     }, 2200)
     return () => clearTimeout(timer)
-  }, [showTransition, currentIndex, items.length])
+  }, [showTransition, currentIndex, items.length, vibrationEnabled])
 
   // ═══════════════════════════════════════════════════════════
   // ✅ Effect 3: إعادة تلقائية بعد الاكتمال (setState داخل setTimeout)
@@ -162,7 +153,7 @@ function GroupModeView({
     if (!currentItem) return
     if (currentTarget && localCount >= currentTarget) return
 
-    vibrate(10)
+    vibrate(vibrationEnabled, 'light')
     const newCount = localCount + 1
     setLocalCount(newCount)
     onAddClick(currentItem.zekr_id)
@@ -174,7 +165,7 @@ function GroupModeView({
       !showTransition &&
       !isComplete
     ) {
-      vibrate([15, 30, 15])
+      vibrate(vibrationEnabled, 'medium')
       const isLast = currentIndex === items.length - 1
       if (isLast) {
         setIsComplete(true)
