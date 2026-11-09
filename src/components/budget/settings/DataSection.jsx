@@ -1,4 +1,7 @@
 import { useState, useRef } from 'react'
+import { Capacitor } from '@capacitor/core'
+import { Filesystem, Directory } from '@capacitor/filesystem'
+import { Share } from '@capacitor/share'
 import {
   getBudgetBackup,
   restoreBudgetBackup,
@@ -6,6 +9,7 @@ import {
   exportBudgetCsv,
   importBudgetCsv,
 } from '@/services/budgetService.js'
+
 import { useToast } from '@/hooks/useToast.js'
 import { useBudget } from '@/contexts/BudgetContext'
 import Modal from '@/components/ui/Modal.jsx'
@@ -490,15 +494,41 @@ function todayStr() {
   ).padStart(2, '0')}`
 }
 
-function triggerDownload(blob, filename) {
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+async function triggerDownload(blob, filename) {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const reader = new FileReader();
+      const base64Data = await new Promise((resolve) => {
+        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(blob);
+      });
+
+      const fileName = filename;
+      const savedFile = await Filesystem.writeFile({
+        path: fileName,
+        data: base64Data,
+        directory: Directory.Cache,
+      });
+
+      await Share.share({
+        title: 'Export Mizan',
+        text: 'Backup file',
+        url: savedFile.uri,
+      });
+    } catch (err) {
+      console.error('Share failed', err);
+      throw new Error('فشل في مشاركة الملف');
+    }
+  } else {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 }
 
 export default DataSection

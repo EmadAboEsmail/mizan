@@ -1,5 +1,9 @@
 import { useState, useRef } from 'react'
+import { Capacitor } from '@capacitor/core'
+import { Filesystem, Directory } from '@capacitor/filesystem'
+import { Share } from '@capacitor/share'
 import { useZekrData } from '@/contexts/ZekrDataContext'
+
 import { useToast } from '@/hooks/useToast.js'
 import SettingsSection from './SettingsSection.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
@@ -133,11 +137,62 @@ function DataSection() {
 
   const handleExportClick = async () => {
     try {
-      await handleExportBackup()
+      setLoading(true)
+      const data = await handleExportBackup()
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: 'application/json',
+      })
+      await triggerDownload(blob, `zekr-backup-${todayStr()}.json`)
       showToast('تم تصدير النسخة الاحتياطية بنجاح!')
-    } catch {
-      // الـ context already shows a toast on error
+    } catch (err) {
+      console.error(err)
+      showToast('فشل تصدير النسخة الاحتياطية')
+    } finally {
+      setLoading(false)
     }
+  }
+
+  async function triggerDownload(blob, filename) {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const reader = new FileReader();
+        const base64Data = await new Promise((resolve) => {
+          reader.onloadend = () => resolve(reader.result.split(',')[1]);
+          reader.readAsDataURL(blob);
+        });
+
+        const savedFile = await Filesystem.writeFile({
+          path: filename,
+          data: base64Data,
+          directory: Directory.Cache,
+        });
+
+        await Share.share({
+          title: 'Export Mizan Zekr',
+          text: 'Backup file',
+          url: savedFile.uri,
+        });
+      } catch (err) {
+        console.error('Share failed', err);
+        throw new Error('فشل في مشاركة الملف');
+      }
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  function todayStr() {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
+      d.getDate()
+    ).padStart(2, '0')}`
   }
 
   // ⬅️ دالة استيراد zekr.db القديم
