@@ -1,15 +1,16 @@
 # Plan
 
-_Approved 2026-11-09 19:09_
+_Approved 2026-11-09 19:33_
 
-تعديل آليات استيراد وتصدير البيانات لتتوافق مع بيئة الأندرويد (Capacitor) بدلاً من متصفح الويب التقليدي.
+إصلاح مشاكل الهزاز (Vibration) وأزرار الصوت في تطبيق أندرويد.
 
 ## Files
 
-- src/components/budget/settings/DataSection.jsx
+- src/utils/haptics.js
+- src/pages/zekr/Sabh.jsx
 
 ## Steps
 
-1. تحديث دالة triggerDownload لتستخدم Capacitor Share/Filesystem عند اكتشاف بيئة الأندرويد، للسماح بحفظ الملفات في مجلد التنزيلات العام.
-2. إضافة خيار استيراد/تصدير إضافي لبيانات الذكر (Zekr) في واجهة DataSection أو إنشاء مكون مشابه في src/components/zekr/settings.
-3. تعديل logic الاستيراد ليعتمد على FileReader لقراءة الملفات المرفوعة من الأندرويد عبر Capacitor.
+1. تعديل `src/utils/haptics.js` لاستخدام `Haptics.vibrate` بدلاً من `Impact` وإضافة `console.log` للتشخيص.
+2. تحديث `handleVolumeButton` في `src/pages/zekr/Sabh.jsx` للتعامل بمرونة مع بيانات الحدث الواردة.
+3. دفع التعديلات لإعادة البناء عبر GitHub Actions.
