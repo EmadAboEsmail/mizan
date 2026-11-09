@@ -25,14 +25,11 @@ const CheckIcon = () => (
 )
 
 
-function vibrate(enabled, ms = 12) {
+import { triggerHapticFeedback } from '@/utils/haptics.js'
+
+function vibrate(enabled, type = 'light') {
   if (!enabled) return
-  if (!('vibrate' in navigator)) return
-  try {
-    navigator.vibrate(ms)
-  } catch (e) {
-    console.log(e)
-  }
+  triggerHapticFeedback(type)
 }
 
 function GroupModeView({
@@ -89,7 +86,7 @@ function GroupModeView({
       setLocalCount(0)
     } else {
       setIsComplete(true)
-      vibrate(vibrationEnabled, [20, 40, 20])
+      vibrate(vibrationEnabled, 'medium')
     }
   }
 
@@ -129,7 +126,7 @@ function GroupModeView({
         setLocalCount(0)
       } else {
         setIsComplete(true)
-        vibrate(vibrationEnabled, [20, 40, 20])
+        vibrate(vibrationEnabled, 'medium')
       }
     }, 2200)
     return () => clearTimeout(timer)
@@ -156,7 +153,7 @@ function GroupModeView({
     if (!currentItem) return
     if (currentTarget && localCount >= currentTarget) return
 
-    vibrate(vibrationEnabled, 10)
+    vibrate(vibrationEnabled, 'light')
     const newCount = localCount + 1
     setLocalCount(newCount)
     onAddClick(currentItem.zekr_id)
@@ -168,7 +165,7 @@ function GroupModeView({
       !showTransition &&
       !isComplete
     ) {
-      vibrate(vibrationEnabled, [15, 30, 15])
+      vibrate(vibrationEnabled, 'medium')
       const isLast = currentIndex === items.length - 1
       if (isLast) {
         setIsComplete(true)

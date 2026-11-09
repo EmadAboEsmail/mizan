@@ -71,3 +71,6 @@ Thumbs.db
 *.log
 logs/
 backend-fastapi/
+
+# devx agent tool state (local only)
+.devx/
