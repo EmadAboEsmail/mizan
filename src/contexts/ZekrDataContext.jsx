@@ -1,3 +1,4 @@
+
 import {
   createContext,
   useContext,
@@ -33,6 +34,8 @@ import {
 } from '@/services/zekrService.js'
 import { useToast } from '@/hooks/useToast.js'
 import { Haptics, ImpactStyle } from '@capacitor/haptics'
+
+import { exportJsonFile } from '@/utils/fileExport.js'; // أضف هذا في أول الملف
 const ZekrDataContext = createContext(null)
 
 // ===========================
@@ -345,28 +348,21 @@ export function ZekrDataProvider({ children }) {
   // ===========================
   // النسخ الاحتياطي (مع dedupe)
   // ===========================
+
+  // ...
+
   const handleExportBackup = async () => {
     try {
-      const backupData = await getBackup()
-      const blob = new Blob([JSON.stringify(backupData, null, 2)], {
-        type: 'application/json',
-      })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      const dateStr = new Date().toISOString().slice(0, 10)
-      a.href = url
-      a.download = `zekr-backup-${dateStr}.json`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      const backupData = await getBackup();
+      const dateStr = new Date().toISOString().slice(0, 10);
+      await exportJsonFile(`zekr-backup-${dateStr}.json`, backupData);
+      // اختياري: عرض رسالة نجاح هنا
     } catch (err) {
-      console.error('فشل تصدير النسخة الاحتياطية:', err)
-      showToast('فشل في تصدير النسخة الاحتياطية من السيرفر.')
-      throw err
+      console.error('فشل تصدير النسخة الاحتياطية:', err);
+      showToast('فشل في تصدير النسخة الاحتياطية.');
+      throw err;
     }
   }
-
   const handleImportBackup = async (fileContent) => {
     try {
       const data = JSON.parse(fileContent)

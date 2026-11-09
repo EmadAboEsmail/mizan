@@ -229,21 +229,20 @@ function ZekrSabh() {
 
   // ✅ تم نقل هذا الـ useEffect ليكون بعد تعريف handleNormalClick
   // استقبال أحداث أزرار الصوت من Native
+  // استقبال أحداث أزرار الصوت من Native
   useEffect(() => {
     const handleVolumeButton = (event) => {
-      // ❌ لا تعدّ أثناء فتح أي modal
       if (isTargetModalOpen || isResetModalOpen) return
-
-      // ❌ لا تعدّ في وضع المجموعات (له منطقه الخاص في GroupModeView)
       if (sabhMode !== 'normal') return
-
-      // ❌ لا تعدّ لو مفيش ذكر مختار
       if (!currentZekrId) return
 
       try {
-        const data = JSON.parse(event.detail || '{}')
+        // Capacitor يرسل البيانات كـ Object، والمتصفح يرسلها كـ String
+        const data = typeof event.detail === 'string'
+          ? JSON.parse(event.detail)
+          : (event.detail || {});
+
         if (data.keyCode === 24 || data.keyCode === 25) {
-          // keyCode 24 = VOLUME_UP، 25 = VOLUME_DOWN
           handleNormalClick()
         }
       } catch (err) {
@@ -254,6 +253,7 @@ function ZekrSabh() {
     window.addEventListener('volumeButtonPress', handleVolumeButton)
     return () => window.removeEventListener('volumeButtonPress', handleVolumeButton)
   }, [handleNormalClick, isTargetModalOpen, isResetModalOpen, sabhMode, currentZekrId])
+
   const handleConfirmReset = async () => {
     if (!currentZekrId) return
     await handleResetForZekr(currentZekrId)

@@ -1,23 +1,18 @@
-import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { Haptics } from '@capacitor/haptics';
 import { Capacitor } from '@capacitor/core';
 
 export const triggerHapticFeedback = async (type = 'light') => {
+  console.log('[Haptics] Triggering:', type, 'Platform:', Capacitor.getPlatform());
+  
   if (Capacitor.isNativePlatform()) {
     try {
-      if (type === 'light') {
-        await Haptics.impact({ style: ImpactStyle.Light });
-      } else if (type === 'medium') {
-        await Haptics.impact({ style: ImpactStyle.Medium });
-      } else if (type === 'heavy') {
-        await Haptics.impact({ style: ImpactStyle.Heavy });
-      }
+      await Haptics.vibrate({ duration: type === 'heavy' ? 100 : 30 });
     } catch (e) {
-      console.error('Haptics failed', e);
+      console.error('[Haptics] Failed:', e);
     }
   } else {
-    // fallback for browser
     if (navigator.vibrate) {
-      navigator.vibrate(20);
+      navigator.vibrate(type === 'heavy' ? 100 : 20);
     }
   }
 };
