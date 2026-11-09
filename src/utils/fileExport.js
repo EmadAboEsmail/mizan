@@ -23,7 +23,7 @@ export async function exportJsonFile(filename, data) {
       });
     } catch (e) {
       console.error('Export failed:', e);
-      throw new Error('فشل في حفظ أو مشاركة الملف');
+      throw new Error('فشل في حفظ أو مشاركة الملف', { cause: e });
     }
   } else {
     // Fallback for Web Browser

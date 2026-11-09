@@ -517,7 +517,7 @@ async function triggerDownload(blob, filename) {
       });
     } catch (err) {
       console.error('Share failed', err);
-      throw new Error('فشل في مشاركة الملف');
+      throw new Error('فشل في مشاركة الملف', { cause: err });
     }
   } else {
     const url = URL.createObjectURL(blob);
