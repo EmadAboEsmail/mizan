@@ -12,6 +12,12 @@ yarn-error.log*
 
 backend-fastapi/ 
 reports/
+<<<<<<< HEAD
+=======
+*.txt
+*.sh
+*.devx
+>>>>>>> ebecdb1 (feat(clean git) add folder reports and *.sh and *.txt to .gitignore)
 # ===========================
 # Python
 # ===========================
