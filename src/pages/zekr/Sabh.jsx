@@ -277,12 +277,19 @@ function ZekrSabh() {
 
   // زر تجريبي للويب
   const renderVolumeTestButton = () => {
-    if (process.env.NODE_ENV !== 'development') return null;
+    if (import.meta.env.MODE !== 'development') return null;
     return (
       <button 
         style={{ position: 'fixed', bottom: '10px', left: '10px', zIndex: 1000 }}
         onClick={() => {
           const event = new CustomEvent('volumeButtonPress', { detail: { keyCode: 24 } });
+          window.dispatchEvent(event);
+        }}
+      >
+        اختبار الصوت
+      </button>
+    );
+  };
           window.dispatchEvent(event);
         }}
       >
