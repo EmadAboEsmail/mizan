@@ -236,13 +236,18 @@ function ZekrSabh() {
       if (sabhMode !== 'normal') return
       if (!currentZekrId) return
 
-      try {
-        // Capacitor يرسل البيانات كـ Object، والمتصفح يرسلها كـ String
-        const data = typeof event.detail === 'string'
-          ? JSON.parse(event.detail)
-          : (event.detail || {});
+      console.log('[VolumeButton] Event received:', event);
 
-        if (data.keyCode === 24 || data.keyCode === 25) {
+      try {
+        // نتحقق من event.detail مباشرة أو من خلال JSON.parse إذا كانت string
+        let data = event.detail;
+        if (typeof data === 'string') {
+          data = JSON.parse(data);
+        }
+        
+        console.log('[VolumeButton] Parsed data:', data);
+
+        if (data && (data.keyCode === 24 || data.keyCode === 25)) {
           handleNormalClick()
         }
       } catch (err) {
@@ -250,9 +255,41 @@ function ZekrSabh() {
       }
     }
 
+    // محاكاة أزرار الصوت للويب
+    const handleTestVolume = (e) => {
+      // F1 = Volume Down (24), F2 = Volume Up (25)
+      if (e.key === 'F1' || e.key === 'F2') {
+        const keyCode = e.key === 'F1' ? 24 : 25;
+        const event = new CustomEvent('volumeButtonPress', {
+          detail: { keyCode }
+        });
+        window.dispatchEvent(event);
+      }
+    };
+    window.addEventListener('keydown', handleTestVolume);
+
     window.addEventListener('volumeButtonPress', handleVolumeButton)
-    return () => window.removeEventListener('volumeButtonPress', handleVolumeButton)
+    return () => {
+      window.removeEventListener('keydown', handleTestVolume);
+      window.removeEventListener('volumeButtonPress', handleVolumeButton)
+    }
   }, [handleNormalClick, isTargetModalOpen, isResetModalOpen, sabhMode, currentZekrId])
+
+  // زر تجريبي للويب
+  const renderVolumeTestButton = () => {
+    if (process.env.NODE_ENV !== 'development') return null;
+    return (
+      <button 
+        style={{ position: 'fixed', bottom: '10px', left: '10px', zIndex: 1000 }}
+        onClick={() => {
+          const event = new CustomEvent('volumeButtonPress', { detail: { keyCode: 24 } });
+          window.dispatchEvent(event);
+        }}
+      >
+        اختبار الصوت (Volume Down)
+      </button>
+    );
+  }
 
   const handleConfirmReset = async () => {
     if (!currentZekrId) return
