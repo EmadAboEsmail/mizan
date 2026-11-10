@@ -35,7 +35,7 @@ export async function seedIfEmpty() {
     return
   }
 
-  console.log('[Seed] Seeding default data...')
+  console.log('[Seed] Database is empty. Seeding default data...')
 
   const statements = []
 

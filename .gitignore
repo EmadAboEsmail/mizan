@@ -14,7 +14,9 @@ backend-fastapi/
 reports/
 *.txt
 *.sh
-*.devx
+.devx/
+*.md
+!README.md
 # ===========================
 # Python
 # ===========================

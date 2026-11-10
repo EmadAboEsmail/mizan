@@ -155,7 +155,8 @@ export async function initDB() {
     throw err
   }
 
-  // 5. Seed (بعد ما تأكدنا إن الـ schema سليمة)
+  // 5. Seed (دائمًا نشغلها للتأكد)
+  console.log('[DB] Running seedIfEmpty...')
   await seedIfEmpty()
 
   console.log('[DB] Ready ✅')
