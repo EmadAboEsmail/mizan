@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { useAutoBackup } from '@/hooks/useAutoBackup'
 
 // ═══════════════════════════════════════
 // Eager imports (يظهر فوراً)
@@ -65,6 +66,9 @@ function PageLoader() {
 // App
 // ═══════════════════════════════════════
 function App() {
+  const autoBackupEnabled = localStorage.getItem('auto_backup_enabled') === 'true';
+  const autoBackupFrequency = localStorage.getItem('auto_backup_frequency') || 'daily';
+  useAutoBackup(autoBackupEnabled, autoBackupFrequency);
   return (
     <>
       <Suspense fallback={<PageLoader />}>

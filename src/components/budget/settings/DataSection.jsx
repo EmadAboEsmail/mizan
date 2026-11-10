@@ -18,8 +18,28 @@ import styles from './DataSection.module.scss'
 
 function DataSection() {
   const { reload, importLegacyBudget } = useBudget()
+  const [autoBackupEnabled, setAutoBackupEnabled] = useState(
+    localStorage.getItem('auto_backup_enabled') === 'true'
+  )
+  const [autoBackupFrequency, setAutoBackupFrequency] = useState(
+    localStorage.getItem('auto_backup_frequency') || 'daily'
+  )
   const { showToast } = useToast()
   const [loading, setLoading] = useState(false)
+  
+  const toggleAutoBackup = (checked) => {
+    setAutoBackupEnabled(checked)
+    localStorage.setItem('auto_backup_enabled', checked)
+    showToast(checked ? 'تم تفعيل النسخ الاحتياطي التلقائي' : 'تم إيقاف النسخ الاحتياطي التلقائي')
+    window.location.reload() 
+  }
+
+  const changeFrequency = (freq) => {
+    setAutoBackupFrequency(freq)
+    localStorage.setItem('auto_backup_frequency', freq)
+    showToast('تم تحديث فترة النسخ الاحتياطي')
+    window.location.reload()
+  }
   const [confirmType, setConfirmType] = useState(null)
   const [pendingRestore, setPendingRestore] = useState(null)
   const [legacyStatus, setLegacyStatus] = useState(null)
@@ -58,7 +78,11 @@ function DataSection() {
     try {
       setLoading(true)
       const blob = await exportBudgetCsv()
-      triggerDownload(blob, `budget-transactions-${todayStr()}.csv`)
+      // إضافة BOM لدعم العربية في إكسل
+      const csvWithBOM = new Blob(['\uFEFF', blob], {
+        type: 'text/csv;charset=utf-8;',
+      })
+      triggerDownload(csvWithBOM, `budget-transactions-${todayStr()}.csv`)
       showToast('تم تصدير CSV')
     } catch (err) {
       showToast(err.message || 'فشل التصدير')
@@ -221,6 +245,34 @@ function DataSection() {
     <section className={styles.section}>
       <div className={styles.header}>
         <h3 className={styles.title}>النسخ الاحتياطي والبيانات</h3>
+      </div>
+
+      {/* ═══════════════════════════════════════
+          Backup Settings
+      ═══════════════════════════════════════ */}
+      <div className={styles.groupLabel}>⚙️ الإعدادات</div>
+      <div className={styles.card}>
+        <div className={styles.cardContent}>
+          <span className={styles.cardTitle}>النسخ الاحتياطي التلقائي</span>
+          <p className={styles.cardDesc}>حفظ نسخة تلقائية في ذاكرة الجهاز</p>
+          {autoBackupEnabled && (
+            <select
+              value={autoBackupFrequency}
+              onChange={(e) => changeFrequency(e.target.value)}
+              className={styles.selectInput}
+              style={{ marginTop: '10px' }}
+            >
+              <option value="daily">يومي</option>
+              <option value="weekly">أسبوعي</option>
+              <option value="monthly">شهري</option>
+            </select>
+          )}
+        </div>
+        <input
+          type="checkbox"
+          checked={autoBackupEnabled}
+          onChange={(e) => toggleAutoBackup(e.target.checked)}
+        />
       </div>
 
       {/* ═══════════════════════════════════════
