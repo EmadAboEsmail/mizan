@@ -12,12 +12,9 @@ yarn-error.log*
 
 backend-fastapi/ 
 reports/
-<<<<<<< HEAD
-=======
 *.txt
 *.sh
 *.devx
->>>>>>> ebecdb1 (feat(clean git) add folder reports and *.sh and *.txt to .gitignore)
 # ===========================
 # Python
 # ===========================
@@ -69,14 +66,8 @@ dev-dist/
 Thumbs.db
 *.swp
 *.swo
-*.sh
-*.txt
 # ===========================
 # Logs
 # ===========================
 *.log
 logs/
-backend-fastapi/
-
-# devx agent tool state (local only)
-.devx/
