@@ -151,11 +151,12 @@ public class MainActivity extends BridgeActivity {
             } else {
                 window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+                WindowManager.LayoutParams lp = window.getAttributes();
+                lp.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    WindowManager.LayoutParams lp = window.getAttributes();
                     lp.layoutInDisplayCutoutMode = defaultCutoutMode;
-                    window.setAttributes(lp);
                 }
+                window.setAttributes(lp);
 
                 applyNormalSystemBars();
 
@@ -166,6 +167,18 @@ public class MainActivity extends BridgeActivity {
 
             ViewCompat.requestApplyInsets(decorView);
             decorView.post(() -> ViewCompat.requestApplyInsets(decorView));
+        });
+    }
+
+    public void setScreenDim(final boolean enabled) {
+        runOnUiThread(() -> {
+            Window window = getWindow();
+            if (window == null) return;
+            WindowManager.LayoutParams lp = window.getAttributes();
+            lp.screenBrightness = enabled
+                ? 0.01f
+                : WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
+            window.setAttributes(lp);
         });
     }
 
@@ -219,12 +232,20 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (event != null && interceptVolumeKeys) {
+        if (event != null) {
             int keyCode = event.getKeyCode();
-            if (
+            boolean isVolume =
                 keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
-                keyCode == KeyEvent.KEYCODE_VOLUME_UP
-            ) {
+                keyCode == KeyEvent.KEYCODE_VOLUME_UP;
+
+            if (isVolume && PocketTasbihService.isRunning()) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
+                    PocketTasbihService.triggerFromActivity();
+                }
+                return true;
+            }
+
+            if (isVolume && interceptVolumeKeys) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
                     if (bridge != null) {
                         JSObject data = new JSObject();

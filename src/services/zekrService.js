@@ -108,6 +108,54 @@ export async function addClick(zekr_id) {
   return { count: dbCount + pending }
 }
 
+/**
+ * مزامنة التسبيحات المسجّلة أثناء قفل الشاشة (Pocket Mode) دفعة واحدة داخل SQLite.
+ * @param {Array<{ zekrId: string, hour: number, count: number }>} items
+ * @returns {Promise<number>} إجمالي التسبيحات المضافة
+ */
+export async function applyPocketClicks(items) {
+  if (!Array.isArray(items) || items.length === 0) return 0
+
+  await flushClicks()
+
+  const existingRows = await query('SELECT id FROM adhkar')
+  const validIds = new Set(existingRows.map((r) => String(r.id)))
+
+  const statements = []
+  const totalsByZekr = new Map()
+  let totalInserted = 0
+
+  for (const raw of items) {
+    const zekrId = raw?.zekrId ? String(raw.zekrId) : ''
+    const hour = Number(raw?.hour)
+    const count = Math.floor(Number(raw?.count) || 0)
+
+    if (!zekrId || !validIds.has(zekrId)) continue
+    if (!Number.isFinite(hour) || hour <= 0 || count <= 0) continue
+
+    statements.push({
+      statement: `INSERT INTO clicks_hourly (zekr_id, hour, count) VALUES (?, ?, ?)
+                  ON CONFLICT(zekr_id, hour) DO UPDATE SET count = count + excluded.count`,
+      values: [zekrId, hour, count],
+    })
+    totalsByZekr.set(zekrId, (totalsByZekr.get(zekrId) || 0) + count)
+    totalInserted += count
+  }
+
+  if (statements.length === 0) return 0
+
+  for (const [zekrId, total] of totalsByZekr) {
+    statements.push({
+      statement: `INSERT INTO counts (zekr_id, count) VALUES (?, ?)
+                  ON CONFLICT(zekr_id) DO UPDATE SET count = count + excluded.count`,
+      values: [zekrId, total],
+    })
+  }
+
+  await transaction(statements)
+  return totalInserted
+}
+
 export async function resetClick(zekr_id) {
   const zekr = await queryOne('SELECT id FROM adhkar WHERE id = ?', [zekr_id])
   if (!zekr) throw new Error('الذكر غير موجود')

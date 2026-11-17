@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Moon } from 'lucide-react'
+import { Moon, Lock } from 'lucide-react'
 import { useCurrentZekrId } from '@/contexts/ZekrDataContext'
 import { TasbihIcon } from '@/components/ui/BrandIcons.jsx'
 import {
@@ -25,6 +25,7 @@ import FocusMode, {
 } from '@/components/zekr/sabh/FocusMode.jsx'
 import { useVibrationEnabled } from '@/hooks/useVibrationEnabled'
 import { useVolumeButton } from '@/hooks/useVolumeButton.js'
+import { usePocketTasbih } from '@/hooks/usePocketTasbih.js'
 import { triggerHapticFeedback } from '@/utils/haptics.js'
 import styles from './Sabh.module.scss'
 
@@ -279,6 +280,20 @@ function ZekrSabh() {
     vibrationEnabled,
   ])
 
+  // التسبيح والشاشة مقفلة (أندرويد APK)
+  const {
+    isPocketSupported,
+    isPocketActive,
+    isPocketBusy,
+    togglePocket,
+  } = usePocketTasbih({
+    zekrId: currentZekrId,
+    zekrText: currentZekr?.text || '',
+    count: currentCount,
+    target: currentTarget,
+    vibrate: vibrationEnabled,
+  })
+
   // التسبيح بأزرار رفع/خفض الصوت في الوضع الحر ووضع التركيز
   useVolumeButton(
     handleNormalClick,
@@ -365,9 +380,12 @@ function ZekrSabh() {
       }
       if (isTargetModalOpen || isResetModalOpen) return
 
-      if (e.key === 'Escape' && isFocusMode) {
-        e.preventDefault()
-        handleExitFocusMode()
+      // أثناء وضع التركيز تتولى FocusMode إدارة Escape وحجب اللمس عند القفل
+      if (isFocusMode) {
+        if (e.code === 'Space' && sabhMode === 'normal') {
+          e.preventDefault()
+          if (!e.repeat) handleNormalClick()
+        }
         return
       }
 
@@ -477,16 +495,44 @@ function ZekrSabh() {
             isFocusMode={isFocusMode}
             extraAction={
               !isFocusMode ? (
-                <button
-                  type="button"
-                  className={styles.focusBtn}
-                  onClick={handleEnterFocusMode}
-                  title="وضع التركيز بدون مشتتات (F)"
-                >
-                  <Moon size={16} strokeWidth={2.1} aria-hidden="true" />
-                  <span>وضع التركيز</span>
-                  <kbd className={styles.kbdHint}>F</kbd>
-                </button>
+                <>
+                  <button
+                    type="button"
+                    className={styles.focusBtn}
+                    onClick={handleEnterFocusMode}
+                    title="وضع التركيز بدون مشتتات (F)"
+                  >
+                    <Moon size={15} strokeWidth={2.1} aria-hidden="true" />
+                    <span>وضع التركيز</span>
+                    <kbd className={styles.kbdHint}>F</kbd>
+                  </button>
+
+                  {isPocketSupported && (
+                    <button
+                      type="button"
+                      className={`${styles.pocketBtn} ${
+                        isPocketActive ? styles.pocketBtnActive : ''
+                      }`}
+                      onClick={togglePocket}
+                      disabled={isPocketBusy}
+                      aria-pressed={isPocketActive}
+                      title={
+                        isPocketActive
+                          ? 'إيقاف التسبيح والشاشة مقفلة'
+                          : 'تفعيل التسبيح بزر الصوت والشاشة مقفلة'
+                      }
+                    >
+                      {isPocketActive ? (
+                        <span className={styles.liveDot} aria-hidden="true" />
+                      ) : (
+                        <Lock size={15} strokeWidth={2.1} aria-hidden="true" />
+                      )}
+                      <span>
+                        {isPocketActive ? 'في القفل · إيقاف' : 'في القفل'}
+                      </span>
+                    </button>
+                  )}
+                </>
               ) : null
             }
           />
@@ -502,7 +548,11 @@ function ZekrSabh() {
       {sabhMode === 'normal' && (
         <div className={styles.normalModeContainer}>
           {isFocusMode ? (
-            <FocusMode onClose={handleExitFocusMode} onCount={handleNormalClick}>
+            <FocusMode
+              onClose={handleExitFocusMode}
+              onCount={handleNormalClick}
+              vibrate={vibrationEnabled}
+            >
               {renderNormalSabhContent()}
             </FocusMode>
           ) : (

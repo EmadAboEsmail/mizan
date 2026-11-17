@@ -68,6 +68,67 @@
   }
 }
 
+.pocketBtn {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  transition: all var(--duration-fast) var(--ease-out);
+
+  &:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: wait;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--zekr);
+    outline-offset: 2px;
+  }
+}
+
+.pocketBtnActive {
+  background: var(--zekr);
+  border-color: var(--zekr);
+  color: var(--text-on-brand);
+  box-shadow: var(--shadow-brand);
+}
+
+.liveDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+  animation: pocketPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes pocketPulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.82);
+  }
+}
+
 // اختصار لوحة المفاتيح يظهر على الديسكتوب فقط ويختفي في APK/اللمس
 .kbdHint {
   display: none;

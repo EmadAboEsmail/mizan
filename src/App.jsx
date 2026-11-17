@@ -1,6 +1,7 @@
 import { lazy, Suspense, useSyncExternalStore } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAutoBackup } from '@/hooks/useAutoBackup'
+import { usePocketQueueSync } from '@/hooks/usePocketTasbih.js'
 
 // ═══════════════════════════════════════
 // Eager imports (يظهر فوراً)
@@ -92,6 +93,7 @@ function App() {
     getAutoBackupFrequency
   )
   useAutoBackup(autoBackupEnabled, autoBackupFrequency)
+  usePocketQueueSync()
 
   return (
     <>
