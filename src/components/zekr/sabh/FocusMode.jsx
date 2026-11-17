@@ -1,5 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from 'react'   // ✅ إضافة
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { Clock } from 'lucide-react'
+import { useModalBackButton } from '@/hooks/useModalBackButton'
 import styles from './FocusMode.module.scss'
 
 const ExitFocusIcon = () => (
@@ -79,11 +81,19 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
     }
   }
 
-  // ✅ Reset startTimeRef via effect (refs في effects مسموحة)
+  // ✅ Reset startTimeRef + مؤقت الجلسة الحي
   useEffect(() => {
     if (!isOpen) {
       startTimeRef.current = null
+      return
     }
+    startTimeRef.current = Date.now()
+    const id = setInterval(() => {
+      if (startTimeRef.current) {
+        setSessionTime(Math.floor((Date.now() - startTimeRef.current) / 1000))
+      }
+    }, 1000)
+    return () => clearInterval(id)
   }, [isOpen])
 
   const handleClose = useCallback(() => {
@@ -92,6 +102,9 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
     exitFullscreenSilent()
     onCloseRef.current?.()
   }, [])
+
+  // دعم زر الرجوع في Android للخروج من وضع التركيز بدلاً من إغلاق التطبيق
+  useModalBackButton(isOpen, handleClose)
 
   // ✅ Fullscreen monitoring
   useEffect(() => {
@@ -228,7 +241,8 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
       )}
 
       <div className={styles.sessionTime} aria-hidden="true">
-        {formatTime(sessionTime)}
+        <Clock size={13} strokeWidth={2.2} />
+        <span>{formatTime(sessionTime)}</span>
       </div>
 
       <div className={styles.centerContainer}>{children}</div>

@@ -1,5 +1,3 @@
-@use '@/styles/tokens' as *;
-
 .message {
   text-align: center;
   color: var(--text-secondary);
@@ -60,7 +58,7 @@
   color: var(--text-on-brand);
   box-shadow: var(--shadow-brand);
 
-  body.dark & {
+  :global(body.dark) & {
     box-shadow: none;
   }
 

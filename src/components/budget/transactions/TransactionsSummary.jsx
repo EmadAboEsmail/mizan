@@ -1,3 +1,4 @@
+import { ArrowDownLeft, ArrowUpRight } from 'lucide-react'
 import { formatAmount } from './lib/transactionsHelpers.js'
 import styles from './TransactionsSummary.module.scss'
 
@@ -6,60 +7,112 @@ export default function TransactionsSummary({ summary, insights, isAllMonths }) 
 
   const incomeChange = insights?.comparison?.income_change_percent
   const expenseChange = insights?.comparison?.expense_change_percent
+  const net = Number(summary.net || 0)
+  const netPositive = net >= 0
+  const txnCount = summary.transaction_count || 0
 
   return (
-    <>
-      <div className={styles.summaryCards}>
-        <div className={`${styles.summaryCard} ${styles.income}`}>
-          <span className={styles.summaryLabel}>
-            الدخل
-            {incomeChange !== undefined && (
-              <span
-                className={`${styles.changeBadge} ${incomeChange >= 0 ? styles.up : styles.down
-                  }`}
-              >
-                {incomeChange >= 0 ? '↑' : '↓'}
-                {Math.abs(incomeChange).toFixed(0)}%
-              </span>
-            )}
+    <section className={styles.heroCard} aria-label="ملخص الرصيد">
+      {/* الصف العلوي: صافي الرصيد */}
+      <div className={styles.netRow}>
+        <div className={styles.netMain}>
+          <span className={styles.netLabel}>
+            {isAllMonths ? 'صافي كل الفترات' : 'صافي الرصيد'}
           </span>
-          <span className={styles.summaryValue}>
-            {formatAmount(summary.total_income)}
-          </span>
-        </div>
-
-        <div className={`${styles.summaryCard} ${styles.expense}`}>
-          <span className={styles.summaryLabel}>
-            المصروف
-            {expenseChange !== undefined && (
-              <span
-                className={`${styles.changeBadge} ${expenseChange > 0 ? styles.down : styles.up
-                  }`}
-              >
-                {expenseChange >= 0 ? '↑' : '↓'}
-                {Math.abs(expenseChange).toFixed(0)}%
-              </span>
-            )}
-          </span>
-          <span className={styles.summaryValue}>
-            {formatAmount(summary.total_expense)}
-          </span>
-        </div>
-
-        <div
-          className={`${styles.summaryCard} ${summary.net >= 0 ? styles.income : styles.expense
+          <div
+            className={`${styles.netValue} ${
+              net > 0
+                ? styles.valPositive
+                : net < 0
+                  ? styles.valNegative
+                  : ''
             }`}
-        >
-          <span className={styles.summaryLabel}>الصافي</span>
-          <span className={styles.summaryValue}>{formatAmount(summary.net)}</span>
+          >
+            <span className={styles.netNumber}>
+              {net > 0 ? '+' : net < 0 ? '−' : ''}
+              {formatAmount(Math.abs(net))}
+            </span>
+            <span className={styles.currency}>ج.م</span>
+          </div>
+        </div>
+
+        {txnCount > 0 && (
+          <span className={styles.countBadge}>
+            {txnCount.toLocaleString('en')}{' '}
+            {txnCount === 1 ? 'معاملة' : 'معاملات'}
+          </span>
+        )}
+      </div>
+
+      {/* الصف السفلي: الدخل والمصروف جنباً إلى جنب حتى على أصغر شاشة */}
+      <div className={styles.splitRow}>
+        <div className={styles.metric}>
+          <span
+            className={`${styles.metricIcon} ${styles.iconIncome}`}
+            aria-hidden="true"
+          >
+            <ArrowDownLeft size={15} strokeWidth={2.4} />
+          </span>
+          <div className={styles.metricBody}>
+            <div className={styles.metricTop}>
+              <span className={styles.metricLabel}>الدخل</span>
+              {incomeChange !== undefined && incomeChange !== 0 && (
+                <span
+                  className={`${styles.delta} ${
+                    incomeChange > 0 ? styles.deltaGood : styles.deltaBad
+                  }`}
+                >
+                  {incomeChange > 0 ? '↑' : '↓'}
+                  {Math.abs(incomeChange).toFixed(0)}%
+                </span>
+              )}
+            </div>
+            <span className={`${styles.metricValue} ${styles.valPositive}`}>
+              {formatAmount(summary.total_income)}
+            </span>
+          </div>
+        </div>
+
+        <span className={styles.vDivider} aria-hidden="true" />
+
+        <div className={styles.metric}>
+          <span
+            className={`${styles.metricIcon} ${styles.iconExpense}`}
+            aria-hidden="true"
+          >
+            <ArrowUpRight size={15} strokeWidth={2.4} />
+          </span>
+          <div className={styles.metricBody}>
+            <div className={styles.metricTop}>
+              <span className={styles.metricLabel}>المصروف</span>
+              {expenseChange !== undefined && expenseChange !== 0 && (
+                <span
+                  className={`${styles.delta} ${
+                    expenseChange > 0 ? styles.deltaBad : styles.deltaGood
+                  }`}
+                >
+                  {expenseChange > 0 ? '↑' : '↓'}
+                  {Math.abs(expenseChange).toFixed(0)}%
+                </span>
+              )}
+            </div>
+            <span
+              className={`${styles.metricValue} ${
+                summary.total_expense > 0 ? styles.valNegative : ''
+              }`}
+            >
+              {formatAmount(summary.total_expense)}
+            </span>
+          </div>
         </div>
       </div>
 
-      {isAllMonths && (
-        <p className={styles.allMonthsNote}>
-          📊 إجمالي كل الفترات ({summary.transaction_count} معاملة)
-        </p>
-      )}
-    </>
+      <span
+        className={`${styles.accentBar} ${
+          netPositive ? styles.barPositive : styles.barNegative
+        }`}
+        aria-hidden="true"
+      />
+    </section>
   )
 }

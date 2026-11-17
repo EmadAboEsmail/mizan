@@ -1,19 +1,20 @@
 .displayCard {
   width: 100%;
-  max-width: 480px;
-  margin: 0 auto;
-  padding: var(--space-6) var(--space-5);
+  padding: var(--space-5) var(--space-4) var(--space-4);
   background: var(--bg-card);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-sm), var(--card-highlight);
   text-align: center;
-  transition: all var(--duration-slow) var(--ease-in-out);
-  animation: fadeIn 0.4s var(--ease-out);
+  transition:
+    border-color var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out);
+  animation: fadeIn 0.3s var(--ease-out);
 
   &.completeGlow {
     border-color: var(--zekr-border);
-    box-shadow: 0 0 30px var(--zekr-soft);
+    background: linear-gradient(180deg, var(--zekr-soft) 0%, var(--bg-card) 55%);
+    box-shadow: 0 6px 24px var(--zekr-soft);
   }
 }
 
@@ -21,18 +22,41 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
+}
+
+.ornament {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 72px;
+  opacity: 0.7;
+}
+
+.ornamentLine {
+  flex: 1;
+  height: 1px;
+  background: var(--border-strong);
+}
+
+.ornamentDiamond {
+  width: 5px;
+  height: 5px;
+  transform: rotate(45deg);
+  background: var(--zekr);
+  border-radius: 1px;
 }
 
 .text {
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(1.3rem, 4.5vw, 1.7rem);
+  font-size: clamp(1.22rem, 4.6vw, 1.62rem);
   font-weight: 700;
   color: var(--text-primary);
-  line-height: 1.65;
-  letter-spacing: -0.2px;
-  padding: 0 var(--space-2);
+  line-height: 1.75;
+  letter-spacing: -0.01em;
+  padding-inline: var(--space-1);
+  word-break: break-word;
 }
 
 .meta {
@@ -41,27 +65,38 @@
   justify-content: center;
   gap: var(--space-2);
   flex-wrap: wrap;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-subtle);
+  width: 100%;
 }
 
-.copyBtn {
+.metaBtn {
+  min-height: 36px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 13px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border-default);
   background: var(--bg-subtle);
   color: var(--text-muted);
-  font-size: 0.72rem;
+  font-family: var(--font-body);
+  font-size: 0.76rem;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out);
-  touch-action: manipulation;
 
-  &:hover {
-    background: var(--zekr-soft);
-    border-color: var(--zekr-border);
-    color: var(--zekr);
+  @media (hover: hover) {
+    &:hover {
+      background: var(--zekr-soft);
+      border-color: var(--zekr-border);
+      color: var(--zekr-text);
+    }
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 
   &.copied {
@@ -69,66 +104,32 @@
     border-color: var(--zekr);
     color: var(--text-on-brand);
   }
-
-  svg {
-    flex-shrink: 0;
-  }
 }
 
 .targetBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border-default);
-  background: var(--bg-subtle);
   color: var(--text-secondary);
-  font-size: 0.78rem;
   font-weight: 700;
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
-  touch-action: manipulation;
-
-  &:hover {
-    background: var(--zekr-soft);
-    border-color: var(--zekr-border);
-    color: var(--zekr);
-  }
+  font-variant-numeric: tabular-nums;
 
   &.targetComplete {
     background: var(--zekr-soft);
     border-color: var(--zekr-border);
-    color: var(--zekr);
+    color: var(--zekr-text);
   }
 }
 
 .editIcon {
-  display: flex;
-  align-items: center;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .setTargetBtn {
-  padding: 5px 12px;
-  border-radius: var(--radius-full);
-  border: 1px dashed var(--border-strong);
+  border-style: dashed;
+  border-color: var(--border-strong);
   background: transparent;
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
-
-  &:hover {
-    border-color: var(--zekr);
-    color: var(--zekr);
-    background: var(--zekr-soft);
-  }
 }
 
 // ═══════════════════════════════════════════════════════
-// Focus Mode (شاشة سودا كاملة)
+// Focus Mode (OLED Zen)
 // ═══════════════════════════════════════════════════════
 .focusDisplay {
   background: transparent;
@@ -144,11 +145,9 @@
   .text {
     color: #F5F0E8;
     text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
-    font-size: clamp(1.4rem, 5vw, 1.9rem);
   }
 }
 
-// ✅ العداد الكبير في وضع التركيز
 .focusCounter {
   display: flex;
   flex-direction: column;
@@ -157,7 +156,7 @@
   gap: var(--space-2);
   margin-top: var(--space-2);
   padding: var(--space-4) var(--space-6);
-  animation: focusFadeIn 0.4s var(--ease-out);
+  animation: focusFadeIn 0.35s var(--ease-out);
 }
 
 .focusCountNum {
@@ -168,29 +167,53 @@
   line-height: 1;
   letter-spacing: -2px;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 40px rgba(74, 154, 117, 0.35);
-  transition: color var(--duration-base) var(--ease-out);
+  text-shadow: 0 0 40px rgba(82, 168, 128, 0.35);
+  transition:
+    color var(--duration-base) var(--ease-out),
+    transform 130ms var(--ease-spring);
+  will-change: transform;
+}
+
+.focusCountTick {
+  transform: scale(1.07);
 }
 
 .focusCountTarget {
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: 0.98rem;
   font-weight: 600;
   color: rgba(245, 240, 232, 0.55);
-  letter-spacing: 0.3px;
+}
+
+.sessionHint {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(245, 240, 232, 0.45);
+  margin-top: var(--space-1);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .focusCounterComplete {
   .focusCountNum {
-    color: #34d399;
-    text-shadow: 0 0 50px rgba(52, 211, 153, 0.6);
+    color: #52A880;
+    text-shadow: 0 0 48px rgba(82, 168, 128, 0.55);
+  }
+
+  .sessionHint {
+    color: rgba(101, 188, 147, 0.85);
+    border-color: rgba(82, 168, 128, 0.28);
+    background: rgba(82, 168, 128, 0.1);
   }
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(5px);
   }
   to {
     opacity: 1;
@@ -201,104 +224,7 @@
 @keyframes focusFadeIn {
   from {
     opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-// ═══════════════════════════════════════════════════════
-// Focus Mode
-// ═══════════════════════════════════════════════════════
-.focusDisplay {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  padding: var(--space-4);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-6);
-  max-width: 100%;
-
-  .text {
-    color: #F5F0E8;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
-    // font-size يُحدد ديناميكياً من JSX
-  }
-}
-
-.focusCounter {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
-  padding: var(--space-4) var(--space-6);
-  animation: focusFadeIn 0.4s var(--ease-out);
-}
-
-.focusCountNum {
-  font-family: var(--font-display);
-  font-size: clamp(4rem, 16vw, 6rem);
-  font-weight: 900;
-  color: #F5F0E8;
-  line-height: 1;
-  letter-spacing: -2px;
-  font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 40px rgba(74, 154, 117, 0.35);
-  transition:
-    color var(--duration-base) var(--ease-out),
-    transform 140ms var(--ease-spring);
-  will-change: transform;
-}
-
-// ✅ نبضة عند كل زيادة
-.focusCountTick {
-  transform: scale(1.08);
-}
-
-.focusCountTarget {
-  font-family: var(--font-body);
-  font-size: 1rem;
-  font-weight: 600;
-  color: rgba(245, 240, 232, 0.55);
-  letter-spacing: 0.3px;
-}
-
-// ✅ عداد الجلسة
-.sessionHint {
-  font-family: var(--font-body);
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: rgba(245, 240, 232, 0.4);
-  letter-spacing: 0.3px;
-  margin-top: var(--space-1);
-  padding: 3px 10px;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.focusCounterComplete {
-  .focusCountNum {
-    color: #34d399;
-    text-shadow: 0 0 50px rgba(52, 211, 153, 0.6);
-  }
-
-  .sessionHint {
-    color: rgba(52, 211, 153, 0.7);
-    border-color: rgba(52, 211, 153, 0.2);
-    background: rgba(52, 211, 153, 0.08);
-  }
-}
-
-@keyframes focusFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.92);
   }
   to {
     opacity: 1;

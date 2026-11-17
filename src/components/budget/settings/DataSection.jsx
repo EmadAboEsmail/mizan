@@ -268,11 +268,16 @@ function DataSection() {
             </select>
           )}
         </div>
-        <input
-          type="checkbox"
-          checked={autoBackupEnabled}
-          onChange={(e) => toggleAutoBackup(e.target.checked)}
-        />
+        <button
+          type="button"
+          role="switch"
+          aria-checked={autoBackupEnabled}
+          aria-label="تفعيل النسخ الاحتياطي التلقائي"
+          className={`${styles.switch} ${autoBackupEnabled ? styles.switchOn : ''}`}
+          onClick={() => toggleAutoBackup(!autoBackupEnabled)}
+        >
+          <span className={styles.switchThumb} aria-hidden="true" />
+        </button>
       </div>
 
       {/* ═══════════════════════════════════════

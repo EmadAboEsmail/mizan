@@ -1,5 +1,3 @@
-@use '@/styles/tokens' as *;
-
 // ═══════════════════════════════════════
 // Section Container
 // ═══════════════════════════════════════
@@ -15,7 +13,7 @@
   box-shadow: var(--shadow-xs);
   transition: box-shadow var(--duration-base) var(--ease-out),
     border-color var(--duration-base) var(--ease-out);
-  scroll-margin-top: 80px; // عشان sticky nav ميتغطاش
+  scroll-margin-top: calc(var(--topbar-height) + var(--safe-top) + 64px);
 
   &:hover {
     border-color: var(--border-strong);

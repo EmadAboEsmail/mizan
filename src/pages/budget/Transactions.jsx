@@ -1,11 +1,5 @@
-import {
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-  useDeferredValue,
-  useRef,
-} from 'react'
+import { useState, useMemo, useCallback, useDeferredValue } from 'react'
+import { Plus } from 'lucide-react'
 import { useBudgetUI, getCurrentMonth } from '@/contexts/BudgetContext'
 import {
   useCategoriesQuery,
@@ -23,14 +17,9 @@ import TransactionsTopBar from '@/components/budget/transactions/TransactionsTop
 import TransactionsSummary from '@/components/budget/transactions/TransactionsSummary.jsx'
 import TransactionsFilters from '@/components/budget/transactions/TransactionsFilters.jsx'
 import TransactionsList from '@/components/budget/transactions/TransactionsList.jsx'
-import {
-  formatAmount,
-  ROW_HEIGHT,
-  groupTransactionsByDate,
-} from '@/components/budget/transactions/lib/transactionsHelpers.js'
+import { formatAmount } from '@/components/budget/transactions/lib/transactionsHelpers.js'
 import styles from './Transactions.module.scss'
 
-const DATE_HEADER_HEIGHT = 48
 const EMPTY_LIST = []
 
 function BudgetTransactions() {
@@ -64,36 +53,20 @@ function BudgetTransactions() {
   // ─── Expanded row ───
   const [expandedId, setExpandedId] = useState(null)
 
-  // ─── Virtual list refs ───
-  const listRef = useRef(null)
-  const listContainerRef = useRef(null)
-  const [listWidth, setListWidth] = useState(0)
-
-  // ─── Measure container width ───
-  useEffect(() => {
-    const el = listContainerRef.current
-    if (!el) return
-    const update = () => setListWidth(el.clientWidth)
-    update()
-    const ro = new ResizeObserver(update)
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [])
-
-  // ─── catMap ───
   const catMap = useMemo(
     () => Object.fromEntries(categories.map((c) => [c.id, c])),
     [categories]
   )
 
-  // ─── Filtered txns ───
   const filteredTxns = useMemo(() => {
     const filtered = transactions.filter((t) => {
       if (filterType !== 'all' && t.type !== filterType) return false
       if (filterCategory && t.category_id !== filterCategory) return false
       if (deferredSearch.trim()) {
         const q = deferredSearch.trim().toLowerCase()
-        const haystack = `${t.details || ''} ${t.description || ''}`.toLowerCase()
+        const catName = catMap[t.category_id]?.name || ''
+        const haystack =
+          `${t.details || ''} ${t.description || ''} ${catName}`.toLowerCase()
         if (!haystack.includes(q)) return false
       }
       return true
@@ -103,9 +76,8 @@ function BudgetTransactions() {
       if (a.date !== b.date) return a.date < b.date ? 1 : -1
       return (b.created_at || 0) - (a.created_at || 0)
     })
-  }, [transactions, filterType, filterCategory, deferredSearch])
+  }, [transactions, filterType, filterCategory, deferredSearch, catMap])
 
-  // ─── الحالة المشتقة ───
   const effectiveExpandedId =
     expandedId && filteredTxns.some((t) => t.id === expandedId)
       ? expandedId
@@ -154,7 +126,7 @@ function BudgetTransactions() {
       await deleteTransaction(deleteTarget.id)
       setDeleteTarget(null)
     } catch {
-      // التراجع التلقائي ورسالة الخطأ يتمان داخل useDeleteTransactionMutation
+      // التراجع ورسالة الخطأ يتمان داخل useDeleteTransactionMutation
     }
   }, [deleteTarget, deleteTransaction])
 
@@ -170,66 +142,6 @@ function BudgetTransactions() {
     setExpandedId((prev) => (prev === id ? null : id))
   }, [])
 
-  // ─── Flat items ───
-  const flatItems = useMemo(
-    () => groupTransactionsByDate(filteredTxns),
-    [filteredTxns]
-  )
-
-  // ─── Row height per item ───
-  const getItemSize = useCallback(
-    (index) => {
-      const item = flatItems[index]
-      if (!item) return ROW_HEIGHT
-
-      if (item.type === 'header') return DATE_HEADER_HEIGHT
-
-      const { txn } = item
-      if (effectiveExpandedId !== txn.id) return ROW_HEIGHT
-
-      let extra = 70
-      if (txn.details) extra += 50
-      if (txn.description) extra += 55
-      return ROW_HEIGHT + extra
-    },
-    [flatItems, effectiveExpandedId]
-  )
-
-  const virtualData = useMemo(
-    () => ({
-      items: flatItems,
-      catMap,
-      onEdit: handleOpenEdit,
-      onDelete: handleDeleteClick,
-      expandedId: effectiveExpandedId,
-      onToggle: handleToggleExpanded,
-    }),
-    [
-      flatItems,
-      catMap,
-      handleOpenEdit,
-      handleDeleteClick,
-      effectiveExpandedId,
-      handleToggleExpanded,
-    ]
-  )
-
-  // ─── List height ───
-  const listHeight = useMemo(() => {
-    let total = 0
-    for (let i = 0; i < flatItems.length; i++) {
-      total += getItemSize(i)
-    }
-    return Math.min(600, Math.max(ROW_HEIGHT * 2, total))
-  }, [flatItems, getItemSize])
-
-  useEffect(() => {
-    if (listRef.current) {
-      listRef.current.resetAfterIndex(0, true)
-    }
-  }, [effectiveExpandedId, flatItems.length])
-
-  // ─── Render ───
   return (
     <div className={styles.container}>
       <TransactionsTopBar
@@ -258,25 +170,35 @@ function BudgetTransactions() {
       />
 
       <TransactionsList
-        items={flatItems}
+        transactions={filteredTxns}
+        catMap={catMap}
         onAdd={handleOpenAdd}
-        listHeight={listHeight}
-        listWidth={listWidth}
-        listRef={listRef}
-        listContainerRef={listContainerRef}
-        getItemSize={getItemSize}
-        virtualData={virtualData}
+        onEdit={handleOpenEdit}
+        onDelete={handleDeleteClick}
+        expandedId={effectiveExpandedId}
+        onToggle={handleToggleExpanded}
         totalTransactions={transactions.length}
         currentMonth={currentMonth}
       />
 
-      {filteredTxns.length > 0 && (
-        <p className={styles.resultCount}>
-          {filteredTxns.length === transactions.length
-            ? `${transactions.length} معاملة`
-            : `${filteredTxns.length} من ${transactions.length} معاملة`}
-        </p>
-      )}
+      {filteredTxns.length > 0 &&
+        filteredTxns.length !== transactions.length && (
+          <p className={styles.resultCount}>
+            يُعرض {filteredTxns.length.toLocaleString('en')} من{' '}
+            {transactions.length.toLocaleString('en')} معاملة
+          </p>
+        )}
+
+      {/* زر إضافة عائم في منطقة الإبهام لشاشات الهاتف/APK */}
+      <button
+        type="button"
+        className={styles.fab}
+        onClick={handleOpenAdd}
+        aria-label="إضافة معاملة جديدة"
+        title="إضافة معاملة جديدة"
+      >
+        <Plus size={25} strokeWidth={2.5} aria-hidden="true" />
+      </button>
 
       <TransactionFormModal
         isOpen={isFormOpen}
@@ -293,7 +215,7 @@ function BudgetTransactions() {
         title="حذف المعاملة؟"
         message={`سيتم حذف معاملة بقيمة ${formatAmount(
           deleteTarget?.amount || 0
-        )}. لا يمكن التراجع.`}
+        )} ج.م. لا يمكن التراجع.`}
         confirmLabel={isDeleting ? 'جاري الحذف...' : 'نعم، احذف'}
         cancelLabel="إلغاء"
         danger

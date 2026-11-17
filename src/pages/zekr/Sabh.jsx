@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Moon } from 'lucide-react'
 import { useCurrentZekrId } from '@/contexts/ZekrDataContext'
+import { TasbihIcon } from '@/components/ui/BrandIcons.jsx'
 import {
   useAdhkarQuery,
   useCountsQuery,
@@ -449,7 +451,9 @@ function ZekrSabh() {
     if (!currentZekr) {
       return (
         <div className={styles.emptyContainer}>
-          <div className={styles.emptyIcon}>📿</div>
+          <div className={styles.emptyIcon} aria-hidden="true">
+            <TasbihIcon size={28} />
+          </div>
           <p className={styles.empty}>لا توجد أذكار مضافة حالياً.</p>
           <button
             type="button"
@@ -464,6 +468,14 @@ function ZekrSabh() {
 
     return (
       <>
+        {!isFocusMode && (
+          <AdhkarSelect
+            adhkar={allAdhkar}
+            value={currentZekrId}
+            onChange={handleZekrChange}
+          />
+        )}
+
         <ZekrDisplay
           key={currentZekr.id}
           zekrText={currentZekr.text}
@@ -477,40 +489,36 @@ function ZekrSabh() {
           isFocusMode={isFocusMode}
         />
 
-        {!isFocusMode && (
-          <AdhkarSelect
-            adhkar={allAdhkar}
-            value={currentZekrId}
-            onChange={handleZekrChange}
+        <div className={isFocusMode ? undefined : styles.thumbZone}>
+          <ActionButtons
+            onReset={!isFocusMode ? () => setIsResetModalOpen(true) : undefined}
+            showReset={!isFocusMode}
+            count={currentCount}
+            target={currentTarget}
+            onClick={handleNormalClick}
+            progress={
+              currentTarget
+                ? Math.min((currentCount / currentTarget) * 100, 100)
+                : 0
+            }
+            isComplete={isComplete}
+            isFocusMode={isFocusMode}
+            extraAction={
+              !isFocusMode ? (
+                <button
+                  type="button"
+                  className={styles.focusBtn}
+                  onClick={handleEnterFocusMode}
+                  title="وضع التركيز بدون مشتتات (F)"
+                >
+                  <Moon size={16} strokeWidth={2.1} aria-hidden="true" />
+                  <span>وضع التركيز</span>
+                  <kbd className={styles.kbdHint}>F</kbd>
+                </button>
+              ) : null
+            }
           />
-        )}
-
-        <ActionButtons
-          onReset={!isFocusMode ? () => setIsResetModalOpen(true) : undefined}
-          showReset={!isFocusMode}
-          count={currentCount}
-          target={currentTarget}
-          onClick={handleNormalClick}
-          progress={
-            currentTarget
-              ? Math.min((currentCount / currentTarget) * 100, 100)
-              : 0
-          }
-          isComplete={isComplete}
-          isFocusMode={isFocusMode}
-        />
-
-        {!isFocusMode && (
-          <button
-            type="button"
-            className={styles.focusBtn}
-            onClick={handleEnterFocusMode}
-            title="الانتقال لوضع التركيز بدون مشتتات (F)"
-          >
-            🌙 وضع التركيز
-            <kbd className={styles.kbdHint}>F</kbd>
-          </button>
-        )}
+        </div>
       </>
     )
   }

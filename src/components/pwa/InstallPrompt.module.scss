@@ -1,8 +1,6 @@
-@use '@/styles/tokens' as *;
-
 .banner {
   position: fixed;
-  bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--space-3));
   left: var(--space-4);
   right: var(--space-4);
   max-width: 480px;
@@ -19,7 +17,7 @@
   box-shadow: var(--shadow-xl);
   animation: slideUp 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
 
-  body.dark & {
+  :global(body.dark) & {
     box-shadow: var(--shadow-dark-xl);
   }
 }

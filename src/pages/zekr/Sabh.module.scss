@@ -1,88 +1,126 @@
 .sabhView {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-6);
-}
-
-.normalModeContainer {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-5);
-}
-
-// زر وضع التركيز
-.focusBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 10px var(--space-5);
-  border-radius: var(--radius-full);
-  background: var(--zekr-soft);
-  border: 1px solid var(--zekr-border);
-  color: var(--zekr);
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all var(--duration-base) var(--ease-out);
-  touch-action: manipulation;
-
-  &:hover {
-    background: var(--zekr);
-    color: var(--text-on-brand);
-    box-shadow: 0 4px 14px var(--zekr-soft);
-  }
-
-  &:active {
-    transform: scale(0.96);
-  }
-}
-
-.kbdHint {
-  display: inline-block;
-  margin-inline-start: var(--space-1);
-  padding: 2px 6px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  font-family: var(--font-mono);
-  background: rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: var(--radius-xs);
-  line-height: 1.2;
-
-  body.dark & {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.12);
-  }
-
-  .focusBtn:hover & {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.3);
-  }
-}
-
-// الحالة الفارغة
-.emptyContainer {
-  text-align: center;
-  padding: var(--space-10) var(--space-5);
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-4);
+}
+
+.normalModeContainer {
+  width: 100%;
+  max-width: 520px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+// يضع حلقة التسبيح في منطقة الإبهام السفلية المريحة على شاشات الهاتف
+.thumbZone {
+  width: 100%;
+  margin-top: auto;
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  @media (min-height: 900px) {
+    margin-top: var(--space-4);
+  }
+}
+
+.focusBtn {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  background: var(--zekr-soft);
+  border: 1px solid var(--zekr-border);
+  color: var(--zekr-text);
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+
+  @media (hover: hover) {
+    &:hover {
+      background: var(--zekr);
+      border-color: var(--zekr);
+      color: var(--text-on-brand);
+      box-shadow: var(--shadow-brand);
+    }
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--zekr);
+    outline-offset: 2px;
+  }
+}
+
+// اختصار لوحة المفاتيح يظهر على الديسكتوب فقط ويختفي في APK/اللمس
+.kbdHint {
+  display: none;
+
+  @media (hover: hover) and (pointer: fine) {
+    display: inline-block;
+    margin-inline-start: 2px;
+    padding: 1px 6px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    background: rgba(0, 0, 0, 0.07);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: var(--radius-tiny);
+    line-height: 1.25;
+
+    :global(body.dark) & {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .focusBtn:hover & {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+  }
+}
+
+.emptyContainer {
+  text-align: center;
+  padding: var(--space-8) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
   background: var(--bg-card);
   border: 1px dashed var(--border-strong);
   border-radius: var(--radius-xl);
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
+  margin-top: var(--space-4);
 }
 
 .emptyIcon {
-  font-size: 2.5rem;
-  opacity: 0.6;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-large);
+  background: var(--zekr-soft);
+  border: 1px solid var(--zekr-border);
+  color: var(--zekr);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .empty {
@@ -93,7 +131,8 @@
 }
 
 .addFirstBtn {
-  padding: 12px var(--space-6);
+  min-height: var(--touch-target);
+  padding: 10px var(--space-6);
   background: var(--zekr);
   color: var(--text-on-brand);
   border: none;
@@ -102,13 +141,8 @@
   font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 12px var(--zekr-soft);
-  transition: all var(--duration-base) var(--ease-out);
-
-  &:hover {
-    filter: brightness(0.94);
-    box-shadow: 0 6px 18px var(--zekr-soft);
-  }
+  box-shadow: var(--shadow-brand);
+  transition: all var(--duration-fast) var(--ease-out);
 
   &:active {
     transform: scale(0.97);

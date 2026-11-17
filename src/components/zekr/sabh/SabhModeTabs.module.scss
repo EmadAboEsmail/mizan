@@ -1,17 +1,18 @@
 .tabsWrapper {
   width: 100%;
-  max-width: 320px;
+  max-width: 360px;
   margin: 0 auto;
   display: flex;
   background: var(--bg-subtle);
   padding: 4px;
   border-radius: var(--radius-md);
   gap: 4px;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-default);
 }
 
 .tab {
   flex: 1;
+  min-height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -26,16 +27,16 @@
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all var(--duration-base) var(--ease-out);
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
 
-  &:hover:not(.active) {
-    color: var(--text-secondary);
+  @media (hover: hover) {
+    &:hover:not(.active) {
+      color: var(--text-secondary);
+    }
   }
 
   &.active {
     background: var(--bg-card);
-    color: var(--zekr);
+    color: var(--zekr-text);
     box-shadow: var(--shadow-xs);
 
     .icon {
@@ -44,7 +45,7 @@
   }
 
   &:active {
-    transform: scale(0.96);
+    transform: scale(0.97);
   }
 
   &:focus-visible {

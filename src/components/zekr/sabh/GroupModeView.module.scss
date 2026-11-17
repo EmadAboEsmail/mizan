@@ -1,5 +1,3 @@
-@use '@/styles/tokens' as *;
-
 // ═══════════════════════════════════════
 // View
 // ═══════════════════════════════════════
@@ -164,17 +162,18 @@
 }
 
 .navBtn {
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
+  gap: 5px;
+  padding: 8px 14px;
   font-family: var(--font-body);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: var(--text-secondary);
   background: var(--bg-card);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-medium);
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out);
   touch-action: manipulation;
@@ -220,21 +219,22 @@
 // Focus Button
 // ═══════════════════════════════════════
 .focusBtn {
+  min-height: 42px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 10px var(--space-5);
+  padding: 8px 18px;
   border-radius: var(--radius-full);
   background: var(--zekr-soft);
   border: 1px solid var(--zekr-border);
-  color: var(--zekr);
+  color: var(--zekr-text);
   font-family: var(--font-body);
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all var(--duration-base) var(--ease-out);
+  transition: all var(--duration-fast) var(--ease-out);
   touch-action: manipulation;
-  margin-top: var(--space-1);
 
   &:hover {
     background: var(--zekr);
@@ -356,9 +356,15 @@
 }
 
 .celebrateIcon {
-  font-size: 3.5rem;
-  animation: bounce 1s infinite alternate;
-  filter: drop-shadow(0 4px 12px rgba(198, 139, 60, 0.3));
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--zekr);
+  color: var(--text-on-brand);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-brand);
 }
 
 .completeTitle {
@@ -389,8 +395,12 @@
 }
 
 .restartBtn {
-  margin-top: var(--space-4);
-  padding: 12px var(--space-6);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-3);
+  min-height: var(--touch-target);
+  padding: 10px var(--space-6);
   background: var(--zekr);
   color: var(--text-on-brand);
   border: none;
@@ -442,9 +452,16 @@
 }
 
 .emptyIcon {
-  font-size: 2.5rem;
-  margin-bottom: var(--space-2);
-  opacity: 0.8;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-large);
+  background: var(--zekr-soft);
+  border: 1px solid var(--zekr-border);
+  color: var(--zekr);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-1);
 }
 
 .emptyTitle {

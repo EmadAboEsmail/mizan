@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════
-// Modal — Center + Bottom Sheet variants
+// Modal — Native Bottom Sheet + Center Dialog
 // ═══════════════════════════════════════════════════════
 
 .overlay {
@@ -7,24 +7,24 @@
   inset: 0;
   background: var(--bg-overlay);
   display: flex;
-  z-index: 1000;
-  padding: var(--space-4);
-  animation: fadeIn var(--duration-base) var(--ease-out);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  z-index: var(--z-modal);
+  padding: calc(var(--space-4) + var(--safe-top)) var(--space-4)
+    calc(var(--space-4) + var(--safe-bottom));
+  animation: fadeIn 180ms var(--ease-out);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  overscroll-behavior: contain;
 }
 
-// تمركز عادي
 .overlay.center {
   align-items: center;
   justify-content: center;
 }
 
-// Bottom Sheet
 .overlay.sheet {
   align-items: flex-end;
   justify-content: center;
-  padding: 0;
+  padding: calc(var(--space-6) + var(--safe-top)) 0 0;
 
   @media (min-width: 640px) {
     align-items: center;
@@ -36,124 +36,138 @@
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-2xl);
-  padding: var(--space-5);
   width: 100%;
   box-shadow: var(--shadow-xl);
-  max-height: 90vh;
-  overflow-y: auto;
-  transition: background-color var(--duration-slow) var(--ease-in-out),
-    border-color var(--duration-slow) var(--ease-in-out);
+  max-height: calc(90dvh - var(--safe-top));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   position: relative;
 }
 
 .modal.center {
   max-width: 420px;
-  animation: scaleIn var(--duration-base) var(--ease-spring);
+  padding: var(--space-5);
+  animation: scaleIn 220ms var(--ease-spring);
 }
 
 .modal.sheet {
   max-width: 100%;
   border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
-  padding: var(--space-3) var(--space-5) var(--space-6);
-  animation: slideUp var(--duration-base) var(--ease-out);
+  border-bottom: none;
+  padding: var(--space-2) var(--space-4)
+    calc(var(--space-5) + var(--safe-bottom));
+  animation: slideUp 260ms var(--ease-out);
 
   @media (min-width: 640px) {
     max-width: 480px;
     border-radius: var(--radius-2xl);
-    animation: scaleIn var(--duration-base) var(--ease-spring);
+    border-bottom: 1px solid var(--border-default);
+    padding: var(--space-5);
+    animation: scaleIn 220ms var(--ease-spring);
   }
 }
 
 .grabber {
-  width: 36px;
+  width: 40px;
   height: 4px;
   border-radius: var(--radius-full);
   background: var(--border-strong);
-  margin: 0 auto var(--space-4);
+  margin: var(--space-1) auto var(--space-3);
+  flex-shrink: 0;
 
   @media (min-width: 640px) {
     display: none;
   }
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-1);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
 .title {
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 800;
-  margin: 0 0 var(--space-4);
-  text-align: center;
+  margin: 0;
   color: var(--text-primary);
-  letter-spacing: -0.2px;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  flex: 1;
+  min-width: 0;
+}
+
+.closeBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all var(--duration-fast) var(--ease-out);
+
+  @media (hover: hover) {
+    &:hover {
+      background: var(--danger-soft);
+      color: var(--danger);
+      border-color: var(--danger-border);
+    }
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
 }
 
 .body {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  padding-top: var(--space-2);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  flex: 1;
+  min-height: 0;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
   from {
     opacity: 0;
-    transform: scale(0.94);
+    transform: scale(0.95) translateY(6px);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateY(0);
   }
 }
 
 @keyframes slideUp {
   from {
-    opacity: 0;
     transform: translateY(100%);
   }
   to {
-    opacity: 1;
     transform: translateY(0);
-  }
-}
-// ✅ ضروري عشان زر X
-.modal {
-  position: relative;
-  // ... باقي الموجود
-}
-
-// ✅ زر X
-.closeBtn {
-  position: absolute;
-  top: var(--space-3);
-  inset-inline-start: var(--space-3);
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-default);
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
-  z-index: 10;
-
-  &:hover {
-    background: var(--danger-soft);
-    color: var(--danger);
-    border-color: var(--danger-border);
-  }
-
-  &:active {
-    transform: scale(0.9);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--zekr);
-    outline-offset: 2px;
   }
 }

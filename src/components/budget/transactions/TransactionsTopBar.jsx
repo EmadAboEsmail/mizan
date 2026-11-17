@@ -1,13 +1,9 @@
-import { useRef } from 'react'
-import {
-  PlusIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from '../icons/transactionsIcons.jsx'
-import { AR_MONTHS } from './lib/transactionsHelpers.js'
+import { useState } from 'react'
+import { ChevronRight, ChevronLeft, Calendar, Plus } from 'lucide-react'
+import MonthPickerSheet from '@/components/ui/MonthPickerSheet/MonthPickerSheet.jsx'
+import { AR_MONTHS_FULL } from './lib/transactionsHelpers.js'
 import styles from './TransactionsTopBar.module.scss'
 
-// ─── Helpers ───
 function getMonthKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
 }
@@ -15,7 +11,7 @@ function getMonthKey(date) {
 function getMonthLabel(currentMonth) {
   if (!currentMonth) return 'كل الفترات'
   const [y, m] = currentMonth.split('-').map(Number)
-  return `${AR_MONTHS[m - 1] || m} ${y}`
+  return `${AR_MONTHS_FULL[m - 1] || m} ${y}`
 }
 
 export default function TransactionsTopBar({
@@ -24,7 +20,7 @@ export default function TransactionsTopBar({
   onToggleAll,
   onAdd,
 }) {
-  const monthInputRef = useRef(null)
+  const [isPickerOpen, setIsPickerOpen] = useState(false)
 
   const monthLabel = getMonthLabel(currentMonth)
   const todayKey = getMonthKey(new Date())
@@ -36,8 +32,7 @@ export default function TransactionsTopBar({
       return
     }
     const [y, m] = currentMonth.split('-').map(Number)
-    const prev = new Date(y, m - 2, 1)
-    onMonthChange(getMonthKey(prev))
+    onMonthChange(getMonthKey(new Date(y, m - 2, 1)))
   }
 
   const handleNext = () => {
@@ -46,70 +41,14 @@ export default function TransactionsTopBar({
       return
     }
     const [y, m] = currentMonth.split('-').map(Number)
-    const next = new Date(y, m, 1)
-    onMonthChange(getMonthKey(next))
-  }
-
-  // ✅ فتح Date Picker عند الضغط على اسم الشهر
-  const handleMonthClick = () => {
-    const input = monthInputRef.current
-    if (!input) return
-
-    // ✅ لو في وضع "الكل"، نضبط الشهر الافتراضي لليوم قبل الفتح
-    if (isAllMode) {
-      input.value = todayKey
-    } else {
-      input.value = currentMonth
-    }
-
-    try {
-      if (typeof input.showPicker === 'function') {
-        input.showPicker()
-      } else {
-        input.click()
-      }
-    } catch {
-      try {
-        input.click()
-      } catch (e) {
-        console.warn('[MonthPicker] not supported:', e)
-      }
-    }
-  }
-
-  const handleMonthInputChange = (e) => {
-    const value = e.target.value
-    if (value) onMonthChange(value)
+    onMonthChange(getMonthKey(new Date(y, m, 1)))
   }
 
   return (
-    <div className={styles.topBar}>
-      {/* ═══════ Header Row ═══════ */}
-      <div className={styles.headerRow}>
-        <div className={styles.titleGroup}>
-          <span className={styles.titleIcon} aria-hidden="true">
-            💵
-          </span>
-          <div className={styles.titleText}>
-            <h2 className={styles.title}>المعاملات</h2>
-            <p className={styles.subtitle}>{monthLabel}</p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          className={styles.addBtn}
-          onClick={onAdd}
-          title="إضافة معاملة جديدة"
-        >
-          <PlusIcon />
-          <span className={styles.addLabel}>إضافة</span>
-        </button>
-      </div>
-
-      {/* ═══════ Month Navigator ═══════ */}
-      <div className={styles.monthNav}>
-        <div className={styles.navGroup}>
+    <>
+      <div className={styles.bar}>
+        {/* في RTL: الزر الأيمن (ChevronRight) = السابق، والأيسر (ChevronLeft) = التالي */}
+        <div className={styles.monthStepper}>
           <button
             type="button"
             className={styles.navBtn}
@@ -117,21 +56,22 @@ export default function TransactionsTopBar({
             aria-label="الشهر السابق"
             title="الشهر السابق"
           >
-            <ChevronLeftIcon />
+            <ChevronRight size={18} strokeWidth={2.3} aria-hidden="true" />
           </button>
 
-          {/* ✅ زر اسم الشهر — يفتح date picker */}
           <button
             type="button"
             className={styles.monthBtn}
-            onClick={handleMonthClick}
-            title="اضغط لاختيار أي شهر"
-            aria-label={`اختيار شهر، الحالي: ${monthLabel}`}
+            onClick={() => setIsPickerOpen(true)}
+            aria-label={`اختيار الفترة، الحالي: ${monthLabel}`}
           >
+            <Calendar
+              size={15}
+              strokeWidth={2.1}
+              className={styles.calIcon}
+              aria-hidden="true"
+            />
             <span className={styles.monthLabel}>{monthLabel}</span>
-            <span className={styles.monthIcon} aria-hidden="true">
-              📅
-            </span>
           </button>
 
           <button
@@ -141,29 +81,40 @@ export default function TransactionsTopBar({
             aria-label="الشهر التالي"
             title="الشهر التالي"
           >
-            <ChevronRightIcon />
+            <ChevronLeft size={18} strokeWidth={2.3} aria-hidden="true" />
           </button>
         </div>
 
         <button
           type="button"
-          className={`${styles.allBtn} ${!currentMonth ? styles.allActive : ''}`}
+          className={`${styles.allBtn} ${isAllMode ? styles.allActive : ''}`}
           onClick={onToggleAll}
-          title={!currentMonth ? 'العودة للشهر الحالي' : 'عرض كل الفترات'}
+          title={isAllMode ? 'العودة للشهر الحالي' : 'عرض كل الفترات'}
         >
-          {!currentMonth ? '📅 شهر' : '🗓️ الكل'}
+          {isAllMode ? 'الشهر' : 'الكل'}
         </button>
+
+        {onAdd && (
+          <button
+            type="button"
+            className={styles.desktopAddBtn}
+            onClick={onAdd}
+          >
+            <Plus size={16} strokeWidth={2.5} aria-hidden="true" />
+            <span>إضافة</span>
+          </button>
+        )}
       </div>
 
-      {/* ✅ Hidden month input — يفتح date picker */}
-      <input
-        ref={monthInputRef}
-        type="month"
-        className={styles.hiddenMonthInput}
-        onChange={handleMonthInputChange}
-        aria-hidden="true"
-        tabIndex={-1}
+      <MonthPickerSheet
+        isOpen={isPickerOpen}
+        onClose={() => setIsPickerOpen(false)}
+        value={currentMonth}
+        onSelect={onMonthChange}
+        allowAll
+        onSelectAll={() => onMonthChange('all')}
+        title="اختر شهر المعاملات"
       />
-    </div>
+    </>
   )
 }

@@ -1,5 +1,3 @@
-@use '@/styles/tokens' as *;
-
 // ═══════════════════════════════════════
 // Form
 // ═══════════════════════════════════════
@@ -249,7 +247,11 @@
 }
 
 .dateChip {
-  padding: 8px 14px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
   font-family: var(--font-body);
   font-size: var(--text-sm);
   font-weight: 600;
@@ -340,9 +342,14 @@
 }
 
 .extrasChevron {
-  font-size: 0.7rem;
   transition: transform var(--duration-fast) var(--ease-out);
-  display: inline-block;
+  display: inline-flex;
+  color: var(--text-muted);
+}
+
+.extrasChevronOpen {
+  transform: rotate(180deg);
+  color: var(--budget);
 }
 
 .extrasContent {
@@ -382,9 +389,10 @@
 .input,
 .textarea {
   width: 100%;
+  min-height: 44px;
   padding: 10px 14px;
   font-family: var(--font-body);
-  font-size: var(--text-sm);
+  font-size: 1rem;
   background: var(--bg-subtle);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);

@@ -1,45 +1,26 @@
-@use '@/styles/tokens' as *;
-
-// ═══════════════════════════════════════
-// Card
-// ═══════════════════════════════════════
 .card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-4);
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
   background: var(--bg-card);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
   transition: all var(--duration-fast) var(--ease-out);
 
-  &:hover {
-    box-shadow: var(--shadow-xs);
-  }
-
-  &.safe {
-    border-color: var(--success-border);
-  }
-
   &.warning {
     border-color: var(--warning-border);
-    background: var(--warning-soft);
   }
 
   &.over {
     border-color: var(--danger-border);
-    background: var(--danger-soft);
   }
 
   &.compact {
     padding: var(--space-3);
-    gap: var(--space-2);
   }
 }
 
-// ═══════════════════════════════════════
-// Header
-// ═══════════════════════════════════════
 .header {
   display: flex;
   align-items: center;
@@ -47,7 +28,7 @@
   gap: var(--space-2);
 }
 
-.headerLeft {
+.catInfo {
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -55,15 +36,14 @@
   flex: 1;
 }
 
-.headerInfo {
+.catText {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   min-width: 0;
 }
 
-.name {
-  font-family: var(--font-body);
+.catName {
   font-size: var(--text-sm);
   font-weight: 700;
   color: var(--text-primary);
@@ -72,181 +52,131 @@
   text-overflow: ellipsis;
 }
 
-.statusBadge {
-  display: inline-flex;
-  align-self: flex-start;
-  padding: 1px 8px;
-  border-radius: var(--radius-full);
-  font-family: var(--font-body);
-  font-size: 0.68rem;
-  font-weight: 700;
-  line-height: 1.4;
+.amounts {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
 
-  .safe & {
-    background: var(--success-soft);
-    color: var(--success);
-    border: 1px solid var(--success-border);
-  }
-
-  .warning & {
-    background: var(--warning-soft);
-    color: var(--warning);
-    border: 1px solid var(--warning-border);
-  }
-
-  .over & {
-    background: var(--danger-soft);
-    color: var(--danger);
-    border: 1px solid var(--danger-border);
+  strong {
+    font-family: var(--font-display);
+    color: var(--text-primary);
+    font-weight: 800;
   }
 }
 
-// ═══════════════════════════════════════
-// Actions
-// ═══════════════════════════════════════
-.actions {
+.right {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--space-2);
   flex-shrink: 0;
 }
 
-.iconBtn {
-  width: 30px;
-  height: 30px;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-muted);
+.percent {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-variant-numeric: tabular-nums;
+}
+
+.percent_safe {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.percent_warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.percent_over {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.actions {
   display: flex;
   align-items: center;
+  gap: 4px;
+}
+
+.actionBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out);
-  touch-action: manipulation;
 
-  svg {
-    width: 13px;
-    height: 13px;
+  @media (hover: hover) {
+    &:hover {
+      background: var(--budget-soft);
+      border-color: var(--budget-border);
+      color: var(--budget-text);
+    }
   }
 
-  &.edit:hover {
-    background: var(--budget-soft);
-    color: var(--budget);
-    border-color: var(--budget-border);
-  }
-
-  &.danger:hover {
-    background: var(--danger-soft);
+  &.deleteBtn {
     color: var(--danger);
-    border-color: var(--danger-border);
+
+    @media (hover: hover) {
+      &:hover {
+        background: var(--danger-soft);
+        border-color: var(--danger-border);
+      }
+    }
   }
 
   &:active {
-    transform: scale(0.9);
+    transform: scale(0.92);
   }
-
-  &:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 1px;
-  }
-}
-
-// ═══════════════════════════════════════
-// Progress
-// ═══════════════════════════════════════
-.progressWrapper {
-  width: 100%;
 }
 
 .progressTrack {
   width: 100%;
-  height: 8px;
-  background: rgba(0, 0, 0, 0.06);
+  height: 6px;
+  background: var(--bg-subtle);
   border-radius: var(--radius-full);
   overflow: hidden;
-
-  body.dark & {
-    background: rgba(255, 255, 255, 0.08);
-  }
 }
 
 .progressFill {
   height: 100%;
   border-radius: var(--radius-full);
-  transition: width 0.4s var(--ease-out);
-
-  .safe & {
-    background: linear-gradient(90deg, var(--success), var(--success));
-  }
-
-  .warning & {
-    background: linear-gradient(90deg, var(--warning), var(--warning-dark));
-  }
-
-  .over & {
-    background: linear-gradient(90deg, var(--danger), var(--danger-dark));
-  }
+  transition: width 0.35s var(--ease-out);
 }
 
-// ═══════════════════════════════════════
-// Stats
-// ═══════════════════════════════════════
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-2);
+.fill_safe {
+  background: var(--success);
 }
 
-.stat {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.fill_warning {
+  background: var(--warning);
 }
 
-.statLabel {
-  font-family: var(--font-body);
-  font-size: 0.68rem;
+.fill_over {
+  background: var(--danger);
+}
+
+.footer {
+  font-size: 0.74rem;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.footer_safe {
   color: var(--text-muted);
 }
 
-.statValue {
-  font-family: var(--font-display);
-  font-size: 0.85rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-letter-spacing: -0.2px;
-
-  &.negative {
-    color: var(--danger);
-  }
+.footer_warning {
+  color: var(--warning);
 }
 
-// ═══════════════════════════════════════
-// Percent Row
-// ═══════════════════════════════════════
-.percentRow {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.percentText {
-  font-family: var(--font-body);
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
-
-  .warning & {
-    color: var(--warning);
-  }
-
-  .over & {
-    color: var(--danger);
-  }
+.footer_over {
+  color: var(--danger);
 }

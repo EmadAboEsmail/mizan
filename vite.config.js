@@ -22,12 +22,12 @@ export default defineConfig({
           registerType: "autoUpdate",
           includeAssets: ["favicon.ico", "icons/*.png"],
           manifest: {
-            name: "مساحتي الرقمية",
-            short_name: "مساحتي",
+            name: "مِيزان — ذِكر والميزانية",
+            short_name: "ميزان",
             description:
-              "منصة تطبيقات عربية — ذِكر للسبحة والإحصائيات، والميزانية لإدارة الدخل والمصروف",
-            theme_color: "#059669",
-            background_color: "#f8fafc",
+              "توازن يومك ومالك — ذِكر للسبحة والإحصائيات، والميزانية لإدارة الدخل والمصروف بدون إنترنت",
+            theme_color: "#FAF6F0",
+            background_color: "#FAF6F0",
             display: "standalone",
             orientation: "portrait",
             lang: "ar",

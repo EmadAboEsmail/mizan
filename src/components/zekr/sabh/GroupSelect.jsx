@@ -23,7 +23,7 @@ function GroupSelect({ groups = [], value, onChange }) {
   const [isOpen, setIsOpen] = useState(false)
   const ref = useRef(null)
 
-  const selected = groups.find((g) => g.id === value)
+  const selected = groups.find((g) => String(g.id) === String(value))
 
   useEffect(() => {
     if (!isOpen) return
@@ -47,7 +47,9 @@ function GroupSelect({ groups = [], value, onChange }) {
   if (groups.length === 0) {
     return (
       <div className={styles.empty}>
-        <span className={styles.emptyIcon}>📂</span>
+        <span className={styles.emptyIcon} aria-hidden="true">
+          <FolderIcon />
+        </span>
         <span>لا توجد مجموعات أذكار. أضِف واحدة من الإعدادات.</span>
       </div>
     )
@@ -90,7 +92,7 @@ function GroupSelect({ groups = [], value, onChange }) {
         <div className={styles.dropdown}>
           <ul className={styles.menu} role="listbox">
             {groups.map((g) => {
-              const isSelected = g.id === value
+              const isSelected = String(g.id) === String(value)
               const itemCount = g.items?.length ?? 0
               return (
                 <li

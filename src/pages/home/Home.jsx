@@ -1,33 +1,18 @@
-import AppCard from './AppCard.jsx'
+import { useMemo } from 'react'
+import { Calendar, Wallet } from 'lucide-react'
+import { useAdhkarQuery, useCountsQuery } from '@/queries/zekr'
+import { useSummaryQuery } from '@/queries/budget'
+import { getCurrentMonth } from '@/contexts/BudgetContext'
 import ThemeToggle from '@/components/ui/ThemeToggle.jsx'
+import { MizanMark, TasbihIcon } from '@/components/ui/BrandIcons.jsx'
+import AppCard from './AppCard.jsx'
+import ContinueCard from './ContinueCard.jsx'
+import QuickStats from './QuickStats.jsx'
 import styles from './Home.module.scss'
 
-const APPS = [
-  {
-    id: 'zekr',
-    name: 'ذِكر',
-    tagline: 'سكينة يومك',
-    category: 'عبادات',
-    description: 'سبحة ذكية بأذكار وإحصائيات دقيقة لأورادك اليومية.',
-    path: '/zekr',
-    icon: '📿',
-    accent: 'zekr',
-    available: true,
-  },
-  {
-    id: 'budget',
-    name: 'الميزانية',
-    tagline: 'وضوح مالك',
-    category: 'مالي',
-    description: 'تتبع الدخل والمصروف مع تقارير بصرية شهرية.',
-    path: '/budget',
-    icon: '💰',
-    accent: 'budget',
-    available: true,
-  },
-]
+const EMPTY_LIST = []
+const EMPTY_MAP = {}
 
-// توقيت بسيط لتغيير التحية
 function getGreeting() {
   const h = new Date().getHours()
   if (h < 5) return 'طاب سُحورك'
@@ -37,8 +22,7 @@ function getGreeting() {
   return 'طاب مساؤك'
 }
 
-function getHijriApprox() {
-  // تقريبي — بدون مكتبة
+function getHijriDate() {
   try {
     return new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
       day: 'numeric',
@@ -50,21 +34,84 @@ function getHijriApprox() {
   }
 }
 
+function formatCompactMoney(n) {
+  const num = Number(n || 0)
+  const sign = num > 0 ? '+' : num < 0 ? '−' : ''
+  return `${sign}${Math.abs(num).toLocaleString('en', { maximumFractionDigits: 0 })} ج.م`
+}
+
 export default function Home() {
   const greeting = getGreeting()
-  const hijri = getHijriApprox()
+  const hijri = getHijriDate()
+  const thisMonth = useMemo(() => getCurrentMonth(), [])
+
+  const { data: adhkar = EMPTY_LIST } = useAdhkarQuery()
+  const { data: counts = EMPTY_MAP } = useCountsQuery()
+  const { data: monthSummary = null } = useSummaryQuery(thisMonth)
+
+  const totalTasbihat = useMemo(
+    () => Object.values(counts).reduce((sum, c) => sum + (c || 0), 0),
+    [counts]
+  )
+
+  const zekrStat = useMemo(() => {
+    if (totalTasbihat > 0) {
+      return `${totalTasbihat.toLocaleString('en')} تسبيحة مسجّلة`
+    }
+    if (adhkar.length > 0) {
+      return `${adhkar.length.toLocaleString('en')} ذكر جاهز للورد`
+    }
+    return 'ابدأ وردك اليومي'
+  }, [totalTasbihat, adhkar.length])
+
+  const budgetStat = useMemo(() => {
+    if (monthSummary && monthSummary.transaction_count > 0) {
+      return `صافي الشهر: ${formatCompactMoney(monthSummary.net)}`
+    }
+    return 'سجّل دخلك ومصروفك بسهولة'
+  }, [monthSummary])
+
+  const apps = [
+    {
+      id: 'zekr',
+      name: 'ذِكر',
+      tagline: 'سكينة يومك',
+      category: 'عبادات',
+      description: 'سبحة هادئة بأوراد مخصصة ووضع تركيز وإحصائيات يومية.',
+      stat: zekrStat,
+      ctaLabel: 'افتح السبحة',
+      path: '/zekr/sabh',
+      icon: <TasbihIcon size={26} />,
+      accent: 'zekr',
+      available: true,
+    },
+    {
+      id: 'budget',
+      name: 'الميزانية',
+      tagline: 'وضوح مالك',
+      category: 'مالي',
+      description: 'تتبّع الدخل والمصروف وحدود الإنفاق مع تقارير شهرية واضحة.',
+      stat: budgetStat,
+      ctaLabel: 'افتح الميزانية',
+      path: '/budget/transactions',
+      icon: <Wallet size={24} strokeWidth={1.9} />,
+      accent: 'budget',
+      available: true,
+    },
+  ]
 
   return (
     <div className={styles.page}>
-      {/* طبقة ديكور علوية ناعمة */}
       <div className={styles.ambientTop} aria-hidden="true" />
 
       <header className={styles.topBar}>
         <div className={styles.brand}>
-          <div className={styles.logoMark}>۞</div>
+          <div className={styles.logoMark}>
+            <MizanMark size={21} />
+          </div>
           <div className={styles.brandText}>
-            <span className={styles.brandName}>مساحتي</span>
-            <span className={styles.brandTag}>فضاء رقمي هادئ</span>
+            <span className={styles.brandName}>مِيزان</span>
+            <span className={styles.brandTag}>توازن يومك ومالك</span>
           </div>
         </div>
         <ThemeToggle />
@@ -72,44 +119,41 @@ export default function Home() {
 
       <main className={styles.main}>
         <section className={styles.hero}>
-          <span className={styles.eyebrow}>{hijri || 'مساحة رقمية'}</span>
+          {hijri && (
+            <span className={styles.eyebrow}>
+              <Calendar size={13} strokeWidth={2.1} aria-hidden="true" />
+              <span>{hijri}</span>
+            </span>
+          )}
           <h1 className={styles.title}>{greeting}</h1>
           <p className={styles.subtitle}>
-            أدوات صغيرة مصنوعة بعناية، لترافقك في يومك دون ضجيج.
+            سكينة الذكر ووضوح المال — في مساحة واحدة هادئة تعمل دون اتصال.
           </p>
-          <div className={styles.divider} aria-hidden="true">
-            <span className={styles.dividerLine} />
-            <span className={styles.dividerDot} />
-            <span className={styles.dividerLine} />
+        </section>
+
+        <ContinueCard />
+
+        <section className={styles.gridSection} aria-label="أقسام مِيزان">
+          <div className={styles.grid}>
+            {apps.map((app, i) => (
+              <AppCard key={app.id} app={app} index={i} />
+            ))}
           </div>
         </section>
 
-        <section className={styles.grid} aria-label="التطبيقات المتاحة">
-          {APPS.map((app, i) => (
-            <AppCard key={app.id} app={app} index={i} />
-          ))}
-        </section>
-
-        <section className={styles.comingSoon} aria-label="قادم قريباً">
-          <div className={styles.comingSoonInner}>
-            <span className={styles.comingSoonIcon}>✦</span>
-            <div>
-              <h3 className={styles.comingSoonTitle}>أدوات جديدة قادمة</h3>
-              <p className={styles.comingSoonText}>
-                نعمل على أدوات إضافية بذات الروح الهادئة.
-              </p>
-            </div>
-          </div>
-        </section>
+        <QuickStats />
       </main>
 
       <footer className={styles.footer}>
-        <span className={styles.footerLine} />
+        <span className={styles.footerOrnament} aria-hidden="true">
+          <span className={styles.footerLine} />
+          <span className={styles.footerDot} />
+          <span className={styles.footerLine} />
+        </span>
         <p className={styles.footerText}>
-          صُنع بشغف · {new Date().getFullYear()}
+          مِيزان · بياناتك محفوظة على جهازك بالكامل
         </p>
       </footer>
     </div>
   )
 }
-

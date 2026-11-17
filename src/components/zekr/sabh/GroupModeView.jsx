@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
+import { FolderOpen, Sparkles, RotateCcw, Moon } from 'lucide-react'
 import GroupSelect from './GroupSelect.jsx'
 import ZekrDisplay from './ZekrDisplay.jsx'
 import ActionButtons from './ActionButtons.jsx'
 import FocusMode from '@/components/zekr/sabh/FocusMode.jsx'
-import { useVibrationEnabled } from "../../../hooks/useVibrationEnabled.js"
+import { TasbihIcon } from '@/components/ui/BrandIcons.jsx'
+import { useVibrationEnabled } from '../../../hooks/useVibrationEnabled.js'
 import styles from './GroupModeView.module.scss'
 
 const ArrowRightIcon = () => (
@@ -189,7 +191,9 @@ function GroupModeView({
   if (groups.length === 0) {
     return (
       <div className={styles.emptyView}>
-        <div className={styles.emptyIcon}>📂</div>
+        <div className={styles.emptyIcon} aria-hidden="true">
+          <FolderOpen size={26} strokeWidth={1.9} />
+        </div>
         <h3 className={styles.emptyTitle}>لا توجد مجموعات أذكار بعد</h3>
         <p className={styles.emptyText}>
           قم بإنشاء مجموعتك الأولى من تبويب الإعدادات لتبدأ الورد.
@@ -202,7 +206,9 @@ function GroupModeView({
     if (items.length === 0) {
       return (
         <div className={styles.emptyGroupCard}>
-          <div className={styles.emptyIcon}>📿</div>
+          <div className={styles.emptyIcon} aria-hidden="true">
+            <TasbihIcon size={26} />
+          </div>
           <p className={styles.emptyText}>
             هذه المجموعة لا تحتوي على أذكار حتى الآن.
           </p>
@@ -220,8 +226,10 @@ function GroupModeView({
           onClick={restartGroup}
           title="اضغط للبدء من جديد"
         >
-          <div className={styles.celebrateIcon}>🎉</div>
-          <h2 className={styles.completeTitle}>تقبل الله!</h2>
+          <div className={styles.celebrateIcon} aria-hidden="true">
+            <Sparkles size={32} strokeWidth={2} />
+          </div>
+          <h2 className={styles.completeTitle}>تقبّل الله طاعتك</h2>
           <p className={styles.completeSub}>أتممت الورد كاملاً</p>
           <p className={styles.groupName}>{selectedGroup?.name}</p>
           <button
@@ -232,7 +240,8 @@ function GroupModeView({
               restartGroup()
             }}
           >
-            إعادة من جديد ↺
+            <RotateCcw size={15} strokeWidth={2.2} aria-hidden="true" />
+            <span>إعادة من جديد</span>
           </button>
         </div>
       )
@@ -337,10 +346,10 @@ function GroupModeView({
         )}
 
         <ActionButtons
-          zekrText={currentItem.text}
           onReset={handleReset}
           onClick={handleAddClick}
           count={localCount}
+          target={currentTarget}
           progress={
             currentTarget
               ? Math.min((localCount / currentTarget) * 100, 100)
@@ -349,18 +358,20 @@ function GroupModeView({
           isComplete={!!currentTarget && localCount >= currentTarget}
           isFocusMode={isFocusMode}
           showReset={!isFocusMode}
+          extraAction={
+            !isFocusMode && items.length > 0 ? (
+              <button
+                type="button"
+                className={styles.focusBtn}
+                onClick={() => setIsFocusMode(true)}
+                title="وضع التركيز"
+              >
+                <Moon size={15} strokeWidth={2.1} aria-hidden="true" />
+                <span>وضع التركيز</span>
+              </button>
+            ) : null
+          }
         />
-
-        {!isFocusMode && items.length > 0 && (
-          <button
-            type="button"
-            className={styles.focusBtn}
-            onClick={() => setIsFocusMode(true)}
-            title="الانتقال لوضع التركيز"
-          >
-            🌙 وضع التركيز
-          </button>
-        )}
       </div>
     )
   }

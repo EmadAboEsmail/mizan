@@ -1,4 +1,12 @@
-import { useState } from 'react'   // ← useEffect اتشال
+import { useState } from 'react'
+import {
+  ArrowUpRight,
+  ArrowDownLeft,
+  Calendar,
+  Check,
+  ChevronDown,
+  AlertCircle,
+} from 'lucide-react'
 import Modal from '@/components/ui/Modal.jsx'
 import CategoryIcon from './CategoryIcon.jsx'
 import styles from './TransactionFormModal.module.scss'
@@ -23,7 +31,7 @@ function yesterdayISO() {
 function formatDateLabel(iso) {
   if (iso === todayISO()) return 'اليوم'
   if (iso === yesterdayISO()) return 'أمس'
-  const [m, d] = iso.split('-')
+  const [, m, d] = iso.split('-')
   return `${d}/${m}`
 }
 
@@ -179,7 +187,7 @@ function TransactionFormModal({
             className={`${styles.segment} ${type === 'expense' ? styles.segmentExpense : ''}`}
             onClick={() => setType('expense')}
           >
-            <span className={styles.segmentIcon}>💸</span>
+            <ArrowUpRight size={16} strokeWidth={2.4} aria-hidden="true" />
             <span>مصروف</span>
           </button>
           <button
@@ -189,7 +197,7 @@ function TransactionFormModal({
             className={`${styles.segment} ${type === 'income' ? styles.segmentIncome : ''}`}
             onClick={() => setType('income')}
           >
-            <span className={styles.segmentIcon}>💰</span>
+            <ArrowDownLeft size={16} strokeWidth={2.4} aria-hidden="true" />
             <span>دخل</span>
           </button>
         </div>
@@ -240,9 +248,16 @@ function TransactionFormModal({
                       if (error) setError('')
                     }}
                   >
-                    <CategoryIcon category={cat} size={20} />
+                    <CategoryIcon category={cat} size={22} />
                     <span className={styles.catName}>{cat.name}</span>
-                    {isSelected && <span className={styles.catCheck}>✓</span>}
+                    {isSelected && (
+                      <Check
+                        size={14}
+                        strokeWidth={2.6}
+                        className={styles.catCheck}
+                        aria-hidden="true"
+                      />
+                    )}
                   </button>
                 )
               })}
@@ -275,7 +290,10 @@ function TransactionFormModal({
               className={`${styles.dateChip} ${!isToday && !isYesterday ? styles.dateChipActive : ''}`}
               onClick={() => setShowDatePicker(!showDatePicker)}
             >
-              {!isToday && !isYesterday ? formatDateLabel(date) : '📅 تاريخ آخر'}
+              <Calendar size={14} strokeWidth={2.1} aria-hidden="true" />
+              <span>
+                {!isToday && !isYesterday ? formatDateLabel(date) : 'تاريخ آخر'}
+              </span>
             </button>
           </div>
           {showDatePicker && (
@@ -301,8 +319,13 @@ function TransactionFormModal({
             onClick={() => setShowExtras(!showExtras)}
             aria-expanded={showExtras}
           >
-            <span className={styles.extrasChevron}>{showExtras ? '▼' : '◀'}</span>
-            <span>تفاصيل إضافية (اختياري)</span>
+            <ChevronDown
+              size={16}
+              strokeWidth={2.2}
+              className={`${styles.extrasChevron} ${showExtras ? styles.extrasChevronOpen : ''}`}
+              aria-hidden="true"
+            />
+            <span>ملاحظات وتفاصيل (اختياري)</span>
           </button>
 
           {showExtras && (
@@ -317,7 +340,7 @@ function TransactionFormModal({
                   className={styles.input}
                   value={details}
                   onChange={(e) => setDetails(e.target.value)}
-                  placeholder="مثال: house, boys..."
+                  placeholder="مثال: البقالة، المواصلات..."
                   maxLength={200}
                 />
               </div>
@@ -343,7 +366,7 @@ function TransactionFormModal({
         {/* ─── Error ─── */}
         {error && (
           <div className={styles.error} role="alert">
-            <span>⚠️</span>
+            <AlertCircle size={16} strokeWidth={2.2} aria-hidden="true" />
             <span>{error}</span>
           </div>
         )}

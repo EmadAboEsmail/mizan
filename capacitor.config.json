@@ -2,6 +2,7 @@
   "appId": "app.mizan",
   "appName": "ميزان",
   "webDir": "dist",
+  "backgroundColor": "#FAF6F0",
   "server": {
     "androidScheme": "https"
   },
@@ -16,8 +17,9 @@
       }
     },
     "StatusBar": {
-      "style": "DARK",
-      "backgroundColor": "#FAF6F0"
+      "style": "LIGHT",
+      "backgroundColor": "#FAF6F0",
+      "overlaysWebView": false
     }
   }
 }

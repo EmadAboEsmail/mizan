@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react'
+import { ArrowLeftRight, Calendar, PieChart } from 'lucide-react'
 import { useBudgetUI, getCurrentMonth } from '@/contexts/BudgetContext'
 import {
   useCategoriesQuery,
@@ -12,15 +13,15 @@ import MonthlyBarChart from '@/components/budget/charts/MonthlyBarChart.jsx'
 import CategoryIcon from '@/components/budget/CategoryIcon.jsx'
 import LimitProgressCard from '@/components/budget/limits/LimitProgressCard.jsx'
 import InsightsGrid from '@/components/budget/insights/InsightsGrid.jsx'
+import TransactionsTopBar from '@/components/budget/transactions/TransactionsTopBar.jsx'
+import TransactionsSummary from '@/components/budget/transactions/TransactionsSummary.jsx'
+import MonthPickerSheet from '@/components/ui/MonthPickerSheet/MonthPickerSheet.jsx'
+import EmptyState from '@/components/ui/EmptyState.jsx'
+import {
+  AR_MONTHS_FULL,
+  formatAmount,
+} from '@/components/budget/transactions/lib/transactionsHelpers.js'
 import styles from './Reports.module.scss'
-
-// ===========================
-// Helpers (outside component)
-// ===========================
-const AR_MONTHS_FULL = [
-  'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-]
 
 const EMPTY_LIST = []
 
@@ -54,25 +55,20 @@ const TREND_OPTIONS = [
   { id: 12, label: '12 شهر' },
 ]
 
-// ===========================
-// Component
-// ===========================
 function BudgetReports() {
   const { currentMonth, setCurrentMonth, setCompareMonth } = useBudgetUI()
 
   const [compareMode, setCompareMode] = useState('prev')
   const [customCompareMonth, setCustomCompareMonth] = useState('')
+  const [isComparePickerOpen, setIsComparePickerOpen] = useState(false)
   const [trendMonths, setTrendMonths] = useState(6)
 
-  // ✅ شهر المقارنة مشتق مباشرة بدون useEffect
   const effectiveCompareMonth = useMemo(
     () => resolveCompareMonth(currentMonth, compareMode, customCompareMonth),
     [currentMonth, compareMode, customCompareMonth]
   )
 
-  // ===========================
-  // Queries
-  // ===========================
+  // ─── Queries ───
   const { data: categories = EMPTY_LIST } = useCategoriesQuery()
   const { data: summary = null } = useSummaryQuery(currentMonth)
   const { data: limits = null } = useLimitsQuery(currentMonth)
@@ -83,9 +79,7 @@ function BudgetReports() {
   const { data: trend = EMPTY_LIST, isPending: trendLoading } =
     useMonthlyTrendQuery(trendMonths, currentMonth)
 
-  // ===========================
-  // Handlers
-  // ===========================
+  // ─── Handlers ───
   const handleMonthChange = useCallback(
     (nextMonth) => {
       setCurrentMonth(nextMonth)
@@ -103,6 +97,9 @@ function BudgetReports() {
   const handleCompareModeChange = useCallback(
     (mode) => {
       setCompareMode(mode)
+      if (mode === 'custom' && !customCompareMonth) {
+        setIsComparePickerOpen(true)
+      }
       setCompareMonth(
         resolveCompareMonth(currentMonth, mode, customCompareMonth)
       )
@@ -126,9 +123,7 @@ function BudgetReports() {
     }
   }, [currentMonth, handleMonthChange])
 
-  // ===========================
-  // Derived data
-  // ===========================
+  // ─── Derived data ───
   const expenseCategories = useMemo(
     () => categories.filter((c) => c.type === 'expense'),
     [categories]
@@ -136,7 +131,6 @@ function BudgetReports() {
 
   const donutData = useMemo(() => {
     if (!summary?.by_category?.length) return []
-
     return summary.by_category
       .map((item) => {
         const cat = expenseCategories.find((c) => c.id === item.category_id)
@@ -144,7 +138,7 @@ function BudgetReports() {
         return {
           label: item.category_name,
           value: item.total,
-          color: item.category_color || '#94a3b8',
+          color: item.category_color || '#C68B3C',
         }
       })
       .filter(Boolean)
@@ -165,142 +159,83 @@ function BudgetReports() {
     [topCategories]
   )
 
-  const formatAmount = (n) =>
-    Number(n || 0).toLocaleString('en', { maximumFractionDigits: 0 })
-
-  // ===========================
-  // Empty (no summary at all)
-  // ===========================
   if (!summary) {
     return (
-      <div className={styles.empty}>
-        <div className={styles.emptyIcon}>📊</div>
-        <p className={styles.emptyTitle}>لا توجد بيانات لعرضها</p>
-        <p className={styles.emptySub}>
-          ابدأ بإضافة معاملات لتظهر هنا تحليلات مفصلة
-        </p>
-      </div>
+      <EmptyState
+        accent="budget"
+        icon={<PieChart size={26} strokeWidth={1.8} />}
+        title="لا توجد بيانات لعرضها"
+        subtitle="ابدأ بإضافة معاملات لتظهر هنا تحليلات مفصلة."
+      />
     )
   }
 
   const hasData = summary.transaction_count > 0
 
-  // ===========================
-  // Render
-  // ===========================
   return (
     <div className={styles.container}>
-      {/* شريط اختيار الشهر */}
-      <div className={styles.periodBar}>
-        <div className={styles.monthControls}>
-          <input
-            type="month"
-            value={currentMonth || ''}
-            onChange={(e) => handleMonthChange(e.target.value)}
-            className={styles.monthInput}
-            disabled={currentMonth === null}
-            aria-label="اختيار الشهر"
-          />
-          <button
-            type="button"
-            className={`${styles.allBtn} ${
-              currentMonth === null ? styles.allActive : ''
-            }`}
-            onClick={handleToggleMonthMode}
-            title={
-              currentMonth === null ? 'العودة للشهر الحالي' : 'عرض كل الفترات'
-            }
-          >
-            {currentMonth === null ? '📅 شهر' : '🗓️ الكل'}
-          </button>
-        </div>
+      {/* شريط الشهر الموحد (Bottom Sheet بدون input[type=month]) */}
+      <TransactionsTopBar
+        currentMonth={currentMonth}
+        onMonthChange={handleMonthChange}
+        onToggleAll={handleToggleMonthMode}
+      />
 
-        <span className={styles.periodLabel}>
-          {currentMonth === null
-            ? 'كل الفترات'
-            : formatMonthLabel(currentMonth)}
-        </span>
-      </div>
-
-      {/* شريط اختيار فترة المقارنة */}
+      {/* شريط المقارنة المدمج */}
       {currentMonth && (
         <div className={styles.compareBar}>
-          <label className={styles.compareLabel}>
-            <span className={styles.compareIcon}>🔄</span>
-            <span>قارن مع:</span>
-          </label>
+          <span className={styles.compareLabel}>
+            <ArrowLeftRight size={14} strokeWidth={2.2} aria-hidden="true" />
+            <span>قارن بـ</span>
+          </span>
 
           <select
             className={styles.compareSelect}
             value={compareMode}
             onChange={(e) => handleCompareModeChange(e.target.value)}
+            aria-label="فترة المقارنة"
           >
             <option value="prev">الشهر السابق</option>
-            <option value="prev_year">نفس الشهر السنة الماضية</option>
+            <option value="prev_year">نفس الشهر العام الماضي</option>
             <option value="custom">شهر مخصص...</option>
           </select>
 
           {compareMode === 'custom' && (
-            <input
-              type="month"
-              className={styles.compareMonthInput}
-              value={customCompareMonth}
-              onChange={(e) => handleCustomCompareChange(e.target.value)}
-              max={subtractMonth(currentMonth, 1)}
-              aria-label="اختر شهر المقارنة"
-            />
-          )}
-
-          {insights?.comparison && (
-            <span className={styles.compareCurrent}>
-              📊 مقارنة مع{' '}
-              <strong>{formatMonthLabel(insights.comparison.prev_month)}</strong>
-            </span>
+            <button
+              type="button"
+              className={styles.customMonthBtn}
+              onClick={() => setIsComparePickerOpen(true)}
+            >
+              <Calendar size={13} strokeWidth={2.1} aria-hidden="true" />
+              <span>
+                {customCompareMonth
+                  ? formatMonthLabel(customCompareMonth)
+                  : 'اختر الشهر'}
+              </span>
+            </button>
           )}
         </div>
       )}
 
-      {/* Empty state للفترة */}
       {!hasData ? (
-        <div className={styles.empty}>
-          <div className={styles.emptyIcon}>📊</div>
-          <p className={styles.emptyTitle}>لا توجد معاملات في هذه الفترة</p>
-          <p className={styles.emptySub}>
-            {currentMonth === null
-              ? 'ابدأ بإضافة معاملات'
-              : 'جرّب اختيار فترة أخرى أو عرض كل الفترات'}
-          </p>
-        </div>
+        <EmptyState
+          accent="budget"
+          icon={<PieChart size={26} strokeWidth={1.8} />}
+          title="لا توجد معاملات في هذه الفترة"
+          subtitle={
+            currentMonth === null
+              ? 'ابدأ بإضافة معاملات لتظهر تحليلاتك هنا.'
+              : 'جرّب اختيار شهر آخر أو عرض كل الفترات.'
+          }
+        />
       ) : (
         <>
-          {/* Summary Cards */}
-          <div className={styles.summaryCards}>
-            <div className={`${styles.card} ${styles.income}`}>
-              <span className={styles.cardLabel}>إجمالي الدخل</span>
-              <span className={styles.cardValue}>
-                {formatAmount(summary.total_income)}
-              </span>
-            </div>
-            <div className={`${styles.card} ${styles.expense}`}>
-              <span className={styles.cardLabel}>إجمالي المصروف</span>
-              <span className={styles.cardValue}>
-                {formatAmount(summary.total_expense)}
-              </span>
-            </div>
-            <div
-              className={`${styles.card} ${
-                summary.net >= 0 ? styles.positive : styles.negative
-              }`}
-            >
-              <span className={styles.cardLabel}>الصافي</span>
-              <span className={styles.cardValue}>
-                {summary.net >= 0 ? '+' : ''}
-                {formatAmount(summary.net)}
-              </span>
-            </div>
-          </div>
+          <TransactionsSummary
+            summary={summary}
+            insights={insights}
+            isAllMonths={currentMonth === null}
+          />
 
-          {/* KPIs */}
           {insights && (
             <InsightsGrid
               insights={insights}
@@ -312,7 +247,7 @@ function BudgetReports() {
             />
           )}
 
-          {/* توزيع المصاريف (Donut) */}
+          {/* توزيع المصاريف */}
           <section className={styles.section}>
             <div className={styles.sectionHeader}>
               <h3 className={styles.sectionTitle}>توزيع المصاريف</h3>
@@ -328,8 +263,8 @@ function BudgetReports() {
             ) : (
               <DonutChart
                 data={donutData}
-                size={220}
-                thickness={36}
+                size={210}
+                thickness={34}
                 centerLabel="إجمالي المصروف"
               />
             )}
@@ -339,7 +274,7 @@ function BudgetReports() {
           {limits && limits.limits.length > 0 && (
             <section className={styles.section}>
               <div className={styles.sectionHeader}>
-                <h3 className={styles.sectionTitle}>تقدم الميزانية</h3>
+                <h3 className={styles.sectionTitle}>حدود الميزانية</h3>
                 <span className={styles.sectionHint}>
                   {limits.limits.length} تصنيف
                 </span>
@@ -363,9 +298,7 @@ function BudgetReports() {
           {topCategories.length > 0 && (
             <section className={styles.section}>
               <div className={styles.sectionHeader}>
-                <h3 className={styles.sectionTitle}>
-                  أعلى التصنيفات إنفاقاً
-                </h3>
+                <h3 className={styles.sectionTitle}>أعلى التصنيفات إنفاقاً</h3>
               </div>
 
               <ul className={styles.topList}>
@@ -377,25 +310,28 @@ function BudgetReports() {
 
                   return (
                     <li key={cat.category_id} className={styles.topItem}>
-                      <span className={styles.topRank}>#{i + 1}</span>
-                      <CategoryIcon category={catObj} size={32} />
+                      <span className={styles.topRank}>{i + 1}</span>
+                      <CategoryIcon category={catObj} size={34} />
                       <div className={styles.topInfo}>
-                        <span className={styles.topName}>
-                          {cat.category_name}
-                        </span>
+                        <div className={styles.topRow}>
+                          <span className={styles.topName}>
+                            {cat.category_name}
+                          </span>
+                          <span className={styles.topAmount}>
+                            {formatAmount(cat.total)}
+                          </span>
+                        </div>
                         <div className={styles.topBarWrapper}>
                           <div
                             className={styles.topBar}
                             style={{
                               width: `${pct}%`,
-                              backgroundColor: cat.category_color || '#059669',
+                              backgroundColor:
+                                cat.category_color || 'var(--budget)',
                             }}
                           />
                         </div>
                       </div>
-                      <span className={styles.topAmount}>
-                        {formatAmount(cat.total)}
-                      </span>
                     </li>
                   )
                 })}
@@ -405,17 +341,10 @@ function BudgetReports() {
         </>
       )}
 
-      {/* الاتجاه الشهري (Trend) */}
+      {/* الاتجاه الشهري */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h3 className={styles.sectionTitle}>
-            الاتجاه الشهري
-            {currentMonth && trend.length > 0 && (
-              <span className={styles.trendPeriod}>
-                ({trend[0].month} → {trend[trend.length - 1].month})
-              </span>
-            )}
-          </h3>
+          <h3 className={styles.sectionTitle}>الاتجاه الشهري</h3>
           <div className={styles.trendTabs}>
             {TREND_OPTIONS.map((opt) => (
               <button
@@ -438,6 +367,17 @@ function BudgetReports() {
           <MonthlyBarChart data={trend} highlightMonth={currentMonth} />
         )}
       </section>
+
+      {currentMonth && (
+        <MonthPickerSheet
+          isOpen={isComparePickerOpen}
+          onClose={() => setIsComparePickerOpen(false)}
+          value={customCompareMonth || subtractMonth(currentMonth, 1)}
+          onSelect={handleCustomCompareChange}
+          maxMonth={subtractMonth(currentMonth, 1)}
+          title="اختر شهر المقارنة"
+        />
+      )}
     </div>
   )
 }

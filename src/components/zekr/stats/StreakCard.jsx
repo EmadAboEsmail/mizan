@@ -46,9 +46,7 @@ function StreakCard({ streak, loading }) {
         </span>
       </div>
 
-      {isRecord && (
-        <div className={styles.recordBadge}>🏆 رقم قياسي!</div>
-      )}
+      {isRecord && <div className={styles.recordBadge}>رقم قياسي جديد</div>}
 
       <div className={styles.footer}>
         <span>

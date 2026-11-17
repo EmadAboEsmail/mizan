@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════
-// Global Resets & Base
+// Global Resets & Native APK Ergonomics
 // ═══════════════════════════════════════════════════════
 
 *,
@@ -8,6 +8,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
@@ -15,6 +16,9 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overscroll-behavior-y: none;
 }
 
 html,
@@ -23,6 +27,7 @@ body,
   direction: rtl;
   text-align: right;
   min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
 }
 
@@ -33,17 +38,38 @@ body {
   font-weight: 400;
   background: var(--bg-base);
   color: var(--text-primary);
-  transition: background-color var(--duration-slow) var(--ease-in-out),
-    color var(--duration-slow) var(--ease-in-out);
+  transition:
+    background-color var(--duration-base) var(--ease-in-out),
+    color var(--duration-base) var(--ease-in-out);
   overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+// السماح بتحديد النص داخل الحقول والمحتوى القابل للقراءة
+input,
+textarea,
+select,
+[contenteditable='true'],
+pre,
+code,
+.selectable {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 // Headings
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-display);
   font-weight: 800;
   line-height: var(--leading-tight);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
 }
 
 p {
@@ -54,6 +80,7 @@ p {
 a {
   text-decoration: none;
   color: inherit;
+  -webkit-touch-callout: none;
 }
 
 button,
@@ -69,6 +96,8 @@ button {
   cursor: pointer;
   background: none;
   border: none;
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
 }
 
 img,
@@ -77,33 +106,47 @@ svg {
   max-width: 100%;
 }
 
-// Scrollbar (Warm)
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
+// Scrollbar — ناعم على الديسكتوب ومخفي على شاشات اللمس/APK
+@media (pointer: fine) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
 
-::-webkit-scrollbar-track {
-  background: var(--bg-subtle);
-}
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
-  border-radius: var(--radius-full);
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: var(--radius-full);
 
-  &:hover {
-    background: var(--text-faint);
+    &:hover {
+      background: var(--text-faint);
+    }
   }
 }
 
 // Selection
 ::selection {
-  background: var(--budget-soft);
+  background: var(--budget-soft-strong);
   color: var(--text-primary);
 }
 
-// Utility
+// Utilities
 .tabular-nums {
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
+}
+
+// احترام تفضيل تقليل الحركة
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

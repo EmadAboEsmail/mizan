@@ -1,14 +1,31 @@
+import {
+  TrendingDown,
+  TrendingUp,
+  PiggyBank,
+  CalendarRange,
+  Flame,
+  ArrowLeftRight,
+} from 'lucide-react'
 import styles from './InsightsGrid.module.scss'
 
 const AR_MONTHS = [
-  'ينا', 'فبر', 'مار', 'أبر', 'ماي', 'يون',
-  'يول', 'أغس', 'سبت', 'أكت', 'نوف', 'ديس',
+  'يناير',
+  'فبراير',
+  'مارس',
+  'أبريل',
+  'مايو',
+  'يونيو',
+  'يوليو',
+  'أغسطس',
+  'سبتمبر',
+  'أكتوبر',
+  'نوفمبر',
+  'ديسمبر',
 ]
 
 function formatAmount(n) {
   const num = Number(n || 0)
-  const fixed = num.toFixed(0)
-  return fixed.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return num.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
 
 function formatDate(s) {
@@ -25,8 +42,10 @@ function ChangeBadge({ value, invert = false }) {
   const isPositive = value > 0
   const isGood = invert ? !isPositive : isPositive
   return (
-    <span className={`${styles.changeBadge} ${isGood ? styles.up : styles.down}`}>
-      {isPositive ? '↑' : '↓'} {Math.abs(value).toFixed(1)}%
+    <span
+      className={`${styles.changeBadge} ${isGood ? styles.up : styles.down}`}
+    >
+      {isPositive ? '↑' : '↓'} {Math.abs(value).toFixed(0)}%
     </span>
   )
 }
@@ -55,30 +74,43 @@ function InsightsGrid({ insights, compareLabel = null }) {
     <div className={styles.wrapper}>
       {compareLabel && (
         <div className={styles.compareHeader}>
-          📊 مقارنة مع <strong>{compareLabel}</strong>
+          <ArrowLeftRight size={13} strokeWidth={2.2} aria-hidden="true" />
+          <span>
+            مقارنة مع <strong>{compareLabel}</strong>
+          </span>
         </div>
       )}
 
       <div className={styles.grid}>
-        {/* 1. متوسط الصرف اليومي */}
         <div className={styles.card}>
           <div className={styles.cardTop}>
-            <span className={styles.icon}>📉</span>
+            <span
+              className={`${styles.iconBadge} ${styles.toneDanger}`}
+              aria-hidden="true"
+            >
+              <TrendingDown size={15} strokeWidth={2.2} />
+            </span>
             {comparisonExpense !== undefined && (
               <ChangeBadge value={comparisonExpense} invert />
             )}
           </div>
           <span className={styles.label}>متوسط الصرف اليومي</span>
-          <span className={styles.value}>{formatAmount(avg_daily_expense)}</span>
+          <span className={styles.value}>
+            {formatAmount(avg_daily_expense)}
+          </span>
           <span className={styles.sub}>
-            خلال {days_elapsed} يوم من {days_in_month}
+            خلال {days_elapsed} من {days_in_month} يوم
           </span>
         </div>
 
-        {/* 2. متوسط الدخل اليومي */}
         <div className={styles.card}>
           <div className={styles.cardTop}>
-            <span className={styles.icon}>📈</span>
+            <span
+              className={`${styles.iconBadge} ${styles.toneSuccess}`}
+              aria-hidden="true"
+            >
+              <TrendingUp size={15} strokeWidth={2.2} />
+            </span>
             {comparisonIncome !== undefined && (
               <ChangeBadge value={comparisonIncome} />
             )}
@@ -88,48 +120,61 @@ function InsightsGrid({ insights, compareLabel = null }) {
             {formatAmount(avg_daily_income)}
           </span>
           <span className={styles.sub}>
-            {transaction_count} معاملة هذا الشهر
+            {transaction_count} معاملة مسجّلة
           </span>
         </div>
 
-        {/* 3. نسبة التوفير */}
         <div className={styles.card}>
           <div className={styles.cardTop}>
-            <span className={styles.icon}>💎</span>
+            <span
+              className={`${styles.iconBadge} ${styles.toneGold}`}
+              aria-hidden="true"
+            >
+              <PiggyBank size={15} strokeWidth={2.1} />
+            </span>
           </div>
-          <span className={styles.label}>نسبة التوفير</span>
+          <span className={styles.label}>نسبة الادخار</span>
           <span
-            className={`${styles.value} ${savingsGood ? styles.success : styles.danger
-              }`}
+            className={`${styles.value} ${
+              savingsGood ? styles.success : styles.danger
+            }`}
           >
             {savings_rate.toFixed(1)}%
           </span>
           <span className={styles.sub}>
-            {savingsGood ? 'من الدخل تم توفيره' : 'صرفت أكتر من الدخل'}
+            {savingsGood ? 'تم توفيره من الدخل' : 'تجاوز الصرف الدخل'}
           </span>
         </div>
 
-        {/* 4. متوسط آخر 7 أيام */}
         <div className={styles.card}>
           <div className={styles.cardTop}>
-            <span className={styles.icon}>📅</span>
+            <span
+              className={`${styles.iconBadge} ${styles.toneGold}`}
+              aria-hidden="true"
+            >
+              <CalendarRange size={15} strokeWidth={2.1} />
+            </span>
           </div>
-          <span className={styles.label}>متوسط الصرف (آخر 7 أيام)</span>
+          <span className={styles.label}>متوسط آخر 7 أيام</span>
           <span className={styles.value}>{formatAmount(last_7_days_avg)}</span>
           <span className={styles.sub}>
             {last_7_days_avg > avg_daily_expense
-              ? '⬆️ أعلى من متوسط الشهر'
+              ? 'أعلى من متوسط الشهر'
               : last_7_days_avg < avg_daily_expense
-                ? '⬇️ أقل من متوسط الشهر'
-                : '= متوسط الشهر'}
+                ? 'أقل من متوسط الشهر'
+                : 'مساوٍ لمتوسط الشهر'}
           </span>
         </div>
 
-        {/* 5. أعلى يوم صرف */}
         {top_expense_day && (
           <div className={styles.card}>
             <div className={styles.cardTop}>
-              <span className={styles.icon}>🔥</span>
+              <span
+                className={`${styles.iconBadge} ${styles.toneDanger}`}
+                aria-hidden="true"
+              >
+                <Flame size={15} strokeWidth={2.1} />
+              </span>
             </div>
             <span className={styles.label}>أعلى يوم صرف</span>
             <span className={`${styles.value} ${styles.danger}`}>
@@ -141,28 +186,28 @@ function InsightsGrid({ insights, compareLabel = null }) {
           </div>
         )}
 
-        {/* 6. أعلى تصنيف إنفاقاً */}
         {top_expense_category && (
           <div className={styles.card}>
             <div className={styles.cardTop}>
-              <span className={styles.icon}>
+              <span className={styles.emojiIcon} aria-hidden="true">
                 {top_expense_category.category_icon || '📦'}
               </span>
               <span className={styles.percent}>
                 {top_expense_category.percent.toFixed(0)}%
               </span>
             </div>
-            <span className={styles.label}>أكثر تصنيف إنفاقاً</span>
+            <span className={styles.label}>الأكثر إنفاقاً</span>
             <span className={styles.valueCategory}>
               {top_expense_category.category_name}
             </span>
             <span className={styles.sub}>
-              {formatAmount(top_expense_category.amount)} ج
+              {formatAmount(top_expense_category.amount)} ج.م
             </span>
           </div>
         )}
       </div>
-    </div>)
+    </div>
+  )
 }
 
 export default InsightsGrid

@@ -1,8 +1,22 @@
 // ═══════════════════════════════════════════════════════════════════
-// Design Tokens — "دفتر" (Warm Editorial)
-// المصدر الوحيد للحقيقة. أي لون/مسافة/خط → هنا فقط.
+// Design Tokens — "دفتر" (Warm Editorial — Native Mobile Refined)
+// المصدر الوحيد للحقيقة. يُستورد مرة واحدة في src/styles/main.scss
 // ═══════════════════════════════════════════════════════════════════
 :root {
+  color-scheme: light;
+
+  // ═══════════════════════════════════════════════════════
+  // 0. Safe Area & Shell Geometry (APK / Notch / Gesture Bar)
+  // ═══════════════════════════════════════════════════════
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  --topbar-height: 56px;
+  --bottom-nav-height: 64px;
+  --touch-target: 44px;
+
   // ═══════════════════════════════════════════════════════
   // 1. Surfaces (Warm Paper)
   // ═══════════════════════════════════════════════════════
@@ -10,14 +24,19 @@
   --bg-card: #FFFFFF;
   --bg-elevated: #FFFFFF;
   --bg-subtle: #F2EBE0;
-  --bg-subtle-hover: #EAE0D0;
-  --bg-overlay: rgba(28, 24, 21, 0.45);
+  --bg-subtle-hover: #E9DFD0;
+  --bg-topbar: rgba(250, 246, 240, 0.88);
+  --bg-nav: rgba(255, 253, 249, 0.94);
+  --bg-overlay: rgba(24, 20, 17, 0.48);
+  --bg-hover: rgba(28, 24, 21, 0.045);
+  --bg-muted: #F2EBE0;
+  --bg-muted-hover: #E9DFD0;
 
-  // Aliases للقديم
+  // Legacy aliases
   --bg-container-light: #FFFFFF;
   --bg-display-light: #FAF6F0;
   --bg-btn-light: #F2EBE0;
-  --bg-btn-hover-light: #EAE0D0;
+  --bg-btn-hover-light: #E9DFD0;
   --bg-page-dark: #131210;
   --bg-container-dark: #1C1A17;
   --bg-display-dark: #1C1A17;
@@ -25,148 +44,195 @@
   --bg-btn-hover-dark: #2E2A26;
 
   // ═══════════════════════════════════════════════════════
-  // 2. Ink (Warm Dark)
+  // 2. Ink (Warm Sepia Dark — WCAG AA+)
   // ═══════════════════════════════════════════════════════
   --text-primary: #1C1815;
-  --text-secondary: #3D3530;
-  --text-muted: #6B5D50;
-  --text-faint: #9C8B7D;
+  --text-secondary: #3D352E;
+  --text-muted: #685A4D;
+  --text-faint: #948374;
   --text-inverse: #FAF6F0;
+  --text-on-brand: #FFFFFF;
+  --text-disabled: #B6A798;
 
-  // Aliases للقديم
+  // Legacy aliases
   --text-light: #2D6A4F;
-  --text-dark: #4A9A75;
+  --text-dark: #52A880;
   --text-display-light: #1C1815;
   --text-display-dark: #F5F0E8;
 
   // ═══════════════════════════════════════════════════════
-  // 3. Borders
+  // 3. Borders (Warm Hairlines)
   // ═══════════════════════════════════════════════════════
-  --border-subtle: #F0E7DA;
-  --border-default: #E8DFD2;
-  --border-strong: #D4C7B4;
+  --border-subtle: #EFE6D9;
+  --border-default: #E6DCCD;
+  --border-strong: #D2C4B0;
   --border-focus: #C68B3C;
+  --card-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 
-  // Aliases للقديم
-  --border-light: #E8DFD2;
+  // Legacy aliases
+  --border-light: #E6DCCD;
   --border-dark: #2E2A26;
-  --border-color: #E8DFD2;
+  --border-color: #E6DCCD;
 
   // ═══════════════════════════════════════════════════════
-  // 4. Brand — Zekr (Forest)
+  // 4. Brand — Zekr (Deep Forest)
   // ═══════════════════════════════════════════════════════
   --zekr: #2D6A4F;
-  --zekr-text: #2D6A4F;
+  --zekr-text: #245A42;
   --zekr-soft: rgba(45, 106, 79, 0.10);
-  --zekr-border: rgba(45, 106, 79, 0.25);
+  --zekr-soft-strong: rgba(45, 106, 79, 0.16);
+  --zekr-border: rgba(45, 106, 79, 0.24);
   --zekr-glow: rgba(45, 106, 79, 0.18);
   --zekr-hover: #245A42;
-  --zekr-dark: #1F4D38;
+  --zekr-dark: #1E4B37;
 
   // ═══════════════════════════════════════════════════════
-  // 5. Brand — Budget (Terracotta)
+  // 5. Brand — Budget (Warm Ochre / Amber)
   // ═══════════════════════════════════════════════════════
   --budget: #C68B3C;
-  --budget-text: #94682D;
-  --budget-soft: rgba(198, 139, 60, 0.10);
+  --budget-text: #946424;
+  --budget-soft: rgba(198, 139, 60, 0.11);
+  --budget-soft-strong: rgba(198, 139, 60, 0.18);
   --budget-border: rgba(198, 139, 60, 0.28);
-  --budget-glow: rgba(198, 139, 60, 0.20);
-  --budget-hover: #A97530;
-  --budget-dark: #8A5E24;
+  --budget-glow: rgba(198, 139, 60, 0.22);
+  --budget-hover: #AF782E;
+  --budget-dark: #8A5C20;
 
   // ═══════════════════════════════════════════════════════
-  // 6. Brand aliases (للملفات اللي بتستخدم --brand-*)
+  // 6. Brand Aliases
   // ═══════════════════════════════════════════════════════
   --brand-primary: #2D6A4F;
   --brand-primary-dark: #245A42;
   --brand: #2D6A4F;
   --brand-dark: #245A42;
-  --brand-darker: #1F4D38;
+  --brand-darker: #1E4B37;
   --brand-light: #4A9A75;
   --brand-bg-soft: rgba(45, 106, 79, 0.08);
   --brand-bg-medium: rgba(45, 106, 79, 0.14);
-  --brand-bg: rgba(45, 106, 79, 0.06);
+  --brand-bg-strong: rgba(45, 106, 79, 0.18);
+  --brand-bg: rgba(45, 106, 79, 0.07);
   --brand-border: rgba(45, 106, 79, 0.22);
   --brand-border-strong: rgba(45, 106, 79, 0.38);
 
   --secondary: #C68B3C;
-  --secondary-dark: #A97530;
+  --secondary-dark: #AF782E;
 
   // ═══════════════════════════════════════════════════════
   // 7. Semantic
   // ═══════════════════════════════════════════════════════
-  --success: #4A8B5C;
-  --success-soft: rgba(74, 139, 92, 0.10);
-  --success-border: rgba(74, 139, 92, 0.28);
-  --warning: #D89A3D;
-  --warning-soft: rgba(216, 154, 61, 0.10);
+  --success: #2F7D4E;
+  --success-soft: rgba(47, 125, 78, 0.10);
+  --success-bg: rgba(47, 125, 78, 0.10);
+  --success-border: rgba(47, 125, 78, 0.24);
+  --success-dark: #24633D;
+
+  --warning: #C98628;
+  --warning-soft: rgba(201, 134, 40, 0.11);
+  --warning-bg: rgba(201, 134, 40, 0.11);
+  --warning-border: rgba(201, 134, 40, 0.28);
+  --warning-dark: #A46B1B;
+
   --danger: #C0392B;
-  --danger-soft: rgba(192, 57, 43, 0.10);
-  --danger-border: rgba(192, 57, 43, 0.25);
-  --info: #4A7AB5;
-  --info-soft: rgba(74, 122, 181, 0.10);
+  --danger-soft: rgba(192, 57, 43, 0.09);
+  --danger-bg: rgba(192, 57, 43, 0.09);
+  --danger-border: rgba(192, 57, 43, 0.24);
+  --danger-dark: #9D2D21;
+
+  --info: #3F6FA6;
+  --info-soft: rgba(63, 111, 166, 0.10);
+  --info-bg: rgba(63, 111, 166, 0.10);
+  --info-dark: #315987;
+
+  // Gold / Streak
+  --gold: #C68B3C;
+  --gold-bg: rgba(198, 139, 60, 0.10);
+  --gold-dark: #A97530;
+  --gold-border: rgba(198, 139, 60, 0.30);
+
+  --streak: #D97706;
+  --streak-dark: #B45309;
+  --streak-bg: rgba(217, 119, 6, 0.10);
+  --streak-border: rgba(217, 119, 6, 0.25);
 
   // ═══════════════════════════════════════════════════════
   // 8. Radius
   // ═══════════════════════════════════════════════════════
+  --radius-none: 0;
+  --radius-tiny: 4px;
   --radius-xs: 6px;
+  --radius-small: 8px;
   --radius-sm: 10px;
+  --radius-medium: 12px;
   --radius-md: 14px;
+  --radius-large: 16px;
   --radius-lg: 18px;
   --radius-xl: 22px;
-  --radius-2xl: 28px;
+  --radius-huge: 24px;
+  --radius-2xl: 26px;
   --radius-full: 9999px;
-  --border-radius: 10px; // alias للقديم
+  --border-radius: 12px;
 
   // ═══════════════════════════════════════════════════════
   // 9. Spacing
   // ═══════════════════════════════════════════════════════
+  --space-0: 0;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-5: 20px;
   --space-6: 24px;
+  --space-7: 28px;
   --space-8: 32px;
+  --space-9: 36px;
   --space-10: 40px;
   --space-12: 48px;
+  --space-14: 56px;
   --space-16: 64px;
-
-  // Aliases للقديم
+  --space-20: 80px;
   --gap: 16px;
   --padding: 16px;
 
   // ═══════════════════════════════════════════════════════
-  // 10. Shadows (Warm)
+  // 10. Shadows (Warm Editorial Elevation)
   // ═══════════════════════════════════════════════════════
-  --shadow-xs: 0 1px 2px rgba(28, 24, 21, 0.04);
-  --shadow-sm: 0 2px 6px rgba(28, 24, 21, 0.06);
-  --shadow-md: 0 4px 12px rgba(28, 24, 21, 0.08);
-  --shadow-lg: 0 10px 28px rgba(28, 24, 21, 0.10);
-  --shadow-xl: 0 20px 48px rgba(28, 24, 21, 0.14);
+  --shadow-xs: 0 1px 2px rgba(28, 22, 16, 0.045);
+  --shadow-sm: 0 2px 8px rgba(28, 22, 16, 0.055), 0 1px 2px rgba(28, 22, 16, 0.03);
+  --shadow-md: 0 6px 18px rgba(28, 22, 16, 0.075), 0 2px 4px rgba(28, 22, 16, 0.04);
+  --shadow-lg: 0 12px 30px rgba(28, 22, 16, 0.10), 0 3px 8px rgba(28, 22, 16, 0.05);
+  --shadow-xl: 0 20px 48px rgba(28, 22, 16, 0.15);
+
+  --shadow-brand: 0 4px 14px rgba(45, 106, 79, 0.22);
+  --shadow-brand-hover: 0 6px 20px rgba(45, 106, 79, 0.30);
+  --shadow-gold: 0 6px 18px rgba(198, 139, 60, 0.28);
+
+  --shadow-dark-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-dark-md: 0 6px 18px rgba(0, 0, 0, 0.45);
+  --shadow-dark-lg: 0 12px 30px rgba(0, 0, 0, 0.55);
+  --shadow-dark-xl: 0 20px 48px rgba(0, 0, 0, 0.65);
 
   // ═══════════════════════════════════════════════════════
   // 11. Motion
   // ═══════════════════════════════════════════════════════
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
   --duration-fast: 150ms;
-  --duration-base: 250ms;
-  --duration-slow: 400ms;
+  --duration-base: 240ms;
+  --duration-slow: 360ms;
 
-  // Aliases للقديم
   --transition: 0.2s ease;
   --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
-  --transition-normal: 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-normal: 240ms cubic-bezier(0.16, 1, 0.3, 1);
 
   // ═══════════════════════════════════════════════════════
-  // 12. Typography
+  // 12. Typography (Bundled Variable Fonts — Offline APK Ready)
   // ═══════════════════════════════════════════════════════
-  --font-display: 'Alexandria', 'IBM Plex Sans Arabic', system-ui, sans-serif;
-  --font-body: 'Readex Pro', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --font-display: 'Alexandria Variable', 'Alexandria', system-ui, -apple-system, sans-serif;
+  --font-body: 'Readex Pro Variable', 'Readex Pro', system-ui, -apple-system, sans-serif;
+  --font-main: var(--font-body);
+  --font-heading: var(--font-display);
   --font-mono: 'SF Mono', 'Monaco', 'Consolas', monospace;
-  --font-main: 'Readex Pro', 'IBM Plex Sans Arabic', system-ui, sans-serif;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -177,293 +243,204 @@
   --text-3xl: 1.875rem;
   --text-4xl: 2.25rem;
 
+  --font-3xs: 0.625rem;
+  --font-2xs: 0.6875rem;
+  --font-xs: 0.75rem;
+  --font-sm: 0.875rem;
+  --font-md: 1rem;
+  --font-base: 1rem;
+  --font-lg: 1.125rem;
+  --font-xl: 1.25rem;
+  --font-2xl: 1.5rem;
+  --font-3xl: 1.875rem;
+  --font-4xl: 2.25rem;
+  --font-5xl: 3rem;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+  --weight-black: 900;
+
   --leading-tight: 1.25;
+  --leading-snug: 1.35;
   --leading-normal: 1.55;
   --leading-relaxed: 1.7;
-// ═══════════════════════════════════════════════════════
-  // Font size aliases (تغطية أسماء متعددة)
+  --leading-loose: 1.85;
+
   // ═══════════════════════════════════════════════════════
-  --font-3xs: 0.625rem;   /* 10px */
-  --font-2xs: 0.6875rem;  /* 11px */
-  --font-xs: 0.75rem;     /* 12px */
-  --font-sm: 0.875rem;    /* 14px */
-  --font-md: 1rem;        /* 16px */
-  --font-base: 1rem;
-  --font-lg: 1.125rem;    /* 18px */
-  --font-xl: 1.25rem;     /* 20px */
-  --font-2xl: 1.5rem;     /* 24px */
-  --font-3xl: 1.875rem;   /* 30px */
-  --font-4xl: 2.25rem;    /* 36px */
-  --font-5xl: 3rem;       /* 48px */
+  // 13. Containers & Z-Index
+  // ═══════════════════════════════════════════════════════
+  --container-max: 720px;
+  --container-narrow: 560px;
+  --container-wide: 1040px;
 
-  // Radius aliases إضافية
-  --radius-none: 0;
-  --radius-tiny: 4px;
-  --radius-small: 8px;
-  --radius-medium: 12px;
-  --radius-large: 16px;
-  --radius-huge: 24px;
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fab: 220;
+  --z-overlay: 500;
+  --z-modal: 1000;
+  --z-toast: 9999;
+  --z-focus-mode: 99999;
 
-  // Spacing aliases إضافية (عشان لو فيه $space-0 أو $space-7)
-  --space-0: 0;
-  --space-7: 28px;
-  --space-9: 36px;
-  --space-14: 56px;
-  --space-20: 80px;
-// ═══════════════════════════════════════════════════════
-// 13. Inline Override Defaults (fallbacks)
-// ═══════════════════════════════════════════════════════
-// دي متغيرات بتتعيّن ديناميكياً في JSX — لكن محتاجة default
---accent: var(--zekr);
---accent-soft: var(--zekr-soft);
---accent-border: var(--zekr-border);
-
---progress: 0%;
---ring-color: var(--brand-primary);
---ring-bg: var(--bg-subtle);
-
-// ═══════════════════════════════════════════════════════
-// 14. Backgrounds الإضافية
-// ═══════════════════════════════════════════════════════
---bg-hover: rgba(28, 24, 21, 0.04);
---bg-muted: #F2EBE0;
---bg-muted-hover: #EAE0D0;
-
-// ═══════════════════════════════════════════════════════
-// 15. Semantic Soft/Dark variants
-// ═══════════════════════════════════════════════════════
---success-bg: rgba(74, 139, 92, 0.10);
---success-dark: #3A6F4A;
-
---warning-bg: rgba(216, 154, 61, 0.10);
---warning-border: rgba(216, 154, 61, 0.28);
---warning-dark: #B87E28;
-
---danger-bg: rgba(192, 57, 43, 0.10);
---danger-dark: #A02E23;
-
---info-bg: rgba(74, 122, 181, 0.10);
---info-dark: #3A5F94;
-
-// ═══════════════════════════════════════════════════════
-// 16. Gold / Streak (Zekr special)
-// ═══════════════════════════════════════════════════════
---gold: #C68B3C;
---gold-bg: rgba(198, 139, 60, 0.10);
---gold-dark: #A97530;
-
---streak: #D97706;
---streak-dark: #B45309;
---streak-bg: rgba(217, 119, 6, 0.10);
-
-// ═══════════════════════════════════════════════════════
-// 17. Typography aliases
-// ═══════════════════════════════════════════════════════
---font-heading: var(--font-display);
-
---weight-regular: 400;
---weight-medium: 500;
---weight-semibold: 600;
---weight-bold: 700;
---weight-extrabold: 800;
---weight-black: 900;
-
---leading-snug: 1.35;
---leading-loose: 1.85;
-
-// ═══════════════════════════════════════════════════════
-// 18. Text variants
-// ═══════════════════════════════════════════════════════
---text-on-brand: #FFFFFF;
---text-disabled: #B8A99A;
-
-// ═══════════════════════════════════════════════════════
-// 19. Sizing / Containers
-// ═══════════════════════════════════════════════════════
---container-max: 880px;
---container-narrow: 680px;
---container-wide: 1100px;
-
---touch-target: 44px; // الحد الأدنى للـ accessibility
---bottom-nav-height: 68px;
-
-// ═══════════════════════════════════════════════════════
-// 20. Z-Index scale
-// ═══════════════════════════════════════════════════════
---z-base: 0;
---z-dropdown: 100;
---z-sticky: 200;
---z-overlay: 500;
---z-modal: 1000;
---z-toast: 9999;
---z-focus-mode: 99999;
-
-// ═══════════════════════════════════════════════════════
-// 21. Shadows الإضافية
-// ═══════════════════════════════════════════════════════
---shadow-brand: 0 4px 14px rgba(45, 106, 79, 0.22);
---shadow-brand-hover: 0 6px 20px rgba(45, 106, 79, 0.30);
---shadow-gold: 0 4px 14px rgba(198, 139, 60, 0.22);
-
---shadow-dark-sm: 0 2px 6px rgba(0, 0, 0, 0.35);
---shadow-dark-md: 0 4px 12px rgba(0, 0, 0, 0.45);
---shadow-dark-lg: 0 10px 28px rgba(0, 0, 0, 0.55);
---shadow-dark-xl: 0 20px 48px rgba(0, 0, 0, 0.65);
-
---brand-bg-strong: rgba(45, 106, 79, 0.18);
-// ═══════════════════════════════════════════════════════
-// 22. Settings/Streak aliases
-// ═══════════════════════════════════════════════════════
---gold-border: rgba(198, 139, 60, 0.30);
---streak-bg: rgba(217, 119, 6, 0.10);
---streak-border: rgba(217, 119, 6, 0.25);
+  // ═══════════════════════════════════════════════════════
+  // 14. Dynamic Override Fallbacks
+  // ═══════════════════════════════════════════════════════
+  --accent: var(--zekr);
+  --accent-text: var(--zekr-text);
+  --accent-soft: var(--zekr-soft);
+  --accent-border: var(--zekr-border);
+  --progress: 0%;
+  --ring-color: var(--brand-primary);
+  --ring-bg: var(--bg-subtle);
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// Dark Theme
+// Dark Theme — Warm Obsidian Paper
 // ═══════════════════════════════════════════════════════════════════
 body.dark {
+  color-scheme: dark;
+
   // Surfaces
   --bg-base: #131210;
   --bg-card: #1C1A17;
-  --bg-elevated: #242018;
-  --bg-subtle: #252220;
-  --bg-subtle-hover: #2E2A26;
-  --bg-overlay: rgba(0, 0, 0, 0.65);
+  --bg-elevated: #23201C;
+  --bg-subtle: #26231F;
+  --bg-subtle-hover: #302C27;
+  --bg-topbar: rgba(19, 18, 16, 0.88);
+  --bg-nav: rgba(26, 24, 21, 0.95);
+  --bg-overlay: rgba(0, 0, 0, 0.68);
+  --bg-hover: rgba(255, 248, 238, 0.05);
+  --bg-muted: #26231F;
+  --bg-muted-hover: #302C27;
 
   --bg-container-light: #1C1A17;
   --bg-display-light: #131210;
-  --bg-btn-light: #252220;
-  --bg-btn-hover-light: #2E2A26;
+  --bg-btn-light: #26231F;
+  --bg-btn-hover-light: #302C27;
 
   // Ink
   --text-primary: #F5F0E8;
-  --text-secondary: #D8CCBD;
-  --text-muted: #9C8B7D;
-  --text-faint: #6B5D50;
+  --text-secondary: #D9CEBF;
+  --text-muted: #A39282;
+  --text-faint: #736457;
   --text-inverse: #131210;
+  --text-on-brand: #FFFFFF;
+  --text-disabled: #4D453C;
 
-  --text-light: #4A9A75;
+  --text-light: #52A880;
   --text-dark: #7BC49A;
   --text-display-light: #F5F0E8;
   --text-display-dark: #F5F0E8;
 
   // Borders
-  --border-subtle: #252220;
-  --border-default: #2E2A26;
-  --border-strong: #40382F;
+  --border-subtle: #26231F;
+  --border-default: #312D28;
+  --border-strong: #433B32;
   --border-focus: #E5A552;
+  --card-highlight: inset 0 1px 0 rgba(255, 250, 240, 0.04);
 
-  --border-light: #2E2A26;
-  --border-dark: #40382F;
-  --border-color: #2E2A26;
+  --border-light: #312D28;
+  --border-dark: #433B32;
+  --border-color: #312D28;
 
   // Zekr
-  --zekr: #4A9A75;
-  --zekr-text: #4A9A75;
-  --zekr-soft: rgba(74, 154, 117, 0.14);
-  --zekr-border: rgba(74, 154, 117, 0.30);
-  --zekr-glow: rgba(74, 154, 117, 0.22);
-  --zekr-hover: #6BB47F;
+  --zekr: #52A880;
+  --zekr-text: #65BC93;
+  --zekr-soft: rgba(82, 168, 128, 0.14);
+  --zekr-soft-strong: rgba(82, 168, 128, 0.22);
+  --zekr-border: rgba(82, 168, 128, 0.30);
+  --zekr-glow: rgba(82, 168, 128, 0.24);
+  --zekr-hover: #65BC93;
   --zekr-dark: #8DD0A5;
 
   // Budget
   --budget: #E5A552;
-  --budget-text: #E5A552;
+  --budget-text: #ECB468;
   --budget-soft: rgba(229, 165, 82, 0.14);
+  --budget-soft-strong: rgba(229, 165, 82, 0.22);
   --budget-border: rgba(229, 165, 82, 0.30);
-  --budget-glow: rgba(229, 165, 82, 0.22);
+  --budget-glow: rgba(229, 165, 82, 0.24);
   --budget-hover: #F0B76D;
   --budget-dark: #FFC98A;
 
   // Brand aliases
-  --brand-primary: #4A9A75;
-  --brand-primary-dark: #6BB47F;
-  --brand: #4A9A75;
-  --brand-dark: #6BB47F;
+  --brand-primary: #52A880;
+  --brand-primary-dark: #65BC93;
+  --brand: #52A880;
+  --brand-dark: #65BC93;
   --brand-darker: #8DD0A5;
   --brand-light: #7BC49A;
-  --brand-bg-soft: rgba(74, 154, 117, 0.10);
-  --brand-bg-medium: rgba(74, 154, 117, 0.16);
-  --brand-bg: rgba(74, 154, 117, 0.08);
-  --brand-border: rgba(74, 154, 117, 0.30);
-  --brand-border-strong: rgba(74, 154, 117, 0.45);
+  --brand-bg-soft: rgba(82, 168, 128, 0.10);
+  --brand-bg-medium: rgba(82, 168, 128, 0.16);
+  --brand-bg-strong: rgba(82, 168, 128, 0.22);
+  --brand-bg: rgba(82, 168, 128, 0.09);
+  --brand-border: rgba(82, 168, 128, 0.30);
+  --brand-border-strong: rgba(82, 168, 128, 0.45);
 
   --secondary: #E5A552;
   --secondary-dark: #F0B76D;
 
   // Semantic
-  --success: #6BB47F;
-  --success-soft: rgba(107, 180, 127, 0.14);
-  --success-border: rgba(107, 180, 127, 0.30);
+  --success: #64BA82;
+  --success-soft: rgba(100, 186, 130, 0.14);
+  --success-bg: rgba(100, 186, 130, 0.14);
+  --success-border: rgba(100, 186, 130, 0.30);
+  --success-dark: #8DD0A5;
+
   --warning: #E5AC55;
   --warning-soft: rgba(229, 172, 85, 0.14);
-  --danger: #E05A4D;
-  --danger-soft: rgba(224, 90, 77, 0.14);
-  --danger-border: rgba(224, 90, 77, 0.30);
-  --info: #6BA0D9;
-  --info-soft: rgba(107, 160, 217, 0.14);
+  --warning-bg: rgba(229, 172, 85, 0.14);
+  --warning-border: rgba(229, 172, 85, 0.30);
+  --warning-dark: #F0C77D;
+
+  --danger: #E56458;
+  --danger-soft: rgba(229, 100, 88, 0.14);
+  --danger-bg: rgba(229, 100, 88, 0.14);
+  --danger-border: rgba(229, 100, 88, 0.30);
+  --danger-dark: #F29A91;
+
+  --info: #6DA4DE;
+  --info-soft: rgba(109, 164, 222, 0.14);
+  --info-bg: rgba(109, 164, 222, 0.14);
+  --info-dark: #9BC1E8;
+
+  // Gold / Streak
+  --gold: #E5A552;
+  --gold-bg: rgba(229, 165, 82, 0.14);
+  --gold-dark: #FFC98A;
+  --gold-border: rgba(229, 165, 82, 0.30);
+
+  --streak: #F5A623;
+  --streak-dark: #FFC45C;
+  --streak-bg: rgba(245, 166, 35, 0.14);
+  --streak-border: rgba(245, 166, 35, 0.30);
 
   // Shadows
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.20);
-  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.28);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 10px 28px rgba(0, 0, 0, 0.45);
-  --shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.55);
-// Inline defaults
---accent: var(--zekr);
---accent-soft: var(--zekr-soft);
---accent-border: var(--zekr-border);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.32);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.42);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.52);
+  --shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.64);
 
---ring-color: var(--brand-primary);
---ring-bg: var(--bg-subtle);
+  --shadow-brand: 0 4px 16px rgba(82, 168, 128, 0.26);
+  --shadow-brand-hover: 0 6px 22px rgba(82, 168, 128, 0.36);
+  --shadow-gold: 0 6px 20px rgba(229, 165, 82, 0.28);
 
-// Backgrounds
---bg-hover: rgba(255, 255, 255, 0.04);
---bg-muted: #252220;
---bg-muted-hover: #2E2A26;
-
-// Semantic dark variants
---success-bg: rgba(107, 180, 127, 0.14);
---success-dark: #8DD0A5;
-
---warning-bg: rgba(229, 172, 85, 0.14);
---warning-border: rgba(229, 172, 85, 0.30);
---warning-dark: #F0C77D;
-
---danger-bg: rgba(224, 90, 77, 0.14);
---danger-dark: #F0968C;
-
---info-bg: rgba(107, 160, 217, 0.14);
---info-dark: #9BC1E8;
-
-// Gold / Streak
---gold: #E5A552;
---gold-bg: rgba(229, 165, 82, 0.14);
---gold-dark: #FFC98A;
-
---streak: #F5A623;
---streak-dark: #FFC45C;
---streak-bg: rgba(245, 166, 35, 0.14);
-
-// Text
---text-on-brand: #FFFFFF;
---text-disabled: #4A4239;
-
-// Brand strong
---brand-bg-strong: rgba(74, 154, 117, 0.22);
-
-// Shadows
---shadow-brand: 0 4px 14px rgba(74, 154, 117, 0.30);
---shadow-brand-hover: 0 6px 20px rgba(74, 154, 117, 0.40);
---shadow-gold: 0 4px 14px rgba(229, 165, 82, 0.30);
---gold-border: rgba(229, 165, 82, 0.30);
---streak-bg: rgba(245, 166, 35, 0.14);
---streak-border: rgba(245, 166, 35, 0.30);
+  // Dynamic defaults
+  --accent: var(--zekr);
+  --accent-text: var(--zekr-text);
+  --accent-soft: var(--zekr-soft);
+  --accent-border: var(--zekr-border);
+  --ring-color: var(--brand-primary);
+  --ring-bg: var(--bg-subtle);
 }
-// ═══════════════════════════════════════
-// Global Focus Ring (Accessibility)
-// ═══════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════
+// Global Focus Ring (Keyboard Accessibility)
+// ═══════════════════════════════════════════════════════════════════
 :focus-visible {
   outline: 2px solid var(--budget);
   outline-offset: 2px;
@@ -482,4 +459,4 @@ input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
   outline: none;
-} 
+}

@@ -1,59 +1,25 @@
-import { useEffect, useState } from 'react'
+import { Sun, Moon } from 'lucide-react'
+import { useTheme } from '@/contexts/ThemeContext.jsx'
 import styles from './ThemeToggle.module.scss'
 
-const SunIcon = () => (
-  <svg
-    className={styles.icon}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <circle cx="12" cy="12" r="4" />
-    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-  </svg>
-)
-
-const MoonIcon = () => (
-  <svg
-    className={styles.icon}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </svg>
-)
-
 export default function ThemeToggle() {
-  const [isDark, setIsDark] = useState(
-    () => document.body.classList.contains('dark')
-  )
-
-  useEffect(() => {
-    document.body.classList.toggle('dark', isDark)
-    try {
-      localStorage.setItem('theme', isDark ? 'dark' : 'light')
-   }catch (e){console.log(e)}
-  }, [isDark])
+  const { theme, toggleTheme } = useTheme()
+  const isDark = theme === 'dark'
 
   return (
     <button
       type="button"
       className={styles.toggle}
-      onClick={() => setIsDark((v) => !v)}
-      aria-label={isDark ? 'الوضع الفاتح' : 'الوضع الداكن'}
+      onClick={toggleTheme}
+      aria-label={isDark ? 'التبديل للوضع الفاتح' : 'التبديل للوضع الداكن'}
       title={isDark ? 'الوضع الفاتح' : 'الوضع الداكن'}
     >
-      <span key={isDark ? 'sun' : 'moon'} className={styles.iconContainer}>
-        {isDark ? <SunIcon /> : <MoonIcon />}
+      <span key={theme} className={styles.iconContainer}>
+        {isDark ? (
+          <Sun size={18} strokeWidth={2} aria-hidden="true" />
+        ) : (
+          <Moon size={18} strokeWidth={2} aria-hidden="true" />
+        )}
       </span>
     </button>
   )

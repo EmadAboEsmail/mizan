@@ -62,9 +62,7 @@ function AppearanceSection() {
   }
 
   const handleToggleVibration = () => {
-    const next = !vibrationEnabled
-    console.log('[Vibration] toggled to:', next)
-    setVibrationEnabled(next)
+    setVibrationEnabled(!vibrationEnabled)
   }
 
   return (

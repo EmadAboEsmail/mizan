@@ -1,29 +1,33 @@
 .toggle {
-  width: 42px;
-  height: 42px;
-  border-radius: var(--radius-md);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-medium);
   border: 1px solid var(--border-default);
   background: var(--bg-card);
-  color: var(--text-muted);
+  color: var(--text-secondary);
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all var(--duration-base) var(--ease-out);
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
   box-shadow: var(--shadow-xs);
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
 
-  &:hover {
-    color: var(--budget);
-    border-color: var(--budget-border);
-    background: var(--budget-soft);
-    transform: translateY(-1px);
+  @media (hover: hover) {
+    &:hover {
+      color: var(--budget);
+      border-color: var(--budget-border);
+      background: var(--budget-soft);
+    }
   }
 
   &:active {
-    transform: scale(0.94);
+    transform: scale(0.92);
+    background: var(--bg-subtle);
   }
 
   &:focus-visible {
@@ -36,22 +40,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: pop 0.3s var(--ease-spring);
-}
-
-.icon {
-  width: 18px;
-  height: 18px;
+  animation: pop 0.28s var(--ease-spring);
 }
 
 @keyframes pop {
   from {
     opacity: 0;
-    transform: rotate(-45deg) scale(0.7);
+    transform: rotate(-35deg) scale(0.72);
   }
   to {
     opacity: 1;
     transform: rotate(0) scale(1);
   }
 }
-

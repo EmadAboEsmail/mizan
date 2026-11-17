@@ -1,15 +1,16 @@
+import { Sparkles, ShieldCheck, WifiOff, Share2, Heart } from 'lucide-react'
+import { MizanMark } from '@/components/ui/BrandIcons.jsx'
 import SettingsSection from './SettingsSection.jsx'
 import styles from './AboutSection.module.scss'
 import { useToast } from '@/hooks/useToast.js'
 
 function AboutSection() {
-  // ✅ الـ hook في top-level (مش جوّه دالة)
   const { showToast } = useToast()
 
   const handleShare = async () => {
     const shareData = {
-      title: 'تطبيق ذِكر',
-      text: 'تطبيق ذِكر - سبحة إلكترونية لمتابعة وإحصاء أذكارك اليومية 📿',
+      title: 'مِيزان — ذِكر وميزانية',
+      text: 'مِيزان — سبحة إلكترونية هادئة وإدارة ميزانية شخصية بدون إنترنت.',
       url: window.location.origin,
     }
 
@@ -17,67 +18,65 @@ function AboutSection() {
       try {
         await navigator.share(shareData)
       } catch {
-        // تم إلغاء المشاركة بواسطة المستخدم — تجاهل بصمت
+        // تم إلغاء المشاركة
       }
     } else {
       try {
         await navigator.clipboard?.writeText(window.location.origin)
-        showToast('تم نسخ رابط التطبيق بنجاح!')
-      } catch (err) {
-        console.error('فشل نسخ الرابط:', err)
-        showToast('تعذر نسخ الرابط، حاول مرة أخرى.')
+        showToast('تم نسخ رابط التطبيق بنجاح')
+      } catch {
+        showToast('تعذر نسخ الرابط، حاول مرة أخرى')
       }
     }
   }
 
   return (
-    <SettingsSection id="about" title="عن التطبيق">
+    <SettingsSection id="about" title="عن مِيزان">
       <div className={styles.aboutCard}>
-        {/* رأس البطاقة: الشعار والمعلومات الأساسية */}
         <div className={styles.header}>
-          <div className={styles.logoBadge}>📿</div>
+          <div className={styles.logoBadge} aria-hidden="true">
+            <MizanMark size={26} />
+          </div>
           <div className={styles.appMeta}>
             <div className={styles.titleRow}>
-              <h3 className={styles.appName}>ذِكر</h3>
-              <span className={styles.versionBadge}>v1.0.0</span>
+              <h3 className={styles.appName}>مِيزان · ذِكر</h3>
+              <span className={styles.versionBadge}>v1.0</span>
             </div>
             <p className={styles.appDesc}>
-              سبحة إلكترونية ذكية تتيح لك التسبيح بتركيز ومتابعة إحصائيات أذكارك يومياً.
+              سبحة إلكترونية هادئة تتيح لك التسبيح بتركيز ومتابعة أورادك اليومية.
             </p>
           </div>
         </div>
 
-        {/* مميزات التطبيق (Features Chips) */}
         <div className={styles.features}>
           <div className={styles.featureItem}>
-            <span className={styles.featureIcon}>✨</span>
+            <Sparkles size={14} strokeWidth={2.1} aria-hidden="true" />
             <span>بدون إعلانات</span>
           </div>
           <div className={styles.featureItem}>
-            <span className={styles.featureIcon}>🔒</span>
-            <span>بياناتك محفوظة بأمان</span>
+            <ShieldCheck size={14} strokeWidth={2.1} aria-hidden="true" />
+            <span>بياناتك على جهازك</span>
           </div>
           <div className={styles.featureItem}>
-            <span className={styles.featureIcon}>⚡</span>
+            <WifiOff size={14} strokeWidth={2.1} aria-hidden="true" />
             <span>يعمل بدون إنترنت</span>
           </div>
         </div>
 
-        {/* زر المشاركة */}
         <div className={styles.actions}>
           <button
             type="button"
             className={styles.shareBtn}
             onClick={handleShare}
           >
+            <Share2 size={15} strokeWidth={2.2} aria-hidden="true" />
             <span>مشاركة التطبيق مع من تحب</span>
-            <span className={styles.shareIcon}>↗</span>
           </button>
         </div>
 
-        {/* لمسة ختامية لطيفة */}
         <div className={styles.footerNote}>
-          🤍 صدقة جارية • لا تنسونا من صالح دعائكم
+          <Heart size={13} strokeWidth={2.1} aria-hidden="true" />
+          <span>صدقة جارية · لا تنسونا من صالح دعائكم</span>
         </div>
       </div>
     </SettingsSection>

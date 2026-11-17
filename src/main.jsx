@@ -14,6 +14,8 @@ import { ZekrDataProvider } from "./contexts/ZekrDataContext.jsx";
 import { BudgetProvider } from "./contexts/BudgetContext.jsx";
 import { initDB } from "./db/index.js";
 import { initClickBuffer } from "./services/clickBuffer.js";
+import "@fontsource-variable/alexandria";
+import "@fontsource-variable/readex-pro";
 import App from "./App.jsx";
 import "./styles/main.scss";
 

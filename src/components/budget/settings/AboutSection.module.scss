@@ -1,5 +1,3 @@
-@use '@/styles/tokens' as *;
-
 // ═══════════════════════════════════════
 // Section
 // ═══════════════════════════════════════
@@ -40,7 +38,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8rem;
+  color: var(--budget);
   flex-shrink: 0;
   box-shadow: var(--shadow-xs);
 }

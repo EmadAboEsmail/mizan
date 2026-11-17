@@ -1,22 +1,45 @@
-// ═══════════════════════════════════════
-// Constants
-// ═══════════════════════════════════════
-export const ROW_HEIGHT = 80
+export const ROW_HEIGHT = 76
 
 export const AR_MONTHS = [
-  'ينا', 'فبر', 'مار', 'أبر', 'ماي', 'يون',
-  'يول', 'أغس', 'سبت', 'أكت', 'نوف', 'ديس',
+  'ينا',
+  'فبر',
+  'مار',
+  'أبر',
+  'ماي',
+  'يون',
+  'يول',
+  'أغس',
+  'سبت',
+  'أكت',
+  'نوف',
+  'ديس',
 ]
 
-// ═══════════════════════════════════════
-// Formatters
-// ═══════════════════════════════════════
+export const AR_MONTHS_FULL = [
+  'يناير',
+  'فبراير',
+  'مارس',
+  'أبريل',
+  'مايو',
+  'يونيو',
+  'يوليو',
+  'أغسطس',
+  'سبتمبر',
+  'أكتوبر',
+  'نوفمبر',
+  'ديسمبر',
+]
+
+/**
+ * تنسيق المبلغ بفواصل آلاف — يخفي .00 للأرقام الصحيحة ويعرض الكسور عند وجودها
+ */
 export function formatAmount(n) {
   const num = Number(n || 0)
-  const fixed = num.toFixed(2)
+  const hasDecimals = Math.abs(Math.round(num * 100) % 100) > 0
+  const fixed = hasDecimals ? num.toFixed(2) : num.toFixed(0)
   const [intPart, decPart] = fixed.split('.')
   const withCommas = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-  return `${withCommas}.${decPart}`
+  return decPart ? `${withCommas}.${decPart}` : withCommas
 }
 
 export function formatDate(s) {
@@ -26,11 +49,9 @@ export function formatDate(s) {
   const y = parts[0]
   const m = parseInt(parts[1], 10) - 1
   const d = parseInt(parts[2], 10)
-  return `${d} ${AR_MONTHS[m] || parts[1]} ${y}`
+  return `${d} ${AR_MONTHS_FULL[m] || parts[1]} ${y}`
 }
-// ═══════════════════════════════════════
-// Date Grouping Helpers
-// ═══════════════════════════════════════
+
 export function todayISO() {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -60,53 +81,50 @@ export function formatDayHeader(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number)
   const date = new Date(y, m - 1, d)
   const dayName = AR_DAYS[date.getDay()]
-  const monthName = AR_MONTHS[m - 1] || m
+  const monthName = AR_MONTHS_FULL[m - 1] || m
   const now = new Date()
   const isCurrentYear = now.getFullYear() === y
 
-  if (isCurrentYear) return `${dayName} ${d} ${monthName}`
-  return `${dayName} ${d} ${monthName} ${y}`
+  if (isCurrentYear) return `${dayName}، ${d} ${monthName}`
+  return `${dayName}، ${d} ${monthName} ${y}`
 }
 
-// ═══════════════════════════════════════
-// Group transactions by date → flat items
-// ═══════════════════════════════════════
-export function groupTransactionsByDate(txns) {
+/**
+ * تجميع المعاملات في مجموعات يومية متتالية
+ */
+export function groupTransactionsByDay(txns) {
   if (!txns || txns.length === 0) return []
 
-  const items = []
-  let currentDate = null
-  let buffer = []
+  const groups = []
+  let current = null
 
-  const flush = () => {
-    if (buffer.length === 0) return
-
-    const dayNet = buffer.reduce((sum, t) => {
-      const amount = Number(t.amount) || 0
-      return sum + (t.type === 'income' ? amount : -amount)
-    }, 0)
-
-    items.push({
-      type: 'header',
-      date: currentDate,
-      total: dayNet,
-      count: buffer.length,
-    })
-
-    buffer.forEach((txn) => {
-      items.push({ type: 'txn', txn })
-    })
+  for (const txn of txns) {
+    if (!current || current.date !== txn.date) {
+      current = {
+        date: txn.date,
+        total: 0,
+        count: 0,
+        txns: [],
+      }
+      groups.push(current)
+    }
+    const amount = Number(txn.amount) || 0
+    current.total += txn.type === 'income' ? amount : -amount
+    current.count += 1
+    current.txns.push(txn)
   }
 
-  txns.forEach((txn) => {
-    if (txn.date !== currentDate) {
-      flush()
-      currentDate = txn.date
-      buffer = []
-    }
-    buffer.push(txn)
-  })
+  return groups
+}
 
-  flush()
+export function groupTransactionsByDate(txns) {
+  const groups = groupTransactionsByDay(txns)
+  const items = []
+  for (const g of groups) {
+    items.push({ type: 'header', date: g.date, total: g.total, count: g.count })
+    for (const txn of g.txns) {
+      items.push({ type: 'txn', txn })
+    }
+  }
   return items
 }

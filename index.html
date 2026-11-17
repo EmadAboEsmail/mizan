@@ -8,30 +8,46 @@
     />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 
-    <meta name="theme-color" content="#FAF6F0" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#131210" media="(prefers-color-scheme: dark)" />
-    <meta name="description" content="مساحتي الرقمية — تطبيقات عربية: ذِكر للسبحة، والميزانية لإدارة المال" />
+    <meta name="theme-color" content="#FAF6F0" />
+    <meta
+      name="description"
+      content="مِيزان — توازن يومك ومالك: ذِكر للسبحة والأوراد، والميزانية لإدارة الدخل والمصروف بدون إنترنت"
+    />
 
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="مساحتي" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="ميزان" />
     <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
 
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" sizes="180x180" />
 
-    <!-- ═══ Fonts: Alexandria + Readex Pro ═══ -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800;900&family=Readex+Pro:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <title>مِيزان — ذِكر والميزانية</title>
 
-    <title>مساحتي الرقمية</title>
+    <script>
+      ;(function () {
+        try {
+          var t = localStorage.getItem('theme')
+          var isDark =
+            t === 'dark' ||
+            (!t &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches)
+          document.documentElement.style.colorScheme = isDark ? 'dark' : 'light'
+          document.documentElement.dataset.theme = isDark ? 'dark' : 'light'
+          var meta = document.querySelector('meta[name="theme-color"]')
+          if (meta) meta.setAttribute('content', isDark ? '#131210' : '#FAF6F0')
+        } catch (_) {}
+      })()
+    </script>
   </head>
   <body>
+    <script>
+      if (document.documentElement.dataset.theme === 'dark') {
+        document.body.classList.add('dark')
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
-

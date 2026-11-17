@@ -1,175 +1,129 @@
-@use '@/styles/tokens' as *;
-
-// ═══════════════════════════════════════
-// Card (Link)
-// ═══════════════════════════════════════
 .card {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
-  border: 1px solid;
+  padding: 10px var(--space-3);
+  border-radius: var(--radius-large);
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-xs);
   text-decoration: none;
   color: inherit;
-  transition: all var(--duration-base) var(--ease-out);
-  touch-action: manipulation;
-  flex-wrap: wrap;
+  transition: all var(--duration-fast) var(--ease-out);
 
   &.safe {
-    background: var(--success-soft);
-    border-color: var(--success-border);
-
+    .icon {
+      background: var(--success-soft);
+      color: var(--success);
+    }
     .status {
       color: var(--success);
     }
-
     .progressFill {
-      background: linear-gradient(90deg, var(--success), var(--success));
+      background: var(--success);
     }
   }
 
   &.warning {
-    background: var(--warning-soft);
     border-color: var(--warning-border);
-
+    .icon {
+      background: var(--warning-soft);
+      color: var(--warning);
+    }
     .status {
       color: var(--warning);
     }
-
     .progressFill {
-      background: linear-gradient(90deg, var(--warning), var(--warning-dark));
+      background: var(--warning);
     }
   }
 
   &.over {
-    background: var(--danger-soft);
     border-color: var(--danger-border);
-
+    .icon {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
     .status {
       color: var(--danger);
     }
-
     .progressFill {
-      background: linear-gradient(90deg, var(--danger), var(--danger-dark));
+      background: var(--danger);
     }
   }
 
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
-  }
-
   &:active {
-    transform: translateY(0) scale(0.99);
+    transform: scale(0.99);
   }
-
-  &:focus-visible {
-    outline: 2px solid var(--budget);
-    outline-offset: 2px;
-  }
-}
-
-// ═══════════════════════════════════════
-// Left (Icon + Info)
-// ═══════════════════════════════════════
-.left {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-shrink: 0;
 }
 
 .icon {
-  font-size: 1.4rem;
-  line-height: 1;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.info {
+.body {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 5px;
+}
+
+.topRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
 }
 
 .label {
-  font-family: var(--font-body);
-  font-size: 0.78rem;
-  font-weight: 800;
-  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .status {
-  font-family: var(--font-body);
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: var(--text-muted);
+  font-weight: 700;
 }
 
-// ═══════════════════════════════════════
-// Center (Progress)
-// ═══════════════════════════════════════
-.center {
-  flex: 1;
-  min-width: 80px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.numbers {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  strong {
+    font-family: var(--font-display);
+    color: var(--text-primary);
+    font-weight: 800;
+  }
 }
 
 .progressTrack {
   width: 100%;
-  height: 6px;
-  background: rgba(0, 0, 0, 0.08);
+  height: 5px;
+  background: var(--bg-subtle);
   border-radius: var(--radius-full);
   overflow: hidden;
-
-  body.dark & {
-    background: rgba(255, 255, 255, 0.1);
-  }
 }
 
 .progressFill {
   height: 100%;
   border-radius: var(--radius-full);
-  transition: width 0.4s var(--ease-out);
+  transition: width 0.35s var(--ease-out);
 }
 
-.percent {
-  font-family: var(--font-body);
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-align: end;
-  font-variant-numeric: tabular-nums;
-}
-
-// ═══════════════════════════════════════
-// Right (Numbers)
-// ═══════════════════════════════════════
-.right {
-  display: flex;
-  align-items: baseline;
-  gap: 3px;
-  font-variant-numeric: tabular-nums;
-  flex-shrink: 0;
-}
-
-.spent {
-  font-family: var(--font-display);
-  font-size: 0.88rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  letter-spacing: -0.3px;
-}
-
-.separator {
-  font-size: 0.75rem;
+.arrow {
   color: var(--text-faint);
-}
-
-.limit {
-  font-family: var(--font-body);
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--text-muted);
+  flex-shrink: 0;
 }

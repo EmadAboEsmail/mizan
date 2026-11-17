@@ -1,5 +1,3 @@
-@use '@/styles/tokens' as *;
-
 .tabsWrapper {
   width: 100%;
   max-width: 100%;
@@ -46,7 +44,7 @@
     color: var(--brand);
     box-shadow: var(--shadow-sm);
 
-    body.dark & {
+    :global(body.dark) & {
       box-shadow: var(--shadow-dark-sm);
     }
 

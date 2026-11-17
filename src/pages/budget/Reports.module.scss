@@ -1,263 +1,81 @@
-@use '@/styles/tokens' as *;
-
-// ═══════════════════════════════════════
-// Container
-// ═══════════════════════════════════════
 .container {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-3);
   width: 100%;
 }
 
-// ═══════════════════════════════════════
-// Period Bar
-// ═══════════════════════════════════════
-.periodBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-  padding: var(--space-3) var(--space-4);
-  background: var(--bg-card);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xs);
-}
-
-.monthControls {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-.monthInput {
-  padding: 8px 12px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-default);
-  background: var(--bg-card);
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  font-weight: 700;
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
-
-  &:focus {
-    outline: none;
-    border-color: var(--budget);
-    box-shadow: 0 0 0 3px var(--budget-soft);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
-.allBtn {
-  padding: 8px 14px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-default);
-  background: var(--bg-card);
-  color: var(--text-secondary);
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all var(--duration-fast) var(--ease-out);
-
-  &:hover {
-    border-color: var(--budget-border);
-    color: var(--budget);
-  }
-
-  &.allActive {
-    background: var(--budget-soft);
-    border-color: var(--budget);
-    color: var(--budget-dark);
-  }
-
-  &:active {
-    transform: scale(0.97);
-  }
-}
-
-.periodLabel {
-  font-family: var(--font-display);
-  font-size: var(--text-sm);
-  font-weight: 800;
-  color: var(--budget);
-  white-space: nowrap;
-  letter-spacing: -0.2px;
-}
-
-// ═══════════════════════════════════════
-// Compare Bar
-// ═══════════════════════════════════════
+// ═══ Compare Bar ═══
 .compareBar {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-subtle);
+  padding: 8px var(--space-3);
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
 }
 
 .compareLabel {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
+  gap: 5px;
+  font-size: 0.78rem;
   font-weight: 700;
-  color: var(--text-secondary);
-}
+  color: var(--text-muted);
 
-.compareIcon {
-  font-size: 0.9rem;
+  svg {
+    color: var(--budget);
+  }
 }
 
 .compareSelect {
-  padding: 6px 10px;
+  flex: 1;
+  min-width: 130px;
+  height: 36px;
+  padding-inline: 10px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-default);
-  background: var(--bg-card);
+  background: var(--bg-subtle);
   color: var(--text-primary);
   font-family: var(--font-body);
-  font-size: var(--text-xs);
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
 
   &:focus {
     outline: none;
     border-color: var(--budget);
-    box-shadow: 0 0 0 2px var(--budget-soft);
   }
 }
 
-.compareMonthInput {
-  padding: 6px 10px;
+.customMonthBtn {
+  height: 36px;
+  padding-inline: 12px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border-default);
-  background: var(--bg-card);
-  color: var(--text-primary);
+  border: 1px solid var(--budget-border);
+  background: var(--budget-soft);
+  color: var(--budget-text);
   font-family: var(--font-body);
-  font-size: var(--text-xs);
-  font-weight: 600;
-
-  &:focus {
-    outline: none;
-    border-color: var(--budget);
-    box-shadow: 0 0 0 2px var(--budget-soft);
-  }
-}
-
-.compareCurrent {
-  margin-inline-start: auto;
-  font-family: var(--font-body);
-  font-size: 0.72rem;
-  color: var(--text-muted);
-
-  strong {
-    color: var(--budget);
-    font-weight: 800;
-  }
-}
-
-// ═══════════════════════════════════════
-// Summary Cards
-// ═══════════════════════════════════════
-.summaryCards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-2);
-
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.card {
-  padding: var(--space-3) var(--space-4);
-  background: var(--bg-card);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  transition: border-color var(--duration-fast) var(--ease-out);
-
-  &.income {
-    border-color: var(--success-border);
-    background: var(--success-soft);
-
-    .cardValue {
-      color: var(--success);
-    }
-  }
-
-  &.expense {
-    border-color: var(--danger-border);
-    background: var(--danger-soft);
-
-    .cardValue {
-      color: var(--danger);
-    }
-  }
-
-  &.positive {
-    border-color: var(--success-border);
-
-    .cardValue {
-      color: var(--success);
-    }
-  }
-
-  &.negative {
-    border-color: var(--danger-border);
-
-    .cardValue {
-      color: var(--danger);
-    }
-  }
-}
-
-.cardLabel {
-  font-family: var(--font-body);
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  &:active {
+    transform: scale(0.96);
+  }
 }
 
-.cardValue {
-  font-family: var(--font-display);
-  font-size: clamp(1.05rem, 3.5vw, 1.35rem);
-  font-weight: 900;
-  color: var(--text-primary);
-  letter-spacing: -0.5px;
-  font-variant-numeric: tabular-nums;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-line-height: 1.1;
-}
-
-// ═══════════════════════════════════════
-// Sections
-// ═══════════════════════════════════════
+// ═══ Sections ═══
 .section {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-4);
   background: var(--bg-card);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);
@@ -275,74 +93,72 @@ line-height: 1.1;
 .sectionTitle {
   margin: 0;
   font-family: var(--font-display);
-  font-size: var(--text-base);
+  font-size: 0.98rem;
   font-weight: 800;
   color: var(--text-primary);
-  letter-spacing: -0.2px;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
+  letter-spacing: -0.02em;
 }
 
 .sectionHint {
-  font-family: var(--font-body);
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-muted);
-  padding: 2px 10px;
+  padding: 3px 10px;
   background: var(--bg-subtle);
   border-radius: var(--radius-full);
-  border: 1px solid var(--border-subtle);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
-// ═══════════════════════════════════════
-// Top Categories
-// ═══════════════════════════════════════
+// ═══ Top Categories ═══
 .topList {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .topItem {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-2) var(--space-2);
-  border-radius: var(--radius-md);
-  transition: background var(--duration-fast) var(--ease-out);
-
-  &:hover {
-    background: var(--bg-subtle);
-  }
 }
 
 .topRank {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--bg-subtle);
+  font-family: var(--font-display);
+  font-size: 0.7rem;
   font-weight: 800;
-  color: var(--text-faint);
-  min-width: 28px;
-  text-align: center;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .topInfo {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   min-width: 0;
 }
 
+.topRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
 .topName {
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
+  font-size: 0.86rem;
   font-weight: 700;
   color: var(--text-primary);
   white-space: nowrap;
@@ -350,15 +166,21 @@ line-height: 1.1;
   text-overflow: ellipsis;
 }
 
+.topAmount {
+  font-family: var(--font-display);
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .topBarWrapper {
   height: 6px;
   background: var(--bg-subtle);
   border-radius: var(--radius-full);
   overflow: hidden;
-
-  body.dark & {
-    background: var(--bg-subtle-hover);
-  }
 }
 
 .topBar {
@@ -367,50 +189,32 @@ line-height: 1.1;
   transition: width var(--duration-slow) var(--ease-out);
 }
 
-.topAmount {
-  font-family: var(--font-display);
-  font-size: var(--text-sm);
-  font-weight: 800;
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-// ═══════════════════════════════════════
-// Trend Tabs
-// ═══════════════════════════════════════
-.trendPeriod {
-  font-family: var(--font-body);
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--text-faint);
-}
-
+// ═══ Trend Tabs ═══
 .trendTabs {
   display: flex;
   gap: 3px;
   padding: 3px;
   background: var(--bg-subtle);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
 }
 
 .trendTab {
-  padding: 5px 12px;
+  min-height: 30px;
+  padding: 4px 12px;
   font-family: var(--font-body);
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 700;
   background: transparent;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xs);
   color: var(--text-muted);
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out);
-  touch-action: manipulation;
 
   &.trendTabActive {
     background: var(--bg-card);
-    color: var(--budget);
+    color: var(--budget-text);
     box-shadow: var(--shadow-xs);
     font-weight: 800;
   }
@@ -418,37 +222,22 @@ line-height: 1.1;
   &:active {
     transform: scale(0.96);
   }
-
-  &:focus-visible {
-    outline: 2px solid var(--budget);
-    outline-offset: 1px;
-  }
 }
 
-// ═══════════════════════════════════════
-// Limits List
-// ═══════════════════════════════════════
 .limitsList {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
 }
 
-// ═══════════════════════════════════════
-// No Data
-// ═══════════════════════════════════════
 .noData {
   text-align: center;
   padding: var(--space-6) var(--space-4);
   color: var(--text-muted);
-  font-family: var(--font-body);
   font-size: var(--text-sm);
   font-weight: 600;
 }
 
-// ═══════════════════════════════════════
-// Skeleton
-// ═══════════════════════════════════════
 .skeletonChart {
   height: 200px;
   border-radius: var(--radius-md);
@@ -457,48 +246,11 @@ line-height: 1.1;
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.5;
   }
   50% {
     opacity: 1;
   }
-}
-
-// ═══════════════════════════════════════
-// Empty State
-// ═══════════════════════════════════════
-.empty {
-  text-align: center;
-  padding: var(--space-10) var(--space-5);
-  background: var(--bg-subtle);
-  border: 1px dashed var(--border-strong);
-  border-radius: var(--radius-xl);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.emptyIcon {
-  font-size: 2.5rem;
-  opacity: 0.8;
-  margin-bottom: var(--space-1);
-}
-
-.emptyTitle {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--text-base);
-  font-weight: 800;
-  color: var(--text-primary);
-}
-
-.emptySub {
-  margin: 0;
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-  line-height: 1.5;
-  max-width: 320px;
 }

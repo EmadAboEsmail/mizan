@@ -1,7 +1,8 @@
 .buttons {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: var(--space-4);
   width: 100%;
 }
 
@@ -12,12 +13,9 @@
   justify-content: center;
 }
 
-// ═══════════════════════════════════════════════════════
-// الزر الدائري الكبير
-// ═══════════════════════════════════════════════════════
 .click {
   position: relative;
-  width: min(62vw, 232px);
+  width: clamp(196px, 56vw, 232px);
   aspect-ratio: 1;
   border-radius: 50%;
   border: none;
@@ -26,29 +24,38 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform var(--duration-fast) var(--ease-out);
   padding: 0;
+  transition: transform 110ms var(--ease-out);
 
-  // الخلفية الداخلية
+  // القرص الداخلي الدافئ
   &::before {
     content: '';
     position: absolute;
-    inset: 14px;
+    inset: 15px;
     background: var(--bg-card);
+    border: 1px solid var(--border-default);
     border-radius: 50%;
-    box-shadow: var(--shadow-md);
-    transition: box-shadow var(--duration-base) var(--ease-out),
-      background-color var(--duration-base) var(--ease-out);
+    box-shadow: var(--shadow-md), var(--card-highlight);
+    transition:
+      box-shadow var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out),
+      transform 110ms var(--ease-out);
   }
 
-  &:hover::before {
-    box-shadow: var(--shadow-lg);
+  @media (hover: hover) {
+    &:hover::before {
+      box-shadow: var(--shadow-lg);
+      border-color: var(--zekr-border);
+    }
   }
 
   &:active {
-    transform: scale(0.97);
+    transform: scale(0.955);
+
+    &::before {
+      border-color: var(--zekr-border);
+      box-shadow: var(--shadow-sm);
+    }
   }
 
   &:focus-visible {
@@ -58,7 +65,6 @@
   }
 }
 
-// SVG Ring
 .ring {
   position: absolute;
   inset: 0;
@@ -71,23 +77,19 @@
 
 .ringBg {
   fill: none;
-  stroke: var(--border-subtle);
+  stroke: var(--border-default);
   transition: stroke var(--duration-base) var(--ease-out);
-
-  body.dark & {
-    stroke: var(--border-default);
-  }
 }
 
 .ringProgress {
   fill: none;
   stroke: var(--zekr);
-  transition: stroke-dashoffset 0.5s var(--ease-out),
+  transition:
+    stroke-dashoffset 0.35s var(--ease-out),
     stroke var(--duration-base) var(--ease-out);
-  filter: drop-shadow(0 0 6px var(--zekr-soft));
+  filter: drop-shadow(0 0 6px var(--zekr-glow));
 }
 
-// المحتوى الداخلي (العداد)
 .inner {
   position: relative;
   z-index: 2;
@@ -95,18 +97,18 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 5px;
   pointer-events: none;
   text-align: center;
 }
 
 .bigCount {
   font-family: var(--font-display);
-  font-size: clamp(2.4rem, 9vw, 3.2rem);
+  font-size: clamp(2.35rem, 9.5vw, 3.1rem);
   font-weight: 900;
   color: var(--text-primary);
   line-height: 1;
-  letter-spacing: -1px;
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
   transition: color var(--duration-base) var(--ease-out);
 }
@@ -116,22 +118,33 @@
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-muted);
-  letter-spacing: 0.2px;
+  font-variant-numeric: tabular-nums;
 }
 
 .hintText {
   font-family: var(--font-body);
-  font-size: 0.75rem;
+  font-size: 0.76rem;
   font-weight: 600;
   color: var(--text-faint);
-  letter-spacing: 0.3px;
 }
 
-// حالة الاكتمال
+.doneBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: var(--radius-full);
+  background: var(--zekr-soft);
+  color: var(--zekr-text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
 .complete {
   .ringProgress {
-    stroke: var(--success);
-    filter: drop-shadow(0 0 10px var(--success-soft));
+    stroke: var(--zekr);
+    filter: drop-shadow(0 0 10px var(--zekr-glow));
   }
 
   .bigCount {
@@ -139,53 +152,59 @@
   }
 
   &::before {
-    box-shadow: 0 0 0 2px var(--zekr-border), var(--shadow-lg);
+    border-color: var(--zekr-border);
+    box-shadow: 0 0 0 3px var(--zekr-soft), var(--shadow-md);
   }
 }
 
-// زر إعادة الضبط
-.reset {
-  position: absolute;
-  bottom: -8px;
-  inset-inline-end: -8px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-default);
-  color: var(--text-muted);
-  font-size: 1.15rem;
-  cursor: pointer;
+// ═══ صف الأزرار الثانوية (تصفير + وضع التركيز) ═══
+.secondaryRow {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-sm);
-  transition: all var(--duration-fast) var(--ease-out);
-  z-index: 3;
-  touch-action: manipulation;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
 
-  &:hover:not(:disabled) {
-    background: var(--danger-soft);
-    border-color: var(--danger-border);
-    color: var(--danger);
-    transform: scale(1.05);
+.resetBtn {
+  min-height: 42px;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: var(--shadow-xs);
+  transition: all var(--duration-fast) var(--ease-out);
+
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      background: var(--danger-soft);
+      border-color: var(--danger-border);
+      color: var(--danger);
+    }
   }
 
   &:active:not(:disabled) {
-    transform: scale(0.92);
+    transform: scale(0.95);
   }
 
   &:disabled {
-    opacity: 0.35;
+    opacity: 0.38;
     cursor: not-allowed;
+    box-shadow: none;
   }
 }
 
-// ═══════════════════════════════════════════════════════
-// حركة النبض عند النقر
-// ═══════════════════════════════════════════════════════
 .clicked {
-  animation: pulse 0.18s var(--ease-out);
+  animation: pulse 0.15s var(--ease-out);
 }
 
 @keyframes pulse {
@@ -193,7 +212,7 @@
     transform: scale(1);
   }
   50% {
-    transform: scale(0.94);
+    transform: scale(0.95);
   }
   100% {
     transform: scale(1);
@@ -201,48 +220,49 @@
 }
 
 // ═══════════════════════════════════════════════════════
-// وضع التركيز — زر عائم صغير
+// وضع التركيز — زر عائم في متناول الإبهام
 // ═══════════════════════════════════════════════════════
 .floatingFocusBtn {
   position: fixed;
-  bottom: max(28px, env(safe-area-inset-bottom));
-  inset-inline-end: max(24px, env(safe-area-inset-right));
-  width: 88px;
-  height: 88px;
-  font-size: 1rem;
+  bottom: calc(var(--safe-bottom) + 28px);
+  inset-inline-end: calc(var(--safe-left) + 24px);
+  width: 86px;
+  height: 86px;
+  font-size: 0.98rem;
   font-weight: 800;
   z-index: var(--z-focus-mode);
   background: conic-gradient(
-    var(--zekr) var(--progress, 0%),
-    rgba(255, 255, 255, 0.12) var(--progress, 0%)
+    #52A880 var(--progress, 0%),
+    rgba(255, 255, 255, 0.14) var(--progress, 0%)
   );
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.7),
-    0 0 0 2px rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.7),
+    0 0 0 1.5px rgba(255, 255, 255, 0.14);
 
   &::before {
-    inset: 6px;
-    background: #0a0a0a;
+    inset: 5px;
+    background: #0c0b0a;
+    border: none;
     box-shadow: none;
   }
 
   .focusLabel {
-  position: relative;
-  z-index: 2;
-  color: #F5F0E8;
-  font-family: var(--font-display);
-}
+    position: relative;
+    z-index: 2;
+    color: #F5F0E8;
+    font-family: var(--font-display);
+  }
+
   &:active {
     transform: scale(0.92);
   }
 
   &.complete {
-    background: conic-gradient(
-      var(--success) 100%,
-      var(--success) 100%
-    );
+    background: conic-gradient(#52A880 100%, #52A880 100%);
 
     &::before {
-      background: #0a0a0a;
+      background: #0c0b0a;
+      box-shadow: none;
     }
   }
 }

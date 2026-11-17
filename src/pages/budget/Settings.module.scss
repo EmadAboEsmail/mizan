@@ -1,9 +1,73 @@
-@use '@/styles/tokens' as *;
-
 .container {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
   width: 100%;
-  padding-bottom: var(--space-6);
+}
+
+.appearanceCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xs);
+  flex-wrap: wrap;
+}
+
+.appearanceInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.appearanceTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.appearanceSub {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.themePills {
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.themePill {
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all var(--duration-fast) var(--ease-out);
+
+  &.themePillActive {
+    background: var(--bg-card);
+    color: var(--budget-text);
+    box-shadow: var(--shadow-xs);
+    font-weight: 800;
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
 }

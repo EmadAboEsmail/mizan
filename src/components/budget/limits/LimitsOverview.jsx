@@ -1,12 +1,11 @@
 import { Link } from 'react-router-dom'
+import { Target, ChevronLeft } from 'lucide-react'
 import { useBudgetUI } from '@/contexts/BudgetContext'
 import { useLimitsQuery } from '@/queries/budget'
 import styles from './LimitsOverview.module.scss'
 
-function formatAmount(n) {
-  const num = Number(n || 0)
-  const fixed = num.toFixed(0)
-  return fixed.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+function formatCompact(n) {
+  return Number(n || 0).toLocaleString('en', { maximumFractionDigits: 0 })
 }
 
 function LimitsOverview() {
@@ -20,40 +19,46 @@ function LimitsOverview() {
     total_percent >= 100 ? 'over' : total_percent >= 75 ? 'warning' : 'safe'
 
   const statusLabel = {
-    safe: 'آمن',
+    safe: 'ضمن الحد',
     warning: 'قريب من الحد',
-    over: 'تجاوز الميزانية',
+    over: 'تجاوز الحد',
   }[status]
 
   return (
     <Link
       to="/budget/settings"
       className={`${styles.card} ${styles[status]}`}
-      title="انتقل لإدارة الميزانية"
+      title="إدارة حدود الميزانية الشهرية"
     >
-      <div className={styles.left}>
-        <span className={styles.icon}>💰</span>
-        <div className={styles.info}>
-          <span className={styles.label}>الميزانية الشهرية</span>
-          <span className={styles.status}>{statusLabel}</span>
-        </div>
-      </div>
+      <span className={styles.icon} aria-hidden="true">
+        <Target size={17} strokeWidth={2.1} />
+      </span>
 
-      <div className={styles.center}>
+      <div className={styles.body}>
+        <div className={styles.topRow}>
+          <span className={styles.label}>
+            حد الميزانية · <strong className={styles.status}>{statusLabel}</strong>
+          </span>
+          <span className={styles.numbers}>
+            <strong>{formatCompact(total_spent)}</strong>
+            <span> / {formatCompact(total_limit)}</span>
+          </span>
+        </div>
+
         <div className={styles.progressTrack}>
           <div
             className={styles.progressFill}
             style={{ width: `${Math.min(total_percent, 100)}%` }}
           />
         </div>
-        <span className={styles.percent}>{total_percent.toFixed(1)}%</span>
       </div>
 
-      <div className={styles.right}>
-        <span className={styles.spent}>{formatAmount(total_spent)}</span>
-        <span className={styles.separator}>/</span>
-        <span className={styles.limit}>{formatAmount(total_limit)}</span>
-      </div>
+      <ChevronLeft
+        size={16}
+        strokeWidth={2.2}
+        className={styles.arrow}
+        aria-hidden="true"
+      />
     </Link>
   )
 }
