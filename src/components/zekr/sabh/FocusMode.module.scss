@@ -16,7 +16,7 @@
   touch-action: manipulation;
   overscroll-behavior: none;
   animation: focusFadeIn 0.22s var(--ease-out);
-  padding: var(--safe-top) var(--safe-left) var(--safe-bottom) var(--safe-right);
+  padding: 0 !important;
 }
 
 @keyframes focusFadeIn {
@@ -31,7 +31,7 @@
 .exitBtn,
 .fullscreenBtn {
   position: absolute;
-  top: calc(var(--safe-top) + var(--space-4));
+  top: var(--space-5);
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -59,11 +59,11 @@
 }
 
 .exitBtn {
-  inset-inline-start: calc(var(--safe-right) + var(--space-4));
+  inset-inline-start: var(--space-4);
 }
 
 .fullscreenBtn {
-  inset-inline-end: calc(var(--safe-left) + var(--space-4));
+  inset-inline-end: var(--space-4);
 }
 
 .centerContainer {
@@ -79,8 +79,8 @@
 
 .sessionTime {
   position: absolute;
-  bottom: calc(var(--safe-bottom) + var(--space-5));
-  inset-inline-start: calc(var(--safe-right) + var(--space-4));
+  bottom: var(--space-5);
+  inset-inline-start: var(--space-4);
   display: inline-flex;
   align-items: center;
   gap: 6px;

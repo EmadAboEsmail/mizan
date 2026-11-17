@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { Capacitor } from '@capacitor/core'
 import { StatusBar, Style } from '@capacitor/status-bar'
+import { setNativeSystemBarTheme } from '@/utils/haptics.js'
 
 const ThemeContext = createContext()
 
@@ -25,6 +26,7 @@ function getInitialTheme() {
 
 function syncNativeStatusBar(isDark) {
   if (!Capacitor.isNativePlatform()) return
+  setNativeSystemBarTheme(isDark)
   // Style.Light = أيقونات داكنة لخلفية فاتحة، Style.Dark = أيقونات فاتحة لخلفية داكنة
   StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light }).catch(
     () => {}

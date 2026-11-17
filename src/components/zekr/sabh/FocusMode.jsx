@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { Capacitor } from '@capacitor/core'
 import { Clock } from 'lucide-react'
 import { useModalBackButton } from '@/hooks/useModalBackButton'
+import { setNativeImmersiveMode } from '@/utils/haptics.js'
 import styles from './FocusMode.module.scss'
 
 const ExitFocusIcon = () => (
@@ -21,6 +23,10 @@ const ExpandIcon = () => (
 )
 
 async function attemptFullscreen() {
+  if (Capacitor.isNativePlatform()) {
+    setNativeImmersiveMode(true)
+    return true
+  }
   const docEl = document.documentElement
   if (!docEl) return false
   try {
@@ -96,19 +102,35 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
     return () => clearInterval(id)
   }, [isOpen])
 
+  const isNative = Capacitor.isNativePlatform()
+
   const handleClose = useCallback(() => {
     if (isClosingRef.current) return
     isClosingRef.current = true
-    exitFullscreenSilent()
+    if (isNative) {
+      setNativeImmersiveMode(false)
+    } else {
+      exitFullscreenSilent()
+    }
     onCloseRef.current?.()
-  }, [])
+  }, [isNative])
 
   // دعم زر الرجوع في Android للخروج من وضع التركيز بدلاً من إغلاق التطبيق
   useModalBackButton(isOpen, handleClose)
 
-  // ✅ Fullscreen monitoring
+  // ✅ ملء الشاشة الغامر على أندرويد (إخفاء الشريط العلوي والسفلي والهوامش الآمنة بالكامل)
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen || !isNative) return
+    isClosingRef.current = false
+    setNativeImmersiveMode(true)
+    return () => {
+      setNativeImmersiveMode(false)
+    }
+  }, [isOpen, isNative])
+
+  // ✅ Fullscreen monitoring (للويب فقط)
+  useEffect(() => {
+    if (!isOpen || isNative) return
     isClosingRef.current = false
     hasTriedFullscreenRef.current = false
 
@@ -130,7 +152,7 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
       document.removeEventListener('fullscreenchange', handleFullscreenChange)
       document.removeEventListener('webkitfullscreenchange', handleFullscreenChange)
     }
-  }, [isOpen, handleClose])
+  }, [isOpen, isNative, handleClose])
 
   // ✅ Escape
   useEffect(() => {
@@ -192,7 +214,7 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
   if (!isOpen) return null
 
   const handleTapScreen = async () => {
-    if (!isFullscreen && !hasTriedFullscreenRef.current) {
+    if (!isNative && !isFullscreen && !hasTriedFullscreenRef.current) {
       hasTriedFullscreenRef.current = true
       await attemptFullscreen()
     }
@@ -228,7 +250,7 @@ function FocusMode({ isOpen = true, onClose, onCount, children }) {
         <ExitFocusIcon />
       </button>
 
-      {!isFullscreen && (
+      {!isNative && !isFullscreen && (
         <button
           type="button"
           className={styles.fullscreenBtn}

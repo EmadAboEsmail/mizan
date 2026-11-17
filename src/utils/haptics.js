@@ -49,3 +49,19 @@ export function setNativeVolumeIntercept(enabled) {
   if (!Capacitor.isNativePlatform()) return
   MizanNative.setVolumeIntercept({ enabled: Boolean(enabled) }).catch(() => {})
 }
+
+/**
+ * تفعيل أو إيقاف ملء الشاشة الغامر (إخفاء شريط الحالة وشريط التنقل والهوامش الآمنة) في وضع التركيز.
+ */
+export function setNativeImmersiveMode(enabled) {
+  if (!Capacitor.isNativePlatform()) return
+  MizanNative.setImmersiveMode({ enabled: Boolean(enabled) }).catch(() => {})
+}
+
+/**
+ * مزامنة لون وأيقونات الشريط العلوي والسفلي مع الوضع الفاتح/الداكن.
+ */
+export function setNativeSystemBarTheme(isDark) {
+  if (!Capacitor.isNativePlatform()) return
+  MizanNative.setSystemBarTheme({ dark: Boolean(isDark) }).catch(() => {})
+}

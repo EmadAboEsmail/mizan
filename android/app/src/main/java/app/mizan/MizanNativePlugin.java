@@ -63,6 +63,30 @@ public class MizanNativePlugin extends Plugin {
         call.resolve();
     }
 
+    @PluginMethod
+    public void setImmersiveMode(PluginCall call) {
+        Boolean enabled = call.getBoolean("enabled", false);
+        boolean active = enabled != null && enabled;
+
+        Activity activity = getActivity();
+        if (activity instanceof MainActivity) {
+            ((MainActivity) activity).setImmersiveMode(active);
+        }
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void setSystemBarTheme(PluginCall call) {
+        Boolean dark = call.getBoolean("dark", false);
+        boolean isDark = dark != null && dark;
+
+        Activity activity = getActivity();
+        if (activity instanceof MainActivity) {
+            ((MainActivity) activity).setSystemBarTheme(isDark);
+        }
+        call.resolve();
+    }
+
     private void performVibration(String type) {
         if (vibrator == null || !vibrator.hasVibrator()) return;
 
