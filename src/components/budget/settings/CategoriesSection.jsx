@@ -1,9 +1,17 @@
 import { useState, useMemo } from 'react'
-import { useBudget } from '@/contexts/BudgetContext'
+import {
+  useCategoriesQuery,
+  useTransactionsQuery,
+  useCreateCategoryMutation,
+  useUpdateCategoryMutation,
+  useDeleteCategoryMutation,
+} from '@/queries/budget'
 import CategoryIcon from '@/components/budget/CategoryIcon.jsx'
 import CategoryFormModal from './CategoryFormModal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import styles from './CategoriesSection.module.scss'
+
+const EMPTY_LIST = []
 
 const EditIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -20,27 +28,30 @@ const DeleteIcon = () => (
 )
 
 function CategoriesSection() {
-  const {
-    categories,
-    transactions,
-    createCategory,
-    updateCategory,
-    deleteCategory,
-  } = useBudget()
+  // ─── Queries ───
+  const { data: categories = EMPTY_LIST } = useCategoriesQuery()
+  // استعلام كل المعاملات لحساب العدد الإجمالي المرتبط بكل تصنيف بدقة
+  const { data: allTransactions = EMPTY_LIST } = useTransactionsQuery(null)
 
+  // ─── Mutations ───
+  const { mutateAsync: createCategory } = useCreateCategoryMutation()
+  const { mutateAsync: updateCategory } = useUpdateCategoryMutation()
+  const { mutateAsync: deleteCategory, isPending: isDeleting } =
+    useDeleteCategoryMutation()
+
+  // ─── UI State ───
   const [formOpen, setFormOpen] = useState(false)
   const [editingCat, setEditingCat] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
-  const [isDeleting, setIsDeleting] = useState(false)
 
   // خريطة عدد المعاملات لكل تصنيف
   const txnCountByCategory = useMemo(() => {
     const map = {}
-    transactions.forEach((t) => {
+    allTransactions.forEach((t) => {
       map[t.category_id] = (map[t.category_id] || 0) + 1
     })
     return map
-  }, [transactions])
+  }, [allTransactions])
 
   const expenseCats = useMemo(
     () => categories.filter((c) => c.type === 'expense'),
@@ -63,7 +74,7 @@ function CategoriesSection() {
 
   const handleSubmit = async (dataOrId, updates) => {
     if (editingCat && editingCat.id) {
-      await updateCategory(editingCat.id, updates)
+      await updateCategory({ id: editingCat.id, data: updates })
     } else {
       await createCategory(dataOrId)
     }
@@ -74,11 +85,10 @@ function CategoriesSection() {
   const handleDelete = async () => {
     if (!deleteTarget) return
     try {
-      setIsDeleting(true)
       await deleteCategory(deleteTarget.id)
       setDeleteTarget(null)
-    } finally {
-      setIsDeleting(false)
+    } catch {
+      // رسالة الخطأ تُعرض تلقائياً عبر useDeleteCategoryMutation
     }
   }
 

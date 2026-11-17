@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { useBudget } from '@/contexts/BudgetContext'
+import { useBudgetUI } from '@/contexts/BudgetContext'
+import { useLimitsQuery } from '@/queries/budget'
 import styles from './LimitsOverview.module.scss'
 
 function formatAmount(n) {
@@ -9,7 +10,8 @@ function formatAmount(n) {
 }
 
 function LimitsOverview() {
-  const { limits, currentMonth } = useBudget()
+  const { currentMonth } = useBudgetUI()
+  const { data: limits } = useLimitsQuery(currentMonth)
 
   if (!currentMonth || !limits || limits.limits.length === 0) return null
 

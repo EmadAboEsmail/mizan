@@ -1,6 +1,12 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
-import { useBudget } from '@/contexts/BudgetContext'
-import { getMonthlyTrend } from '@/services/budgetService.js'
+import { useState, useMemo, useCallback } from 'react'
+import { useBudgetUI, getCurrentMonth } from '@/contexts/BudgetContext'
+import {
+  useCategoriesQuery,
+  useSummaryQuery,
+  useLimitsQuery,
+  useInsightsQuery,
+  useMonthlyTrendQuery,
+} from '@/queries/budget'
 import DonutChart from '@/components/budget/charts/DonutChart.jsx'
 import MonthlyBarChart from '@/components/budget/charts/MonthlyBarChart.jsx'
 import CategoryIcon from '@/components/budget/CategoryIcon.jsx'
@@ -15,6 +21,8 @@ const AR_MONTHS_FULL = [
   'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
   'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
 ]
+
+const EMPTY_LIST = []
 
 function formatMonthLabel(ym) {
   if (!ym) return ''
@@ -34,6 +42,13 @@ function subtractMonth(ym, n) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
 }
 
+function resolveCompareMonth(currentMonth, mode, customMonth) {
+  if (!currentMonth) return null
+  if (mode === 'prev_year') return subtractYear(currentMonth)
+  if (mode === 'custom') return customMonth || null
+  return null
+}
+
 const TREND_OPTIONS = [
   { id: 6, label: '6 أشهر' },
   { id: 12, label: '12 شهر' },
@@ -43,63 +58,73 @@ const TREND_OPTIONS = [
 // Component
 // ===========================
 function BudgetReports() {
-  const {
-    summary,
-    categories,
-    limits,
-    insights,
-    currentMonth,
-    setCurrentMonth,
-    setCompareMonth,
-  } = useBudget()
+  const { currentMonth, setCurrentMonth, setCompareMonth } = useBudgetUI()
 
   const [compareMode, setCompareMode] = useState('prev')
   const [customCompareMonth, setCustomCompareMonth] = useState('')
-
   const [trendMonths, setTrendMonths] = useState(6)
-  const [trend, setTrend] = useState([])
-  const [trendLoading, setTrendLoading] = useState(true)
+
+  // ✅ شهر المقارنة مشتق مباشرة بدون useEffect
+  const effectiveCompareMonth = useMemo(
+    () => resolveCompareMonth(currentMonth, compareMode, customCompareMonth),
+    [currentMonth, compareMode, customCompareMonth]
+  )
 
   // ===========================
-  // Sync compareMode → compareMonth
+  // Queries
   // ===========================
-  useEffect(() => {
-    if (!currentMonth) return
+  const { data: categories = EMPTY_LIST } = useCategoriesQuery()
+  const { data: summary = null } = useSummaryQuery(currentMonth)
+  const { data: limits = null } = useLimitsQuery(currentMonth)
+  const { data: insights = null } = useInsightsQuery(
+    currentMonth,
+    effectiveCompareMonth
+  )
+  const { data: trend = EMPTY_LIST, isPending: trendLoading } =
+    useMonthlyTrendQuery(trendMonths, currentMonth)
 
-    if (compareMode === 'prev') {
-      setCompareMonth(null)
-    } else if (compareMode === 'prev_year') {
-      setCompareMonth(subtractYear(currentMonth))
-    } else if (compareMode === 'custom') {
-      setCompareMonth(customCompareMonth || null)
+  // ===========================
+  // Handlers
+  // ===========================
+  const handleMonthChange = useCallback(
+    (nextMonth) => {
+      setCurrentMonth(nextMonth)
+      setCompareMonth(
+        resolveCompareMonth(
+          nextMonth === 'all' ? null : nextMonth,
+          compareMode,
+          customCompareMonth
+        )
+      )
+    },
+    [compareMode, customCompareMonth, setCurrentMonth, setCompareMonth]
+  )
+
+  const handleCompareModeChange = useCallback(
+    (mode) => {
+      setCompareMode(mode)
+      setCompareMonth(
+        resolveCompareMonth(currentMonth, mode, customCompareMonth)
+      )
+    },
+    [currentMonth, customCompareMonth, setCompareMonth]
+  )
+
+  const handleCustomCompareChange = useCallback(
+    (val) => {
+      setCustomCompareMonth(val)
+      setCompareMonth(resolveCompareMonth(currentMonth, 'custom', val))
+    },
+    [currentMonth, setCompareMonth]
+  )
+
+  const handleToggleMonthMode = useCallback(() => {
+    if (currentMonth === null) {
+      handleMonthChange(getCurrentMonth())
+    } else {
+      handleMonthChange('all')
     }
-  }, [compareMode, customCompareMonth, currentMonth, setCompareMonth])
-
-  // ===========================
-  // Load trend
-  // ✅ eslint-disable for legitimate data-fetch loading state
-  // ===========================
-  useEffect(() => {
-    let cancelled = false
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTrendLoading(true)
-
-    getMonthlyTrend(trendMonths, currentMonth)
-      .then((data) => {
-        if (!cancelled) {
-          setTrend(data)
-          setTrendLoading(false)
-        }
-      })
-      .catch((err) => {
-        console.error('فشل تحميل الـ trend:', err)
-        if (!cancelled) setTrendLoading(false)
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [trendMonths, currentMonth])
+  }, [currentMonth, handleMonthChange])
 
   // ===========================
   // Derived data
@@ -143,17 +168,6 @@ function BudgetReports() {
   const formatAmount = (n) =>
     Number(n || 0).toLocaleString('en', { maximumFractionDigits: 0 })
 
-  const handleToggleMonthMode = useCallback(() => {
-    if (currentMonth === null) {
-      const d = new Date()
-      setCurrentMonth(
-        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-      )
-    } else {
-      setCurrentMonth('all')
-    }
-  }, [currentMonth, setCurrentMonth])
-
   // ===========================
   // Empty (no summary at all)
   // ===========================
@@ -182,15 +196,16 @@ function BudgetReports() {
           <input
             type="month"
             value={currentMonth || ''}
-            onChange={(e) => setCurrentMonth(e.target.value)}
+            onChange={(e) => handleMonthChange(e.target.value)}
             className={styles.monthInput}
             disabled={currentMonth === null}
             aria-label="اختيار الشهر"
           />
           <button
             type="button"
-            className={`${styles.allBtn} ${currentMonth === null ? styles.allActive : ''
-              }`}
+            className={`${styles.allBtn} ${
+              currentMonth === null ? styles.allActive : ''
+            }`}
             onClick={handleToggleMonthMode}
             title={
               currentMonth === null ? 'العودة للشهر الحالي' : 'عرض كل الفترات'
@@ -218,7 +233,7 @@ function BudgetReports() {
           <select
             className={styles.compareSelect}
             value={compareMode}
-            onChange={(e) => setCompareMode(e.target.value)}
+            onChange={(e) => handleCompareModeChange(e.target.value)}
           >
             <option value="prev">الشهر السابق</option>
             <option value="prev_year">نفس الشهر السنة الماضية</option>
@@ -230,7 +245,7 @@ function BudgetReports() {
               type="month"
               className={styles.compareMonthInput}
               value={customCompareMonth}
-              onChange={(e) => setCustomCompareMonth(e.target.value)}
+              onChange={(e) => handleCustomCompareChange(e.target.value)}
               max={subtractMonth(currentMonth, 1)}
               aria-label="اختر شهر المقارنة"
             />
@@ -273,8 +288,9 @@ function BudgetReports() {
               </span>
             </div>
             <div
-              className={`${styles.card} ${summary.net >= 0 ? styles.positive : styles.negative
-                }`}
+              className={`${styles.card} ${
+                summary.net >= 0 ? styles.positive : styles.negative
+              }`}
             >
               <span className={styles.cardLabel}>الصافي</span>
               <span className={styles.cardValue}>
@@ -405,8 +421,9 @@ function BudgetReports() {
               <button
                 key={opt.id}
                 type="button"
-                className={`${styles.trendTab} ${trendMonths === opt.id ? styles.trendTabActive : ''
-                  }`}
+                className={`${styles.trendTab} ${
+                  trendMonths === opt.id ? styles.trendTabActive : ''
+                }`}
                 onClick={() => setTrendMonths(opt.id)}
               >
                 {opt.label}
@@ -418,10 +435,7 @@ function BudgetReports() {
         {trendLoading ? (
           <div className={styles.skeletonChart} />
         ) : (
-          <MonthlyBarChart
-            data={trend}
-            highlightMonth={currentMonth}
-          />
+          <MonthlyBarChart data={trend} highlightMonth={currentMonth} />
         )}
       </section>
     </div>

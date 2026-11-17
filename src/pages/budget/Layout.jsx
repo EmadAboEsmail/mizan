@@ -1,5 +1,6 @@
 import { Link, Outlet } from 'react-router-dom'
-import { useBudget } from '@/contexts/BudgetContext'
+import { useBudgetUI } from '@/contexts/BudgetContext'
+import { useBudgetBootstrap } from '@/queries/budget'
 import ThemeToggle from '@/components/ui/ThemeToggle.jsx'
 import BottomNav from '@/components/ui/BottomNav/BottomNav.jsx'
 import styles from './Layout.module.scss'
@@ -11,9 +12,10 @@ const NAV_ITEMS = [
 ]
 
 function BudgetLayout() {
-  const { loading, error, reload } = useBudget()
+  const { currentMonth } = useBudgetUI()
+  const { isPending, error, refetchAll } = useBudgetBootstrap(currentMonth)
 
-  if (loading && !error) {
+  if (isPending && !error) {
     return (
       <div className={styles.loadingScreen}>
         <div className={styles.spinner} />
@@ -27,9 +29,13 @@ function BudgetLayout() {
       <div className={styles.errorScreen}>
         <div className={styles.errorCard}>
           <div className={styles.errorIcon}>⚠️</div>
-          <h2 className={styles.errorTitle}>تعذر الاتصال بالخادم</h2>
+          <h2 className={styles.errorTitle}>تعذر تحميل البيانات</h2>
           <p className={styles.errorMessage}>{error}</p>
-          <button type="button" className={styles.retryBtn} onClick={reload}>
+          <button
+            type="button"
+            className={styles.retryBtn}
+            onClick={refetchAll}
+          >
             إعادة المحاولة ↺
           </button>
         </div>

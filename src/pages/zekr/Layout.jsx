@@ -1,5 +1,5 @@
 import { Link, Outlet } from 'react-router-dom'
-import { useZekrData } from '@/contexts/ZekrDataContext'
+import { useZekrBootstrap } from '@/queries/zekr'
 import ThemeToggle from '@/components/ui/ThemeToggle.jsx'
 import BottomNav from '@/components/ui/BottomNav/BottomNav.jsx'
 import styles from './Layout.module.scss'
@@ -11,9 +11,9 @@ const NAV_ITEMS = [
 ]
 
 function ZekrLayout() {
-  const { loading, error, loadInitialData } = useZekrData()
+  const { isPending, error, refetchAll } = useZekrBootstrap()
 
-  if (loading) {
+  if (isPending && !error) {
     return (
       <div className={styles.loadingScreen}>
         <div className={styles.spinner} />
@@ -27,9 +27,13 @@ function ZekrLayout() {
       <div className={styles.errorScreen}>
         <div className={styles.errorCard}>
           <div className={styles.errorIcon}>⚠️</div>
-          <h2 className={styles.errorTitle}>تعذر الاتصال بالخادم</h2>
+          <h2 className={styles.errorTitle}>تعذر تحميل البيانات</h2>
           <p className={styles.errorMessage}>{error}</p>
-          <button type="button" className={styles.retryBtn} onClick={loadInitialData}>
+          <button
+            type="button"
+            className={styles.retryBtn}
+            onClick={refetchAll}
+          >
             إعادة المحاولة ↺
           </button>
         </div>

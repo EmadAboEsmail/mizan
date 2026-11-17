@@ -1,9 +1,16 @@
 import { useState, useMemo } from 'react'
-import { useZekrData } from '@/contexts/ZekrDataContext'
+import {
+  useAdhkarQuery,
+  useCreateAdhkarMutation,
+  useUpdateAdhkarMutation,
+  useDeleteAdhkarMutation,
+} from '@/queries/zekr'
 import SettingsSection from './SettingsSection.jsx'
 import AdhkarFormModal from './AdhkarFormModal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import styles from './AdhkarSection.module.scss'
+
+const EMPTY_LIST = []
 
 const EditIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -22,17 +29,18 @@ const DeleteIcon = () => (
 )
 
 function AdhkarSection() {
-  // ✅ الـ context مباشرة — بدون props
-  const {
-    allAdhkar,
-    handleAddAdhkar,
-    handleUpdateAdhkar,
-    handleDeleteAdhkar,
-  } = useZekrData()
+  // ─── Query ───
+  const { data: allAdhkar = EMPTY_LIST } = useAdhkarQuery()
 
+  // ─── Mutations ───
+  const { mutateAsync: createAdhkar } = useCreateAdhkarMutation()
+  const { mutateAsync: updateAdhkar } = useUpdateAdhkarMutation()
+  const { mutateAsync: deleteAdhkar, isPending: isDeleting } =
+    useDeleteAdhkarMutation()
+
+  // ─── UI State ───
   const [formMode, setFormMode] = useState(null) // null | 'add' | { editing: zekr }
   const [deleteTarget, setDeleteTarget] = useState(null)
-  const [isDeleting, setIsDeleting] = useState(false)
   const [search, setSearch] = useState('')
 
   // فلترة الأذكار بالبحث
@@ -44,25 +52,26 @@ function AdhkarSection() {
   }, [allAdhkar, search])
 
   const handleAdd = async (text, target) => {
-    await handleAddAdhkar(text, target)
+    await createAdhkar({ text, defaultTarget: target })
     setFormMode(null)
   }
 
   const handleUpdate = async (text, target) => {
-    await handleUpdateAdhkar(formMode.editing.id, text, target)
+    await updateAdhkar({
+      id: formMode.editing.id,
+      text,
+      defaultTarget: target,
+    })
     setFormMode(null)
   }
 
   const handleDelete = async () => {
     if (!deleteTarget) return
     try {
-      setIsDeleting(true)
-      await handleDeleteAdhkar(deleteTarget.id)
+      await deleteAdhkar(deleteTarget.id)
       setDeleteTarget(null)
     } catch (err) {
       console.error('فشل حذف الذكر:', err)
-    } finally {
-      setIsDeleting(false)
     }
   }
 
@@ -134,7 +143,9 @@ function AdhkarSection() {
           <div className={styles.emptyState}>
             <div className={styles.emptyIcon}>📿</div>
             <p className={styles.emptyText}>
-              {search ? 'لا توجد أذكار تطابق بحثك' : 'لم تقم بإضافة أي أذكار بعد'}
+              {search
+                ? 'لا توجد أذكار تطابق بحثك'
+                : 'لم تقم بإضافة أي أذكار بعد'}
             </p>
           </div>
         )}

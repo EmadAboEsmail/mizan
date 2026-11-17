@@ -1,11 +1,13 @@
 // ═══════════════════════════════════════════════════════════════
-// src/main.jsx — Native-first bootstrap (Android / iOS)
+// src/main.jsx — Native-first bootstrap (Android / iOS / Web)
 // ═══════════════════════════════════════════════════════════════
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, HashRouter } from "react-router-dom";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { Capacitor } from "@capacitor/core";
 
+import { queryClient } from "./lib/queryClient.js";
 import { ThemeProvider } from "./contexts/ThemeContext.jsx";
 import { ToastProvider } from "./contexts/ToastProvider.jsx";
 import { ZekrDataProvider } from "./contexts/ZekrDataContext.jsx";
@@ -23,7 +25,7 @@ async function bootstrap() {
     const platform = Capacitor.getPlatform();
     console.log(`[Bootstrap] Starting on ${platform}...`);
 
-    // 1. DB أولًا — كل حاجة تحتها محتاجة الـ adapter جاهز
+    // 1. DB أولًا — كل استعلامات TanStack Query تعتمد على جاهزية الـ adapter
     await initDB();
 
     // 2. click buffer (listeners على visibilitychange / appStateChange)
@@ -35,17 +37,19 @@ async function bootstrap() {
 
     ReactDOM.createRoot(document.getElementById("root")).render(
       <React.StrictMode>
-        <ThemeProvider>
-          <ToastProvider>
-            <ZekrDataProvider>
-              <BudgetProvider>
-                <Router>
-                  <App />
-                </Router>
-              </BudgetProvider>
-            </ZekrDataProvider>
-          </ToastProvider>
-        </ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider>
+            <ToastProvider>
+              <ZekrDataProvider>
+                <BudgetProvider>
+                  <Router>
+                    <App />
+                  </Router>
+                </BudgetProvider>
+              </ZekrDataProvider>
+            </ToastProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
       </React.StrictMode>
     );
 

@@ -3,43 +3,64 @@ import { Capacitor } from '@capacitor/core'
 import { Filesystem, Directory } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
 import {
-  getBudgetBackup,
-  restoreBudgetBackup,
-  deleteAllBudgetData,
-  exportBudgetCsv,
-  importBudgetCsv,
-} from '@/services/budgetService.js'
-
+  useExportBudgetJsonMutation,
+  useExportBudgetCsvMutation,
+  useRestoreBudgetBackupMutation,
+  useImportBudgetCsvMutation,
+  useImportLegacyBudgetMutation,
+  useDeleteAllBudgetDataMutation,
+} from '@/queries/budget'
 import { useToast } from '@/hooks/useToast.js'
-import { useBudget } from '@/contexts/BudgetContext'
 import Modal from '@/components/ui/Modal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import styles from './DataSection.module.scss'
 
 function DataSection() {
-  const { reload, importLegacyBudget } = useBudget()
+  const { showToast } = useToast()
+
+  // ─── Mutations ───
+  const exportJsonMutation = useExportBudgetJsonMutation()
+  const exportCsvMutation = useExportBudgetCsvMutation()
+  const restoreBackupMutation = useRestoreBudgetBackupMutation()
+  const importCsvMutation = useImportBudgetCsvMutation()
+  const importLegacyMutation = useImportLegacyBudgetMutation()
+  const deleteAllMutation = useDeleteAllBudgetDataMutation()
+
+  const loading =
+    exportJsonMutation.isPending ||
+    exportCsvMutation.isPending ||
+    restoreBackupMutation.isPending ||
+    importCsvMutation.isPending ||
+    importLegacyMutation.isPending ||
+    deleteAllMutation.isPending
+
+  // ─── Auto Backup Settings ───
   const [autoBackupEnabled, setAutoBackupEnabled] = useState(
-    localStorage.getItem('auto_backup_enabled') === 'true'
+    () => localStorage.getItem('auto_backup_enabled') === 'true'
   )
   const [autoBackupFrequency, setAutoBackupFrequency] = useState(
-    localStorage.getItem('auto_backup_frequency') || 'daily'
+    () => localStorage.getItem('auto_backup_frequency') || 'daily'
   )
-  const { showToast } = useToast()
-  const [loading, setLoading] = useState(false)
-  
+
   const toggleAutoBackup = (checked) => {
     setAutoBackupEnabled(checked)
-    localStorage.setItem('auto_backup_enabled', checked)
-    showToast(checked ? 'تم تفعيل النسخ الاحتياطي التلقائي' : 'تم إيقاف النسخ الاحتياطي التلقائي')
-    window.location.reload() 
+    localStorage.setItem('auto_backup_enabled', String(checked))
+    window.dispatchEvent(new Event('mizan:auto-backup-change'))
+    showToast(
+      checked
+        ? 'تم تفعيل النسخ الاحتياطي التلقائي'
+        : 'تم إيقاف النسخ الاحتياطي التلقائي'
+    )
   }
 
   const changeFrequency = (freq) => {
     setAutoBackupFrequency(freq)
     localStorage.setItem('auto_backup_frequency', freq)
+    window.dispatchEvent(new Event('mizan:auto-backup-change'))
     showToast('تم تحديث فترة النسخ الاحتياطي')
-    window.location.reload()
   }
+
+  // ─── UI State ───
   const [confirmType, setConfirmType] = useState(null)
   const [pendingRestore, setPendingRestore] = useState(null)
   const [legacyStatus, setLegacyStatus] = useState(null)
@@ -57,17 +78,14 @@ function DataSection() {
   // ═══════════════════════════════════════
   const handleExportJson = async () => {
     try {
-      setLoading(true)
-      const data = await getBudgetBackup()
+      const data = await exportJsonMutation.mutateAsync()
       const blob = new Blob([JSON.stringify(data, null, 2)], {
         type: 'application/json',
       })
-      triggerDownload(blob, `budget-backup-${todayStr()}.json`)
+      await triggerDownload(blob, `budget-backup-${todayStr()}.json`)
       showToast('تم تصدير النسخة الاحتياطية')
     } catch {
       showToast('فشل التصدير')
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -76,18 +94,11 @@ function DataSection() {
   // ═══════════════════════════════════════
   const handleExportCsv = async () => {
     try {
-      setLoading(true)
-      const blob = await exportBudgetCsv()
-      // إضافة BOM لدعم العربية في إكسل
-      const csvWithBOM = new Blob(['\uFEFF', blob], {
-        type: 'text/csv;charset=utf-8;',
-      })
-      triggerDownload(csvWithBOM, `budget-transactions-${todayStr()}.csv`)
+      const blob = await exportCsvMutation.mutateAsync()
+      await triggerDownload(blob, `budget-transactions-${todayStr()}.csv`)
       showToast('تم تصدير CSV')
     } catch (err) {
-      showToast(err.message || 'فشل التصدير')
-    } finally {
-      setLoading(false)
+      showToast(err?.message || 'فشل التصدير')
     }
   }
 
@@ -115,18 +126,14 @@ function DataSection() {
   const handleConfirmRestore = async () => {
     if (!pendingRestore) return
     try {
-      setLoading(true)
-      const result = await restoreBudgetBackup(pendingRestore)
+      const result = await restoreBackupMutation.mutateAsync(pendingRestore)
       showToast(
         `تم الاستيراد: ${result.transactions} معاملة، ${result.categories} تصنيف`
       )
-      await reload()
       setConfirmType(null)
       setPendingRestore(null)
     } catch (err) {
-      showToast(err.message || 'فشل الاستيراد')
-    } finally {
-      setLoading(false)
+      showToast(err?.message || 'فشل الاستيراد')
     }
   }
 
@@ -143,22 +150,22 @@ function DataSection() {
   const handleConfirmCsvImport = async () => {
     if (!csvFile) return
     try {
-      setLoading(true)
-      const result = await importBudgetCsv(csvFile, clearExisting)
+      const result = await importCsvMutation.mutateAsync({
+        file: csvFile,
+        clearExisting,
+      })
       showToast(
-        `تم استيراد ${result.imported} معاملة${result.created_categories > 0
-          ? ` (${result.created_categories} تصنيف جديد)`
-          : ''
+        `تم استيراد ${result.imported} معاملة${
+          result.created_categories > 0
+            ? ` (${result.created_categories} تصنيف جديد)`
+            : ''
         }${result.skipped > 0 ? ` — تخطي ${result.skipped}` : ''}`
       )
-      await reload()
       setCsvModalOpen(false)
       setCsvFile(null)
       setClearExisting(false)
     } catch (err) {
-      showToast(err.message || 'فشل استيراد CSV')
-    } finally {
-      setLoading(false)
+      showToast(err?.message || 'فشل استيراد CSV')
     }
   }
 
@@ -174,13 +181,12 @@ function DataSection() {
       const file = e.target.files?.[0]
       if (!file) return
 
-      setLoading(true)
       setLegacyStatus(null)
 
       try {
         const text = await file.text()
         const legacy = JSON.parse(text)
-        const res = await importLegacyBudget(legacy)
+        const res = await importLegacyMutation.mutateAsync(legacy)
 
         let msg = `✅ تم: ${res.categories} تصنيف، ${res.transactions} معاملة، ${res.limits} حد`
         if (res.failed > 0) msg += ` — ⚠️ ${res.failed} فشل`
@@ -194,11 +200,9 @@ function DataSection() {
         console.error('[Legacy Budget Import] Failed:', err)
         setLegacyStatus({
           type: 'error',
-          text: `⚠️ فشل: ${err.message || 'خطأ غير متوقع'}`,
+          text: `⚠️ فشل: ${err?.message || 'خطأ غير متوقع'}`,
         })
         showToast('فشل الاستيراد')
-      } finally {
-        setLoading(false)
       }
     }
 
@@ -211,18 +215,14 @@ function DataSection() {
   const handleConfirmDelete = async () => {
     if (!confirmType) return
     try {
-      setLoading(true)
       const keepCategories = confirmType === 'transactions'
-      await deleteAllBudgetData(keepCategories)
+      await deleteAllMutation.mutateAsync(keepCategories)
       showToast(
         keepCategories ? 'تم مسح كل المعاملات' : 'تم مسح كل البيانات'
       )
-      await reload()
       setConfirmType(null)
     } catch {
       showToast('فشل المسح')
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -276,7 +276,7 @@ function DataSection() {
       </div>
 
       {/* ═══════════════════════════════════════
-          Legacy Import (أولاً — الأهم)
+          Legacy Import
       ═══════════════════════════════════════ */}
       <div className={styles.legacySection}>
         <div className={styles.groupLabel}>📦 استيراد البيانات القديمة</div>
@@ -300,10 +300,11 @@ function DataSection() {
         </div>
         {legacyStatus && (
           <div
-            className={`${styles.statusMessage} ${legacyStatus.type === 'success'
+            className={`${styles.statusMessage} ${
+              legacyStatus.type === 'success'
                 ? styles.statusSuccess
                 : styles.statusError
-              }`}
+            }`}
           >
             {legacyStatus.text}
           </div>
@@ -386,9 +387,7 @@ function DataSection() {
           <div className={styles.cardIcon}>📎</div>
           <div className={styles.cardContent}>
             <span className={styles.cardTitle}>استيراد CSV</span>
-            <p className={styles.cardDesc}>
-              إضافة أو استبدال من ملف CSV
-            </p>
+            <p className={styles.cardDesc}>إضافة أو استبدال من ملف CSV</p>
           </div>
           <button
             type="button"
@@ -527,7 +526,7 @@ function DataSection() {
               onClick={handleConfirmCsvImport}
               disabled={!csvFile || loading}
             >
-              {loading ? 'جاري الاستيراد...' : 'استيراد'}
+              {importCsvMutation.isPending ? 'جاري الاستيراد...' : 'استيراد'}
             </button>
           </div>
         </div>
@@ -541,45 +540,45 @@ function DataSection() {
 // ═══════════════════════════════════════
 function todayStr() {
   const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
-    d.getDate()
-  ).padStart(2, '0')}`
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+    2,
+    '0'
+  )}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 async function triggerDownload(blob, filename) {
   if (Capacitor.isNativePlatform()) {
     try {
-      const reader = new FileReader();
+      const reader = new FileReader()
       const base64Data = await new Promise((resolve) => {
-        reader.onloadend = () => resolve(reader.result.split(',')[1]);
-        reader.readAsDataURL(blob);
-      });
+        reader.onloadend = () => resolve(reader.result.split(',')[1])
+        reader.readAsDataURL(blob)
+      })
 
-      const fileName = filename;
       const savedFile = await Filesystem.writeFile({
-        path: fileName,
+        path: filename,
         data: base64Data,
         directory: Directory.Cache,
-      });
+      })
 
       await Share.share({
         title: 'Export Mizan',
         text: 'Backup file',
         url: savedFile.uri,
-      });
+      })
     } catch (err) {
-      console.error('Share failed', err);
-      throw new Error('فشل في مشاركة الملف', { cause: err });
+      console.error('Share failed', err)
+      throw new Error('فشل في مشاركة الملف', { cause: err })
     }
   } else {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 }
 

@@ -1,11 +1,20 @@
-import { useZekrData } from '@/contexts/ZekrDataContext'
+import {
+  useAdhkarQuery,
+  useGroupsQuery,
+  useCountsQuery,
+} from '@/queries/zekr'
 import styles from './QuickStats.module.scss'
 
-function QuickStats() {
-  const { allAdhkar, groups, counts, loading } = useZekrData()
+const EMPTY_LIST = []
+const EMPTY_MAP = {}
 
-  // مفيش بيانات → نخفي
-  if (loading || allAdhkar.length === 0) return null
+function QuickStats() {
+  const { data: allAdhkar = EMPTY_LIST, isPending: adhkarLoading } =
+    useAdhkarQuery()
+  const { data: groups = EMPTY_LIST } = useGroupsQuery()
+  const { data: counts = EMPTY_MAP } = useCountsQuery()
+
+  if (adhkarLoading || allAdhkar.length === 0) return null
 
   const totalClicks = Object.values(counts).reduce((sum, c) => sum + c, 0)
 

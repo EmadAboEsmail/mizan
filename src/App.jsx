@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useSyncExternalStore } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAutoBackup } from '@/hooks/useAutoBackup'
 
@@ -22,6 +22,23 @@ const BudgetTransactions = lazy(() =>
 )
 const BudgetReports = lazy(() => import('./pages/budget/Reports.jsx'))
 const BudgetSettings = lazy(() => import('./pages/budget/Settings.jsx'))
+
+// ═══════════════════════════════════════
+// Auto-backup localStorage subscription
+// ═══════════════════════════════════════
+function subscribeAutoBackup(callback) {
+  window.addEventListener('storage', callback)
+  window.addEventListener('mizan:auto-backup-change', callback)
+  return () => {
+    window.removeEventListener('storage', callback)
+    window.removeEventListener('mizan:auto-backup-change', callback)
+  }
+}
+
+const getAutoBackupEnabled = () =>
+  localStorage.getItem('auto_backup_enabled') === 'true'
+const getAutoBackupFrequency = () =>
+  localStorage.getItem('auto_backup_frequency') || 'daily'
 
 // ═══════════════════════════════════════
 // Loading Fallback
@@ -66,9 +83,16 @@ function PageLoader() {
 // App
 // ═══════════════════════════════════════
 function App() {
-  const autoBackupEnabled = localStorage.getItem('auto_backup_enabled') === 'true';
-  const autoBackupFrequency = localStorage.getItem('auto_backup_frequency') || 'daily';
-  useAutoBackup(autoBackupEnabled, autoBackupFrequency);
+  const autoBackupEnabled = useSyncExternalStore(
+    subscribeAutoBackup,
+    getAutoBackupEnabled
+  )
+  const autoBackupFrequency = useSyncExternalStore(
+    subscribeAutoBackup,
+    getAutoBackupFrequency
+  )
+  useAutoBackup(autoBackupEnabled, autoBackupFrequency)
+
   return (
     <>
       <Suspense fallback={<PageLoader />}>

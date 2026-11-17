@@ -6,7 +6,16 @@ import {
   useDeferredValue,
   useRef,
 } from 'react'
-import { useBudget } from '@/contexts/BudgetContext'
+import { useBudgetUI, getCurrentMonth } from '@/contexts/BudgetContext'
+import {
+  useCategoriesQuery,
+  useTransactionsQuery,
+  useSummaryQuery,
+  useInsightsQuery,
+  useCreateTransactionMutation,
+  useUpdateTransactionMutation,
+  useDeleteTransactionMutation,
+} from '@/queries/budget'
 import TransactionFormModal from '@/components/budget/TransactionFormModal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import LimitsOverview from '@/components/budget/limits/LimitsOverview.jsx'
@@ -22,25 +31,29 @@ import {
 import styles from './Transactions.module.scss'
 
 const DATE_HEADER_HEIGHT = 48
+const EMPTY_LIST = []
 
 function BudgetTransactions() {
-  const {
-    transactions,
-    summary,
-    categories,
-    currentMonth,
-    setCurrentMonth,
-    createTransaction,
-    updateTransaction,
-    deleteTransaction,
-    insights,
-  } = useBudget()
+  const { currentMonth, compareMonth, setCurrentMonth } = useBudgetUI()
+
+  // ─── Queries ───
+  const { data: categories = EMPTY_LIST } = useCategoriesQuery()
+  const { data: transactions = EMPTY_LIST } = useTransactionsQuery(currentMonth)
+  const { data: summary = null } = useSummaryQuery(currentMonth)
+  const { data: insights = null } = useInsightsQuery(currentMonth, compareMonth)
+
+  // ─── Mutations ───
+  const { mutateAsync: createTransaction } =
+    useCreateTransactionMutation(currentMonth)
+  const { mutateAsync: updateTransaction } =
+    useUpdateTransactionMutation(currentMonth)
+  const { mutateAsync: deleteTransaction, isPending: isDeleting } =
+    useDeleteTransactionMutation(currentMonth)
 
   // ─── UI state ───
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTxn, setEditingTxn] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
-  const [isDeleting, setIsDeleting] = useState(false)
 
   // ─── Filters ───
   const [filterType, setFilterType] = useState('all')
@@ -92,9 +105,7 @@ function BudgetTransactions() {
     })
   }, [transactions, filterType, filterCategory, deferredSearch])
 
-  // ═══════════════════════════════════════════════════════════
-  // ✅ الحالة المشتقة — بدل useEffect
-  // ═══════════════════════════════════════════════════════════
+  // ─── الحالة المشتقة ───
   const effectiveExpandedId =
     expandedId && filteredTxns.some((t) => t.id === expandedId)
       ? expandedId
@@ -127,7 +138,7 @@ function BudgetTransactions() {
   const handleSubmit = useCallback(
     async (payload) => {
       if (editingTxn) {
-        await updateTransaction(editingTxn.id, payload)
+        await updateTransaction({ id: editingTxn.id, data: payload })
       } else {
         await createTransaction(payload)
       }
@@ -140,20 +151,16 @@ function BudgetTransactions() {
   const handleDelete = useCallback(async () => {
     if (!deleteTarget) return
     try {
-      setIsDeleting(true)
       await deleteTransaction(deleteTarget.id)
       setDeleteTarget(null)
-    } finally {
-      setIsDeleting(false)
+    } catch {
+      // التراجع التلقائي ورسالة الخطأ يتمان داخل useDeleteTransactionMutation
     }
   }, [deleteTarget, deleteTransaction])
 
   const handleToggleMonthMode = useCallback(() => {
     if (currentMonth === null) {
-      const d = new Date()
-      setCurrentMonth(
-        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-      )
+      setCurrentMonth(getCurrentMonth())
     } else {
       setCurrentMonth('all')
     }
@@ -178,24 +185,23 @@ function BudgetTransactions() {
       if (item.type === 'header') return DATE_HEADER_HEIGHT
 
       const { txn } = item
-      if (effectiveExpandedId !== txn.id) return ROW_HEIGHT   // ← تعديل
+      if (effectiveExpandedId !== txn.id) return ROW_HEIGHT
 
       let extra = 70
       if (txn.details) extra += 50
       if (txn.description) extra += 55
       return ROW_HEIGHT + extra
     },
-    [flatItems, effectiveExpandedId]                          // ← تعديل
+    [flatItems, effectiveExpandedId]
   )
 
-  // ✅ virtualData
   const virtualData = useMemo(
     () => ({
       items: flatItems,
       catMap,
       onEdit: handleOpenEdit,
       onDelete: handleDeleteClick,
-      expandedId: effectiveExpandedId,                        // ← تعديل
+      expandedId: effectiveExpandedId,
       onToggle: handleToggleExpanded,
     }),
     [
@@ -203,7 +209,7 @@ function BudgetTransactions() {
       catMap,
       handleOpenEdit,
       handleDeleteClick,
-      effectiveExpandedId,                                    // ← تعديل
+      effectiveExpandedId,
       handleToggleExpanded,
     ]
   )
@@ -217,12 +223,11 @@ function BudgetTransactions() {
     return Math.min(600, Math.max(ROW_HEIGHT * 2, total))
   }, [flatItems, getItemSize])
 
-  // ✅ effect واحد بس
   useEffect(() => {
     if (listRef.current) {
       listRef.current.resetAfterIndex(0, true)
     }
-  }, [effectiveExpandedId, flatItems.length])                 // ← تعديل
+  }, [effectiveExpandedId, flatItems.length])
 
   // ─── Render ───
   return (

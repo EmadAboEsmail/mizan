@@ -1,48 +1,50 @@
-import { useEffect } from 'react';
-import { getBudgetBackup } from '@/services/budgetService.js';
-import { Filesystem, Directory } from '@capacitor/filesystem';
-import { Capacitor } from '@capacitor/core';
+import { useEffect } from 'react'
+import { useMutation } from '@tanstack/react-query'
+import { Filesystem, Directory } from '@capacitor/filesystem'
+import { Capacitor } from '@capacitor/core'
+import { getBudgetBackup } from '@/services/budgetService.js'
+
+const INTERVALS = {
+  daily: 24 * 60 * 60 * 1000,
+  weekly: 7 * 24 * 60 * 60 * 1000,
+  monthly: 30 * 24 * 60 * 60 * 1000,
+}
+
+async function runAutoBackup() {
+  const data = await getBudgetBackup()
+  const content = JSON.stringify(data)
+  const fileName = `auto-backup-${new Date().toISOString().split('T')[0]}.json`
+
+  if (Capacitor.isNativePlatform()) {
+    await Filesystem.writeFile({
+      path: `backups/${fileName}`,
+      data: content,
+      directory: Directory.Data,
+      recursive: true,
+    })
+  } else {
+    localStorage.setItem('auto_backup_data', content)
+  }
+
+  localStorage.setItem('last_auto_backup_date', Date.now().toString())
+}
 
 export const useAutoBackup = (enabled, frequency = 'daily') => {
+  const { mutate } = useMutation({
+    mutationFn: runAutoBackup,
+    onError: (err) => {
+      console.error('Auto backup failed:', err)
+    },
+  })
+
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) return
 
-    const performBackup = async () => {
-      const lastBackup = localStorage.getItem('last_auto_backup_date');
-      const now = Date.now();
-      
-      const intervals = {
-        daily: 24 * 60 * 60 * 1000,
-        weekly: 7 * 24 * 60 * 60 * 1000,
-        monthly: 30 * 24 * 60 * 60 * 1000,
-      };
+    const lastBackup = localStorage.getItem('last_auto_backup_date')
+    const interval = INTERVALS[frequency] || INTERVALS.daily
 
-      const interval = intervals[frequency] || intervals.daily;
+    if (lastBackup && Date.now() - parseInt(lastBackup, 10) < interval) return
 
-      if (lastBackup && now - parseInt(lastBackup) < interval) return;
-
-      try {
-        const data = await getBudgetBackup();
-        const content = JSON.stringify(data);
-        const fileName = `auto-backup-${new Date().toISOString().split('T')[0]}.json`;
-
-        if (Capacitor.isNativePlatform()) {
-          await Filesystem.writeFile({
-            path: `backups/${fileName}`,
-            data: content,
-            directory: Directory.Data,
-            recursive: true,
-          });
-        } else {
-          localStorage.setItem('auto_backup_data', content);
-        }
-
-        localStorage.setItem('last_auto_backup_date', now.toString());
-      } catch (err) {
-        console.error('Auto backup failed:', err);
-      }
-    };
-
-    performBackup();
-  }, [enabled, frequency]);
-};
+    mutate()
+  }, [enabled, frequency, mutate])
+}

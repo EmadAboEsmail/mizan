@@ -1,9 +1,18 @@
 import { useState, useMemo } from 'react'
-import { useBudget } from '@/contexts/BudgetContext'
+import { useBudgetUI } from '@/contexts/BudgetContext'
+import {
+  useCategoriesQuery,
+  useLimitsQuery,
+  useCreateOrUpdateLimitMutation,
+  useUpdateLimitMutation,
+  useDeleteLimitMutation,
+} from '@/queries/budget'
 import LimitFormModal from './LimitFormModal.jsx'
 import LimitProgressCard from './LimitProgressCard.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import styles from './BudgetLimitsSection.module.scss'
+
+const EMPTY_LIST = []
 
 const PlusIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -21,19 +30,22 @@ function formatAmount(n) {
 }
 
 function BudgetLimitsSection() {
-  const {
-    categories,
-    limits,
-    currentMonth,
-    createOrUpdateLimit,
-    updateLimit,
-    deleteLimit,
-  } = useBudget()
+  const { currentMonth } = useBudgetUI()
 
+  // ─── Queries ───
+  const { data: categories = EMPTY_LIST } = useCategoriesQuery()
+  const { data: limits = null } = useLimitsQuery(currentMonth)
+
+  // ─── Mutations ───
+  const { mutateAsync: createOrUpdateLimit } = useCreateOrUpdateLimitMutation()
+  const { mutateAsync: updateLimit } = useUpdateLimitMutation(currentMonth)
+  const { mutateAsync: deleteLimit, isPending: isDeleting } =
+    useDeleteLimitMutation(currentMonth)
+
+  // ─── UI State ───
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingLimit, setEditingLimit] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
-  const [isDeleting, setIsDeleting] = useState(false)
 
   // خريطة التصنيفات
   const catMap = useMemo(
@@ -41,8 +53,7 @@ function BudgetLimitsSection() {
     [categories]
   )
 
-  // limits الحالية للشهر المختار
-  const currentLimits = limits?.limits || []
+  const currentLimits = limits?.limits || EMPTY_LIST
 
   const handleOpenAdd = () => {
     setEditingLimit(null)
@@ -56,7 +67,7 @@ function BudgetLimitsSection() {
 
   const handleSubmit = async (dataOrId, amount) => {
     if (editingLimit) {
-      await updateLimit(editingLimit.id, amount)
+      await updateLimit({ id: editingLimit.id, amount })
     } else {
       await createOrUpdateLimit(dataOrId)
     }
@@ -67,11 +78,10 @@ function BudgetLimitsSection() {
   const handleDelete = async () => {
     if (!deleteTarget) return
     try {
-      setIsDeleting(true)
       await deleteLimit(deleteTarget.id)
       setDeleteTarget(null)
-    } finally {
-      setIsDeleting(false)
+    } catch {
+      // التراجع ورسالة الخطأ يتمان داخل useDeleteLimitMutation
     }
   }
 
@@ -132,8 +142,9 @@ function BudgetLimitsSection() {
                 {limits.total_remaining >= 0 ? 'متبقي' : 'تجاوز'}
               </span>
               <span
-                className={`${styles.totalValue} ${limits.total_remaining < 0 ? styles.negative : ''
-                  }`}
+                className={`${styles.totalValue} ${
+                  limits.total_remaining < 0 ? styles.negative : ''
+                }`}
               >
                 {formatAmount(Math.abs(limits.total_remaining))}
               </span>
@@ -142,12 +153,13 @@ function BudgetLimitsSection() {
 
           <div className={styles.totalProgressTrack}>
             <div
-              className={`${styles.totalProgressFill} ${limits.total_percent >= 100
-                ? styles.over
-                : limits.total_percent >= 75
-                  ? styles.warning
-                  : ''
-                }`}
+              className={`${styles.totalProgressFill} ${
+                limits.total_percent >= 100
+                  ? styles.over
+                  : limits.total_percent >= 75
+                    ? styles.warning
+                    : ''
+              }`}
               style={{ width: `${Math.min(limits.total_percent, 100)}%` }}
             />
           </div>
@@ -205,8 +217,9 @@ function BudgetLimitsSection() {
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
         title="حذف الميزانية؟"
-        message={`سيتم حذف ميزانية "${catMap[deleteTarget?.category_id]?.name || 'التصنيف'
-          }". المعاملات لن تتأثر.`}
+        message={`سيتم حذف ميزانية "${
+          catMap[deleteTarget?.category_id]?.name || 'التصنيف'
+        }". المعاملات لن تتأثر.`}
         confirmLabel={isDeleting ? 'جاري الحذف...' : 'نعم، احذف'}
         cancelLabel="إلغاء"
         danger

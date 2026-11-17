@@ -1,8 +1,11 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useZekrData } from '@/contexts/ZekrDataContext'
+import {
+  useAdhkarQuery,
+  useZekrStatsQuery,
+  useZekrStreakQuery,
+} from '@/queries/zekr'
 import { useAnimatedNumber } from '@/hooks/useAnimatedNumber'
-import { getStats, getStreak } from '@/services/zekrService.js'
 import { downloadCsv, getCsvFilename } from '@/utils/csv.js'
 import PeriodTabs from './PeriodTabs.jsx'
 import BarChart from './BarChart.jsx'
@@ -13,6 +16,7 @@ import ComparisonCard from './ComparisonCard.jsx'
 import styles from './StatsTab.module.scss'
 
 const VALID_PERIODS = ['day', 'week', 'month', 'year']
+const EMPTY_LIST = []
 
 const PERIOD_LABELS = {
   day: 'ساعة',
@@ -40,12 +44,7 @@ const DownloadIcon = () => (
 )
 
 function StatsTab() {
-  const { allAdhkar } = useZekrData()
   const [searchParams, setSearchParams] = useSearchParams()
-
-  // Streak state
-  const [streak, setStreak] = useState(null)
-  const [streakLoading, setStreakLoading] = useState(true)
 
   // ===========================
   // URL state
@@ -54,101 +53,74 @@ function StatsTab() {
   const period = VALID_PERIODS.includes(rawPeriod) ? rawPeriod : 'day'
 
   const rawZekrId = searchParams.get('zekr')
-  const zekrId = rawZekrId || null
+  const urlZekrId = rawZekrId || null
 
-  const setPeriod = (newPeriod) => {
-    setSearchParams(
-      (prev) => {
+  const setPeriod = useCallback(
+    (newPeriod) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          next.set('period', newPeriod)
+          return next
+        },
+        { replace: true }
+      )
+    },
+    [setSearchParams]
+  )
+
+  const setZekrId = useCallback(
+    (newZekrId) => {
+      setSearchParams((prev) => {
         const next = new URLSearchParams(prev)
-        next.set('period', newPeriod)
+        if (newZekrId) next.set('zekr', newZekrId)
+        else next.delete('zekr')
         return next
-      },
-      { replace: true }
-    )
-  }
-
-  const setZekrId = (newZekrId) => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-      if (newZekrId) next.set('zekr', newZekrId)
-      else next.delete('zekr')
-      return next
-    })
-  }
+      })
+    },
+    [setSearchParams]
+  )
 
   // ===========================
-  // Data state
+  // Queries
   // ===========================
-  const [stats, setStats] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [refreshTick, setRefreshTick] = useState(0)
+  const { data: allAdhkar = EMPTY_LIST } = useAdhkarQuery()
 
-  // حماية: لو zekrId في URL غير موجود في adhkar
+  // حماية فورية: لا نستعلم بذكر محذوف من الـ URL
+  const zekrId = useMemo(() => {
+    if (!urlZekrId) return null
+    if (allAdhkar.length === 0) return null
+    return allAdhkar.some((z) => z.id === urlZekrId) ? urlZekrId : null
+  }, [urlZekrId, allAdhkar])
+
   useEffect(() => {
-    if (
-      zekrId &&
-      allAdhkar.length > 0 &&
-      !allAdhkar.some((z) => z.id === zekrId)
-    ) {
+    if (urlZekrId && allAdhkar.length > 0 && !zekrId) {
       setZekrId(null)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zekrId, allAdhkar])
+  }, [urlZekrId, allAdhkar.length, zekrId, setZekrId])
 
-  // Fetch stats
-  useEffect(() => {
-    let isCurrent = true
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true)
-    setError(null)
+  const {
+    data: stats = null,
+    isPending,
+    isFetching,
+    error: statsError,
+    refetch: refetchStats,
+  } = useZekrStatsQuery(period, zekrId, true)
 
-    getStats(period, zekrId, true)
-      .then((data) => {
-        if (isCurrent) {
-          setStats(data)
-          setLoading(false)
-        }
-      })
-      .catch((err) => {
-        if (isCurrent) {
-          console.error('فشل تحميل الإحصائيات:', err)
-          setError(err.message || 'فشل تحميل الإحصائيات')
-          setLoading(false)
-        }
-      })
+  const {
+    data: streak = null,
+    isPending: streakLoading,
+    refetch: refetchStreak,
+  } = useZekrStreakQuery()
 
-    return () => {
-      isCurrent = false
-    }
-  }, [period, zekrId, refreshTick])
+  const error = statsError
+    ? statsError.message || 'فشل تحميل الإحصائيات'
+    : null
 
-  // Fetch streak
-  useEffect(() => {
-    let isCurrent = true
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setStreakLoading(true)
-
-    getStreak()
-      .then((data) => {
-        if (isCurrent) {
-          setStreak(data)
-          setStreakLoading(false)
-        }
-      })
-      .catch((err) => {
-        if (isCurrent) {
-          console.error('فشل تحميل السلسلة:', err)
-          setStreakLoading(false)
-        }
-      })
-
-    return () => {
-      isCurrent = false
-    }
-  }, [refreshTick])
-
-  const retry = () => setRefreshTick((t) => t + 1)
+  const retry = useCallback(() => {
+    refetchStats()
+    refetchStreak()
+  }, [refetchStats, refetchStreak])
 
   // ===========================
   // Animated numbers
@@ -212,7 +184,6 @@ function StatsTab() {
 
   const periodUnit = PERIOD_LABELS[period] || 'فترة'
 
-  // اسم الذكر المختار
   const selectedZekrName = useMemo(() => {
     if (!zekrId) return null
     const found = allAdhkar.find((z) => z.id === zekrId)
@@ -231,9 +202,9 @@ function StatsTab() {
       rows.push(['فترة', label, values[i] ?? 0, ''])
     })
 
-      ; (stats.breakdown ?? []).forEach((item) => {
-        rows.push(['ذكر', '', item.count, item.text])
-      })
+    ;(stats.breakdown ?? []).forEach((item) => {
+      rows.push(['ذكر', '', item.count, item.text])
+    })
 
     if (rows.length === 0) {
       rows.push(['—', 'لا توجد بيانات', 0, ''])
@@ -256,9 +227,7 @@ function StatsTab() {
         <div className={styles.headerIcon}>📊</div>
         <div className={styles.headerText}>
           <h1 className={styles.pageTitle}>إحصائياتك</h1>
-          <p className={styles.pageSubtitle}>
-            تتبّع رحلتك مع الأذكار
-          </p>
+          <p className={styles.pageSubtitle}>تتبّع رحلتك مع الأذكار</p>
         </div>
       </header>
       <PeriodTabs value={period} onChange={setPeriod} />
@@ -287,7 +256,7 @@ function StatsTab() {
         </div>
       )}
 
-      {loading && !stats && (
+      {isPending && !stats && (
         <div className={styles.skeletonContainer}>
           <div className={styles.skeletonCards}>
             <div className={styles.skeletonCard}>
@@ -330,7 +299,9 @@ function StatsTab() {
       )}
 
       {stats && (
-        <div className={`${styles.content} ${loading ? styles.updating : ''}`}>
+        <div
+          className={`${styles.content} ${isFetching ? styles.updating : ''}`}
+        >
           <div className={styles.metricsGrid}>
             <div className={styles.metricCard}>
               <span className={styles.metricLabel}>إجمالي التسبيحات</span>
@@ -344,7 +315,7 @@ function StatsTab() {
               {stats.comparison && (
                 <ComparisonCard
                   comparison={stats.comparison}
-                  loading={loading}
+                  loading={isFetching}
                 />
               )}
             </div>
@@ -363,9 +334,7 @@ function StatsTab() {
 
             {bestPeriod && (
               <div className={`${styles.metricCard} ${styles.highlight}`}>
-                <span className={styles.metricLabel}>
-                  أفضل {periodUnit}
-                </span>
+                <span className={styles.metricLabel}>أفضل {periodUnit}</span>
                 <span className={styles.metricValueTop}>
                   {bestPeriod.label}
                 </span>
@@ -377,9 +346,7 @@ function StatsTab() {
 
             {worstPeriod && worstPeriod.label !== bestPeriod?.label && (
               <div className={styles.metricCard}>
-                <span className={styles.metricLabel}>
-                  أقل {periodUnit}
-                </span>
+                <span className={styles.metricLabel}>أقل {periodUnit}</span>
                 <span className={styles.metricValueTop}>
                   {worstPeriod.label}
                 </span>

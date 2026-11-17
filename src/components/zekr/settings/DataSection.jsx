@@ -1,9 +1,14 @@
 import { useState, useRef } from 'react'
-import { Capacitor } from '@capacitor/core'
-import { Filesystem, Directory } from '@capacitor/filesystem'
-import { Share } from '@capacitor/share'
-import { useZekrData } from '@/contexts/ZekrDataContext'
-
+import {
+  useDeleteAllCountsMutation,
+  useDeleteAllTargetsMutation,
+  useDeleteAllClicksMutation,
+  useDeleteAllZekrDataMutation,
+  useExportZekrBackupMutation,
+  useRestoreZekrBackupMutation,
+  useImportLegacyZekrMutation,
+} from '@/queries/zekr'
+import { exportJsonFile } from '@/utils/fileExport.js'
 import { useToast } from '@/hooks/useToast.js'
 import SettingsSection from './SettingsSection.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
@@ -16,7 +21,8 @@ const RESET_OPTIONS = [
     desc: 'إعادة عداد كل ذكر إلى صفر مع الحفاظ على الأهداف وسجل الإحصائيات.',
     btnLabel: 'تصفير',
     confirmTitle: 'تصفير كل الأعداد؟',
-    confirmMessage: 'سيتم تصفير عدد جميع الأذكار الحالية. لا يمكن التراجع عن هذا الإجراء.',
+    confirmMessage:
+      'سيتم تصفير عدد جميع الأذكار الحالية. لا يمكن التراجع عن هذا الإجراء.',
     icon: '↺',
   },
   {
@@ -34,7 +40,8 @@ const RESET_OPTIONS = [
     desc: 'حذف سجل الضغطات والرسوم البيانية وتفاصيل الأيام السابقة بالكامل.',
     btnLabel: 'مسح السجل',
     confirmTitle: 'مسح سجل الإحصائيات؟',
-    confirmMessage: 'سيتم مسح كافة الرسوم البيانية وسجلات الأيام السابقة نهائياً.',
+    confirmMessage:
+      'سيتم مسح كافة الرسوم البيانية وسجلات الأيام السابقة نهائياً.',
     icon: '📊',
   },
 ]
@@ -45,36 +52,56 @@ const DANGER_OPTION = {
   desc: 'إعادة ضبط المصنع: مسح الأعداد الحالية، الأهداف، والإحصائيات نهائياً.',
   btnLabel: 'مسح شامل',
   confirmTitle: 'تحذير: مسح كل البيانات نهائياً؟',
-  confirmMessage: 'سيتم حذف كل شيء بلا استثناء (الأعداد، الأهداف، وسجل التسبيح). لا يمكن التراجع أبداً!',
+  confirmMessage:
+    'سيتم حذف كل شيء بلا استثناء (الأعداد، الأهداف، وسجل التسبيح). لا يمكن التراجع أبداً!',
   icon: '⚠️',
 }
 
-function DataSection() {
-  const {
-    handleDeleteAllCounts,
-    handleDeleteAllTargets,
-    handleDeleteAllClicks,
-    handleDeleteAll,
-    handleExportBackup,
-    handleImportBackup,
-    importLegacy, // ⬅️ مهم — ضيفها هنا
-  } = useZekrData()
+function todayStr() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+    2,
+    '0'
+  )}-${String(d.getDate()).padStart(2, '0')}`
+}
 
+function DataSection() {
   const { showToast } = useToast()
 
+  // ─── Mutations ───
+  const deleteCountsMutation = useDeleteAllCountsMutation()
+  const deleteTargetsMutation = useDeleteAllTargetsMutation()
+  const deleteClicksMutation = useDeleteAllClicksMutation()
+  const deleteAllMutation = useDeleteAllZekrDataMutation()
+  const exportBackupMutation = useExportZekrBackupMutation()
+  const restoreBackupMutation = useRestoreZekrBackupMutation()
+  const importLegacyMutation = useImportLegacyZekrMutation()
+
+  const isResetting =
+    deleteCountsMutation.isPending ||
+    deleteTargetsMutation.isPending ||
+    deleteClicksMutation.isPending ||
+    deleteAllMutation.isPending
+
+  const loading =
+    isResetting ||
+    exportBackupMutation.isPending ||
+    restoreBackupMutation.isPending ||
+    importLegacyMutation.isPending
+
+  // ─── UI State ───
   const [confirmType, setConfirmType] = useState(null)
-  const [loading, setLoading] = useState(false)
   const [importStatus, setImportStatus] = useState(null)
   const [pendingFileContent, setPendingFileContent] = useState(null)
-  const [legacyStatus, setLegacyStatus] = useState(null) // ⬅️ جديد
+  const [legacyStatus, setLegacyStatus] = useState(null)
 
   const fileInputRef = useRef(null)
 
   const actionHandlers = {
-    counts: handleDeleteAllCounts,
-    targets: handleDeleteAllTargets,
-    clicks: handleDeleteAllClicks,
-    all: handleDeleteAll,
+    counts: () => deleteCountsMutation.mutateAsync(),
+    targets: () => deleteTargetsMutation.mutateAsync(),
+    clicks: () => deleteClicksMutation.mutateAsync(),
+    all: () => deleteAllMutation.mutateAsync(),
   }
 
   const currentConfirmData =
@@ -85,7 +112,6 @@ function DataSection() {
   const handleConfirm = async () => {
     if (!confirmType || !actionHandlers[confirmType]) return
 
-    setLoading(true)
     try {
       await actionHandlers[confirmType]()
       setConfirmType(null)
@@ -93,8 +119,6 @@ function DataSection() {
     } catch (err) {
       console.error('فشل تنفيذ عملية المسح:', err)
       showToast('فشلت العملية، يرجى المحاولة مرة أخرى.')
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -114,88 +138,36 @@ function DataSection() {
   const handleConfirmImport = async () => {
     if (!pendingFileContent) return
 
-    setLoading(true)
     setImportStatus(null)
     try {
-      const result = await handleImportBackup(pendingFileContent)
+      const result = await restoreBackupMutation.mutateAsync(pendingFileContent)
       setImportStatus({
         type: 'success',
         text: `تم استرجاع البيانات بنجاح (${result.count} ذكر ومجموعاتها).`,
       })
       showToast('تم استيراد النسخة الاحتياطية بنجاح!')
-      setPendingFileContent(null)
     } catch (err) {
       setImportStatus({
         type: 'error',
-        text: err.message || 'فشل استيراد النسخة الاحتياطية، تأكد من صحة الملف.',
+        text:
+          err?.message || 'فشل استيراد النسخة الاحتياطية، تأكد من صحة الملف.',
       })
-      setPendingFileContent(null)
     } finally {
-      setLoading(false)
+      setPendingFileContent(null)
     }
   }
 
   const handleExportClick = async () => {
     try {
-      setLoading(true)
-      const data = await handleExportBackup()
-      const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: 'application/json',
-      })
-      await triggerDownload(blob, `zekr-backup-${todayStr()}.json`)
+      const data = await exportBackupMutation.mutateAsync()
+      await exportJsonFile(`zekr-backup-${todayStr()}.json`, data)
       showToast('تم تصدير النسخة الاحتياطية بنجاح!')
     } catch (err) {
       console.error(err)
       showToast('فشل تصدير النسخة الاحتياطية')
-    } finally {
-      setLoading(false)
     }
   }
 
-  async function triggerDownload(blob, filename) {
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const reader = new FileReader();
-        const base64Data = await new Promise((resolve) => {
-          reader.onloadend = () => resolve(reader.result.split(',')[1]);
-          reader.readAsDataURL(blob);
-        });
-
-        const savedFile = await Filesystem.writeFile({
-          path: filename,
-          data: base64Data,
-          directory: Directory.Cache,
-        });
-
-        await Share.share({
-          title: 'Export Mizan Zekr',
-          text: 'Backup file',
-          url: savedFile.uri,
-        });
-      } catch (err) {
-        console.error('Share failed', err);
-        throw new Error('فشل في مشاركة الملف', { cause: err });
-      }
-    } else {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  }
-
-  function todayStr() {
-    const d = new Date()
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
-      d.getDate()
-    ).padStart(2, '0')}`
-  }
-
-  // ⬅️ دالة استيراد zekr.db القديم
   const handleLegacyImport = () => {
     const input = document.createElement('input')
     input.type = 'file'
@@ -205,13 +177,12 @@ function DataSection() {
       const file = e.target.files?.[0]
       if (!file) return
 
-      setLoading(true)
       setLegacyStatus(null)
 
       try {
         const text = await file.text()
         const legacy = JSON.parse(text)
-        const res = await importLegacy(legacy)
+        const res = await importLegacyMutation.mutateAsync(legacy)
 
         let msg = `✅ تم: ${res.imported}/${res.total}`
         if (res.adhkar) msg += ` (${res.adhkar} ذكر)`
@@ -226,11 +197,9 @@ function DataSection() {
         console.error('[Legacy Import] Failed:', err)
         setLegacyStatus({
           type: 'error',
-          text: `⚠️ فشل: ${err.message || 'خطأ غير متوقع'}`,
+          text: `⚠️ فشل: ${err?.message || 'خطأ غير متوقع'}`,
         })
         showToast('فشل الاستيراد')
-      } finally {
-        setLoading(false)
       }
     }
 
@@ -242,16 +211,21 @@ function DataSection() {
       <div className={styles.container}>
         {/* 1. النسخ الاحتياطي */}
         <div className={styles.backupSection}>
-          <h4 className={styles.subSectionTitle}>النسخ الاحتياطي السحابي والمحلي</h4>
+          <h4 className={styles.subSectionTitle}>
+            النسخ الاحتياطي السحابي والمحلي
+          </h4>
 
           <div className={styles.backupGrid}>
             <div className={styles.backupCard}>
               <div className={styles.backupHeader}>
                 <span className={styles.backupIcon}>📥</span>
                 <div>
-                  <span className={styles.backupTitle}>تصدير نسخة احتياطية</span>
+                  <span className={styles.backupTitle}>
+                    تصدير نسخة احتياطية
+                  </span>
                   <p className={styles.backupDesc}>
-                    حفظ ملف JSON يحوي كل أذكارك، أهدافك، ومجموعاتك لنقلها لأي جهاز.
+                    حفظ ملف JSON يحوي كل أذكارك، أهدافك، ومجموعاتك لنقلها لأي
+                    جهاز.
                   </p>
                 </div>
               </div>
@@ -259,8 +233,11 @@ function DataSection() {
                 type="button"
                 className={styles.exportBtn}
                 onClick={handleExportClick}
+                disabled={loading}
               >
-                تنزيل الملف
+                {exportBackupMutation.isPending
+                  ? 'جاري التصدير...'
+                  : 'تنزيل الملف'}
               </button>
             </div>
 
@@ -287,6 +264,7 @@ function DataSection() {
                 type="button"
                 className={styles.importBtn}
                 onClick={() => fileInputRef.current?.click()}
+                disabled={loading}
               >
                 اختيار ملف
               </button>
@@ -295,10 +273,11 @@ function DataSection() {
 
           {importStatus && (
             <div
-              className={`${styles.statusMessage} ${importStatus.type === 'success'
-                ? styles.statusSuccess
-                : styles.statusError
-                }`}
+              className={`${styles.statusMessage} ${
+                importStatus.type === 'success'
+                  ? styles.statusSuccess
+                  : styles.statusError
+              }`}
             >
               {importStatus.type === 'success' ? '✓ ' : '⚠️ '}
               {importStatus.text}
@@ -306,9 +285,11 @@ function DataSection() {
           )}
         </div>
 
-        {/* 2. 🆕 استيراد البيانات القديمة */}
+        {/* 2. استيراد البيانات القديمة */}
         <div className={styles.legacySection}>
-          <h4 className={styles.subSectionTitle}>📦 استيراد البيانات القديمة</h4>
+          <h4 className={styles.subSectionTitle}>
+            📦 استيراد البيانات القديمة
+          </h4>
           <p className={styles.legacyDesc}>
             لو عندك نسخة من التطبيق القديم (FastAPI)، اختار ملف{' '}
             <code>zekr-legacy-backup.json</code> لاستيراد الأذكار والإحصائيات
@@ -326,10 +307,11 @@ function DataSection() {
 
           {legacyStatus && (
             <div
-              className={`${styles.statusMessage} ${legacyStatus.type === 'success'
-                ? styles.statusSuccess
-                : styles.statusError
-                }`}
+              className={`${styles.statusMessage} ${
+                legacyStatus.type === 'success'
+                  ? styles.statusSuccess
+                  : styles.statusError
+              }`}
             >
               {legacyStatus.text}
             </div>
@@ -353,6 +335,7 @@ function DataSection() {
                 type="button"
                 className={styles.actionBtn}
                 onClick={() => setConfirmType(item.id)}
+                disabled={loading}
               >
                 {item.btnLabel}
               </button>
@@ -374,6 +357,7 @@ function DataSection() {
             type="button"
             className={styles.dangerBtn}
             onClick={() => setConfirmType(DANGER_OPTION.id)}
+            disabled={loading}
           >
             {DANGER_OPTION.btnLabel}
           </button>
@@ -386,7 +370,7 @@ function DataSection() {
         onConfirm={handleConfirm}
         title={currentConfirmData?.confirmTitle ?? ''}
         message={currentConfirmData?.confirmMessage ?? ''}
-        confirmLabel={loading ? 'جاري المسح...' : 'نعم، امسح'}
+        confirmLabel={isResetting ? 'جاري المسح...' : 'نعم، امسح'}
         cancelLabel="إلغاء"
         danger
       />
@@ -397,7 +381,11 @@ function DataSection() {
         onConfirm={handleConfirmImport}
         title="استيراد النسخة الاحتياطية؟"
         message="سيتم إضافة الأذكار والمجموعات الموجودة بالملف إلى تطبيقك. هل تريد المتابعة؟"
-        confirmLabel={loading ? 'جاري الاستيراد...' : 'نعم، استورد الآن'}
+        confirmLabel={
+          restoreBackupMutation.isPending
+            ? 'جاري الاستيراد...'
+            : 'نعم، استورد الآن'
+        }
         cancelLabel="إلغاء"
       />
     </SettingsSection>

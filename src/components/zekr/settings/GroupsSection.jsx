@@ -1,10 +1,21 @@
-import { useState, useMemo } from 'react'   // ← useEffect اتشال
-import { useZekrData } from '@/contexts/ZekrDataContext'
+import { useState, useMemo, useCallback } from 'react'
+import {
+  useGroupsQuery,
+  useAdhkarQuery,
+  useCreateGroupMutation,
+  useUpdateGroupMutation,
+  useDeleteGroupMutation,
+  useAddGroupItemMutation,
+  useUpdateGroupItemMutation,
+  useDeleteGroupItemMutation,
+} from '@/queries/zekr'
 import SettingsSection from './SettingsSection.jsx'
 import GroupFormModal from './GroupFormModal.jsx'
 import GroupEditorModal from './GroupEditorModal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import styles from './GroupsSection.module.scss'
+
+const EMPTY_LIST = []
 
 const EditIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -35,65 +46,73 @@ const ArrowLeftIcon = () => (
 )
 
 function GroupsSection() {
-  const {
-    groups,
-    allAdhkar,
-    handleAddGroup,
-    handleUpdateGroup,
-    handleDeleteGroup,
-    handleAddGroupItem,
-    handleUpdateGroupItem,
-    handleDeleteGroupItem,
-  } = useZekrData()
+  // ─── Queries ───
+  const { data: groups = EMPTY_LIST } = useGroupsQuery()
+  const { data: allAdhkar = EMPTY_LIST } = useAdhkarQuery()
 
+  // ─── Mutations ───
+  const { mutateAsync: createGroup } = useCreateGroupMutation()
+  const { mutateAsync: updateGroup } = useUpdateGroupMutation()
+  const { mutateAsync: deleteGroup, isPending: isDeleting } =
+    useDeleteGroupMutation()
+  const { mutateAsync: addGroupItem } = useAddGroupItemMutation()
+  const { mutateAsync: updateGroupItem } = useUpdateGroupItemMutation()
+  const { mutateAsync: deleteGroupItem } = useDeleteGroupItemMutation()
+
+  // ─── UI State ───
   const [formMode, setFormMode] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [editorGroupId, setEditorGroupId] = useState(null)
-  const [isDeleting, setIsDeleting] = useState(false)
-
-  // ✅ نحتفظ بآخر مجموعة معروفة عشان ما يختفيش المودال أثناء تحديث groups
   const [lastKnownGroup, setLastKnownGroup] = useState(null)
 
   const editorGroup = useMemo(() => {
     if (editorGroupId == null) return null
-    return (
-      groups.find((g) => String(g.id) === String(editorGroupId)) ?? null
-    )
+    return groups.find((g) => String(g.id) === String(editorGroupId)) ?? null
   }, [editorGroupId, groups])
 
-  // ═══════════════════════════════════════════════════════════
-  // ✅ بدل useEffect — Adjust during render
-  // ═══════════════════════════════════════════════════════════
   if (editorGroup && editorGroup !== lastKnownGroup) {
     setLastKnownGroup(editorGroup)
   }
 
-  // لو editorGroupId موجود لكن editorGroup مؤقتاً null → استخدم lastKnown
   const effectiveGroup =
     editorGroup ?? (editorGroupId != null ? lastKnownGroup : null)
 
   const handleAdd = async (name, description) => {
-    await handleAddGroup(name, description)
+    await createGroup({ name, description })
     setFormMode(null)
   }
 
   const handleUpdate = async (name, description) => {
-    await handleUpdateGroup(formMode.editing.id, name, description)
+    await updateGroup({ id: formMode.editing.id, name, description })
     setFormMode(null)
   }
 
   const handleDelete = async () => {
     if (!deleteTarget) return
     try {
-      setIsDeleting(true)
-      await handleDeleteGroup(deleteTarget.id)
+      await deleteGroup(deleteTarget.id)
       setDeleteTarget(null)
     } catch (err) {
       console.error('فشل حذف المجموعة:', err)
-    } finally {
-      setIsDeleting(false)
     }
   }
+
+  const handleAddGroupItem = useCallback(
+    (groupId, zekrId, target = null) =>
+      addGroupItem({ groupId, zekrId, target }),
+    [addGroupItem]
+  )
+
+  const handleUpdateGroupItem = useCallback(
+    (groupId, itemId, updates) =>
+      updateGroupItem({ groupId, itemId, updates }),
+    [updateGroupItem]
+  )
+
+  const handleDeleteGroupItem = useCallback(
+    (groupId, itemId) => deleteGroupItem({ groupId, itemId }),
+    [deleteGroupItem]
+  )
 
   const closeEditor = () => {
     setEditorGroupId(null)
@@ -105,7 +124,8 @@ function GroupsSection() {
       <div className={styles.container}>
         <div className={styles.topBar}>
           <p className={styles.hint}>
-            رتّب أذكارك في مجموعات (مثل: أذكار الصباح، بعد الصلاة) لتكرارها تلقائياً.
+            رتّب أذكارك في مجموعات (مثل: أذكار الصباح، بعد الصلاة) لتكرارها
+            تلقائياً.
           </p>
           <button
             type="button"

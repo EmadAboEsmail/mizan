@@ -1,6 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useZekrData } from '@/contexts/ZekrDataContext'
+import { useCurrentZekrId } from '@/contexts/ZekrDataContext'
+import {
+  useAdhkarQuery,
+  useCountsQuery,
+  useTargetsQuery,
+  useGroupsQuery,
+  useAddClickMutation,
+  useResetClickMutation,
+  useSetTargetMutation,
+  useUpdateGroupItemMutation,
+} from '@/queries/zekr'
 import ZekrDisplay from '@/components/zekr/sabh/ZekrDisplay.jsx'
 import AdhkarSelect from '@/components/zekr/sabh/AdhkarSelect.jsx'
 import ActionButtons from '@/components/zekr/sabh/ActionButtons.jsx'
@@ -8,10 +18,15 @@ import SabhModeTabs from '@/components/zekr/sabh/SabhModeTabs.jsx'
 import GroupModeView from '@/components/zekr/sabh/GroupModeView.jsx'
 import PromptModal from '@/components/ui/PromptModal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
-import FocusMode, { attemptFullscreen } from '@/components/zekr/sabh/FocusMode.jsx'
+import FocusMode, {
+  attemptFullscreen,
+} from '@/components/zekr/sabh/FocusMode.jsx'
 import { useVibrationEnabled } from '@/hooks/useVibrationEnabled'
-import { triggerHapticFeedback } from '@/utils/haptics.js' // ✅ تم نقلها للأعلى
+import { triggerHapticFeedback } from '@/utils/haptics.js'
 import styles from './Sabh.module.scss'
+
+const EMPTY_LIST = []
+const EMPTY_MAP = {}
 
 // Wake Lock Hook — يمنع إطفاء الشاشة في وضع التركيز
 function useWakeLock(active) {
@@ -26,7 +41,7 @@ function useWakeLock(active) {
       try {
         wakeLock = await navigator.wakeLock.request('screen')
         if (cancelled) {
-          wakeLock?.release().catch(() => { })
+          wakeLock?.release().catch(() => {})
           wakeLock = null
         }
       } catch (err) {
@@ -46,7 +61,7 @@ function useWakeLock(active) {
     return () => {
       cancelled = true
       document.removeEventListener('visibilitychange', onVisibility)
-      wakeLock?.release().catch(() => { })
+      wakeLock?.release().catch(() => {})
       wakeLock = null
     }
   }, [active])
@@ -56,18 +71,43 @@ function ZekrSabh() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const {
-    allAdhkar,
-    counts,
-    targets,
-    groups,
-    currentZekrId,
-    setCurrentZekrId,
-    handlePerformClick,
-    handleResetForZekr,
-    updateZekrTarget,
-    handleUpdateGroupItem,
-  } = useZekrData()
+  // ===========================
+  // Queries
+  // ===========================
+  const { data: allAdhkar = EMPTY_LIST } = useAdhkarQuery()
+  const { data: counts = EMPTY_MAP } = useCountsQuery()
+  const { data: targets = EMPTY_MAP } = useTargetsQuery()
+  const { data: groups = EMPTY_LIST } = useGroupsQuery()
+
+  // ===========================
+  // UI Context
+  // ===========================
+  const [currentZekrId, setCurrentZekrId] = useCurrentZekrId(allAdhkar)
+
+  // ===========================
+  // Mutations
+  // ===========================
+  const { mutate: addClickMutate } = useAddClickMutation()
+  const { mutate: resetClickFire, mutateAsync: resetClickMutate } =
+    useResetClickMutation()
+  const { mutateAsync: setTargetMutate } = useSetTargetMutation()
+  const { mutateAsync: updateGroupItemMutate } = useUpdateGroupItemMutation()
+
+  const handlePerformClick = useCallback(
+    (zekrId) => {
+      if (!zekrId) return
+      addClickMutate(zekrId)
+    },
+    [addClickMutate]
+  )
+
+  const handleResetForGroupItem = useCallback(
+    (zekrId) => {
+      if (!zekrId) return
+      resetClickFire(zekrId)
+    },
+    [resetClickFire]
+  )
 
   // ===========================
   // URL-derived state
@@ -92,7 +132,9 @@ function ZekrSabh() {
   // ===========================
   // القيم المشتقة
   // ===========================
-  const currentZekr = allAdhkar.find((z) => String(z.id) === String(currentZekrId))
+  const currentZekr = allAdhkar.find(
+    (z) => String(z.id) === String(currentZekrId)
+  )
   const currentCount = (currentZekrId && counts[currentZekrId]) || 0
   const currentTarget = currentZekr
     ? targets[currentZekr.id] ?? currentZekr.default_target ?? null
@@ -227,8 +269,6 @@ function ZekrSabh() {
     handlePerformClick(currentZekrId)
   }, [currentZekrId, handlePerformClick, vibrationEnabled])
 
-  // ✅ تم نقل هذا الـ useEffect ليكون بعد تعريف handleNormalClick
-  // استقبال أحداث أزرار الصوت من Native
   // استقبال أحداث أزرار الصوت من Native
   useEffect(() => {
     const handleVolumeButton = (event) => {
@@ -236,16 +276,11 @@ function ZekrSabh() {
       if (sabhMode !== 'normal') return
       if (!currentZekrId) return
 
-      console.log('[VolumeButton] Event received:', event);
-
       try {
-        // نتحقق من event.detail مباشرة أو من خلال JSON.parse إذا كانت string
-        let data = event.detail;
+        let data = event.detail
         if (typeof data === 'string') {
-          data = JSON.parse(data);
+          data = JSON.parse(data)
         }
-        
-        console.log('[VolumeButton] Parsed data:', data);
 
         if (data && (data.keyCode === 24 || data.keyCode === 25)) {
           handleNormalClick()
@@ -255,56 +290,41 @@ function ZekrSabh() {
       }
     }
 
-    // محاكاة أزرار الصوت للويب
+    // محاكاة أزرار الصوت للويب: F1 = Volume Down (24), F2 = Volume Up (25)
     const handleTestVolume = (e) => {
-      // F1 = Volume Down (24), F2 = Volume Up (25)
       if (e.key === 'F1' || e.key === 'F2') {
-        const keyCode = e.key === 'F1' ? 24 : 25;
-        const event = new CustomEvent('volumeButtonPress', {
-          detail: { keyCode }
-        });
-        window.dispatchEvent(event);
+        const keyCode = e.key === 'F1' ? 24 : 25
+        window.dispatchEvent(
+          new CustomEvent('volumeButtonPress', { detail: { keyCode } })
+        )
       }
-    };
-    window.addEventListener('keydown', handleTestVolume);
+    }
 
+    window.addEventListener('keydown', handleTestVolume)
     window.addEventListener('volumeButtonPress', handleVolumeButton)
     return () => {
-      window.removeEventListener('keydown', handleTestVolume);
+      window.removeEventListener('keydown', handleTestVolume)
       window.removeEventListener('volumeButtonPress', handleVolumeButton)
     }
-  }, [handleNormalClick, isTargetModalOpen, isResetModalOpen, sabhMode, currentZekrId])
-
-  // زر تجريبي للويب
-  const renderVolumeTestButton = () => {
-    if (import.meta.env.MODE !== 'development') return null;
-    return (
-      <button 
-        style={{ position: 'fixed', bottom: '10px', left: '10px', zIndex: 1000 }}
-        onClick={() => {
-          const event = new CustomEvent('volumeButtonPress', { detail: { keyCode: 24 } });
-          window.dispatchEvent(event);
-        }}
-      >
-        اختبار الصوت
-      </button>
-    );
-  };
-          window.dispatchEvent(event);
-        }}
-      >
-        اختبار الصوت (Volume Down)
-      </button>
-    );
-  }
+  }, [
+    handleNormalClick,
+    isTargetModalOpen,
+    isResetModalOpen,
+    sabhMode,
+    currentZekrId,
+  ])
 
   const handleConfirmReset = async () => {
     if (!currentZekrId) return
-    await handleResetForZekr(currentZekrId)
-    if (isFocusMode) {
-      setFocusSessionStart(0)
+    try {
+      await resetClickMutate(currentZekrId)
+      if (isFocusMode) {
+        setFocusSessionStart(0)
+      }
+      setIsResetModalOpen(false)
+    } catch (err) {
+      console.error('فشل تصفير العدد:', err)
     }
-    setIsResetModalOpen(false)
   }
 
   const handleOpenNormalTargetModal = (zekrId, currentValue) => {
@@ -323,13 +343,16 @@ function ZekrSabh() {
     const numericTarget = Number.isNaN(parsed) ? null : parsed
     try {
       if (targetModalConfig.mode === 'normal') {
-        await updateZekrTarget(targetModalConfig.zekrId, numericTarget)
+        await setTargetMutate({
+          zekrId: targetModalConfig.zekrId,
+          target: numericTarget,
+        })
       } else if (targetModalConfig.mode === 'group') {
-        await handleUpdateGroupItem(
-          targetModalConfig.groupId,
-          targetModalConfig.itemId,
-          { target: numericTarget }
-        )
+        await updateGroupItemMutate({
+          groupId: targetModalConfig.groupId,
+          itemId: targetModalConfig.itemId,
+          updates: { target: numericTarget },
+        })
       }
       setIsTargetModalOpen(false)
       setTargetModalConfig(null)
@@ -360,7 +383,10 @@ function ZekrSabh() {
     const handleKeyDown = (e) => {
       const el = document.activeElement
       const tag = el?.tagName
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) || el?.isContentEditable) {
+      if (
+        ['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) ||
+        el?.isContentEditable
+      ) {
         return
       }
       if (isTargetModalOpen || isResetModalOpen) return
@@ -511,7 +537,7 @@ function ZekrSabh() {
           selectedGroupId={urlGroupId}
           onGroupChange={handleGroupChange}
           onAddClick={handlePerformClick}
-          onResetClick={handleResetForZekr}
+          onResetClick={handleResetForGroupItem}
           onSetTarget={handleOpenGroupTargetModal}
         />
       )}

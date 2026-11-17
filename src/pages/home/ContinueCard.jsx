@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom'
-import { useZekrData } from '@/contexts/ZekrDataContext'
+import { useCurrentZekrId } from '@/contexts/ZekrDataContext'
+import { useAdhkarQuery, useCountsQuery } from '@/queries/zekr'
 import styles from './ContinueCard.module.scss'
+
+const EMPTY_LIST = []
+const EMPTY_MAP = {}
 
 const ArrowLeftIcon = () => (
   <svg
@@ -19,9 +23,13 @@ const ArrowLeftIcon = () => (
 )
 
 function ContinueCard() {
-  const { currentZekrId, allAdhkar, counts, loading } = useZekrData()
+  const { data: allAdhkar = EMPTY_LIST, isPending: adhkarLoading } =
+    useAdhkarQuery()
+  const { data: counts = EMPTY_MAP, isPending: countsLoading } =
+    useCountsQuery()
+  const [currentZekrId] = useCurrentZekrId(allAdhkar)
 
-  if (loading || !currentZekrId) return null
+  if (adhkarLoading || countsLoading || !currentZekrId) return null
 
   const zekr = allAdhkar.find((z) => z.id === currentZekrId)
   if (!zekr) return null
@@ -29,7 +37,6 @@ function ContinueCard() {
   const count = counts[zekr.id] || 0
   const hasAnyActivity = Object.values(counts).some((c) => c > 0)
 
-  // نظهر بس لو المستخدم بدأ فعلاً
   if (!hasAnyActivity) return null
 
   return (
