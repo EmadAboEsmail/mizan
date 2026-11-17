@@ -5,7 +5,9 @@ import ZekrDisplay from './ZekrDisplay.jsx'
 import ActionButtons from './ActionButtons.jsx'
 import FocusMode from '@/components/zekr/sabh/FocusMode.jsx'
 import { TasbihIcon } from '@/components/ui/BrandIcons.jsx'
-import { useVibrationEnabled } from '../../../hooks/useVibrationEnabled.js'
+import { useVibrationEnabled } from '@/hooks/useVibrationEnabled.js'
+import { useVolumeButton } from '@/hooks/useVolumeButton.js'
+import { triggerHapticFeedback } from '@/utils/haptics.js'
 import styles from './GroupModeView.module.scss'
 
 const ArrowRightIcon = () => (
@@ -27,8 +29,6 @@ const CheckIcon = () => (
 )
 
 
-import { triggerHapticFeedback } from '@/utils/haptics.js'
-
 function vibrate(enabled, type = 'light') {
   if (!enabled) return
   triggerHapticFeedback(type)
@@ -41,6 +41,7 @@ function GroupModeView({
   onAddClick,
   onResetClick,
   onSetTarget,
+  isModalOpen = false,
 }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [localCount, setLocalCount] = useState(0)
@@ -48,7 +49,9 @@ function GroupModeView({
   const [isComplete, setIsComplete] = useState(false)
   const [isFocusMode, setIsFocusMode] = useState(false)
   const vibrationEnabled = useVibrationEnabled()
-  const selectedGroup = groups.find((g) => g.id === selectedGroupId)
+  const selectedGroup = groups.find(
+    (g) => String(g.id) === String(selectedGroupId)
+  )
   const items = selectedGroup?.items ?? []
 
   // ═══════════════════════════════════════════════════════════
@@ -152,22 +155,17 @@ function GroupModeView({
   // ✅ handleAddClick: كشف الاكتمال انتقل هنا (بدل الـ effect)
   // ═══════════════════════════════════════════════════════════
   const handleAddClick = () => {
-    if (!currentItem) return
+    if (!currentItem || showTransition || isComplete) return
     if (currentTarget && localCount >= currentTarget) return
 
-    vibrate(vibrationEnabled, 'light')
     const newCount = localCount + 1
+    const reachesTarget = !!currentTarget && newCount >= currentTarget
+
+    vibrate(vibrationEnabled, reachesTarget ? 'success' : 'light')
     setLocalCount(newCount)
     onAddClick(currentItem.zekr_id)
 
-    // فحص الاكتمال مباشرة بعد الزيادة
-    if (
-      currentTarget &&
-      newCount >= currentTarget &&
-      !showTransition &&
-      !isComplete
-    ) {
-      vibrate(vibrationEnabled, 'medium')
+    if (reachesTarget) {
       const isLast = currentIndex === items.length - 1
       if (isLast) {
         setIsComplete(true)
@@ -176,6 +174,18 @@ function GroupModeView({
       }
     }
   }
+
+  // التسبيح بأزرار رفع/خفض الصوت داخل وضع المجموعة ووضع التركيز أيضاً
+  useVolumeButton(
+    () => {
+      if (showTransition) {
+        goToNext()
+        return
+      }
+      handleAddClick()
+    },
+    !!currentItem && !isComplete && !isModalOpen
+  )
 
   const handleReset = () => {
     if (!currentItem) return

@@ -24,6 +24,7 @@ import FocusMode, {
   attemptFullscreen,
 } from '@/components/zekr/sabh/FocusMode.jsx'
 import { useVibrationEnabled } from '@/hooks/useVibrationEnabled'
+import { useVolumeButton } from '@/hooks/useVolumeButton.js'
 import { triggerHapticFeedback } from '@/utils/haptics.js'
 import styles from './Sabh.module.scss'
 
@@ -266,55 +267,26 @@ function ZekrSabh() {
   const handleNormalClick = useCallback(() => {
     if (!currentZekrId) return
     if (vibrationEnabled) {
-      triggerHapticFeedback('light')
+      const reachesTarget = !!currentTarget && currentCount + 1 === currentTarget
+      triggerHapticFeedback(reachesTarget ? 'success' : 'light')
     }
     handlePerformClick(currentZekrId)
-  }, [currentZekrId, handlePerformClick, vibrationEnabled])
-
-  // استقبال أحداث أزرار الصوت من Native
-  useEffect(() => {
-    const handleVolumeButton = (event) => {
-      if (isTargetModalOpen || isResetModalOpen) return
-      if (sabhMode !== 'normal') return
-      if (!currentZekrId) return
-
-      try {
-        let data = event.detail
-        if (typeof data === 'string') {
-          data = JSON.parse(data)
-        }
-
-        if (data && (data.keyCode === 24 || data.keyCode === 25)) {
-          handleNormalClick()
-        }
-      } catch (err) {
-        console.warn('[VolumeButton] Invalid event payload:', err)
-      }
-    }
-
-    // محاكاة أزرار الصوت للويب: F1 = Volume Down (24), F2 = Volume Up (25)
-    const handleTestVolume = (e) => {
-      if (e.key === 'F1' || e.key === 'F2') {
-        const keyCode = e.key === 'F1' ? 24 : 25
-        window.dispatchEvent(
-          new CustomEvent('volumeButtonPress', { detail: { keyCode } })
-        )
-      }
-    }
-
-    window.addEventListener('keydown', handleTestVolume)
-    window.addEventListener('volumeButtonPress', handleVolumeButton)
-    return () => {
-      window.removeEventListener('keydown', handleTestVolume)
-      window.removeEventListener('volumeButtonPress', handleVolumeButton)
-    }
   }, [
-    handleNormalClick,
-    isTargetModalOpen,
-    isResetModalOpen,
-    sabhMode,
     currentZekrId,
+    currentCount,
+    currentTarget,
+    handlePerformClick,
+    vibrationEnabled,
   ])
+
+  // التسبيح بأزرار رفع/خفض الصوت في الوضع الحر ووضع التركيز
+  useVolumeButton(
+    handleNormalClick,
+    sabhMode === 'normal' &&
+      !!currentZekrId &&
+      !isTargetModalOpen &&
+      !isResetModalOpen
+  )
 
   const handleConfirmReset = async () => {
     if (!currentZekrId) return
@@ -547,6 +519,7 @@ function ZekrSabh() {
           onAddClick={handlePerformClick}
           onResetClick={handleResetForGroupItem}
           onSetTarget={handleOpenGroupTargetModal}
+          isModalOpen={isTargetModalOpen || isResetModalOpen}
         />
       )}
 

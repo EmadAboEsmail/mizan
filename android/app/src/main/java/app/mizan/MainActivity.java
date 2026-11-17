@@ -1,31 +1,41 @@
 package app.mizan;
 
+import android.os.Bundle;
 import android.view.KeyEvent;
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.JSObject;
 
 public class MainActivity extends BridgeActivity {
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            // ✅ نرسل الحدث مرة واحدة فقط عند أول ضغطة (نتجاهل الـ repeat)
-            if (event.getRepeatCount() == 0) {
-                JSObject data = new JSObject();
-                data.put("keyCode", keyCode);
-                bridge.triggerWindowJSEvent("volumeButtonPress", data.toString());
-            }
-            // نستهلك الحدث — الصوت لا يتغير والتطبيق مفتوح (design choice)
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
+
+    // يُفعَّل فقط داخل شاشة السبحة حتى تبقى أزرار الصوت طبيعية في باقي التطبيق
+    private volatile boolean interceptVolumeKeys = false;
+
+    public void setInterceptVolumeKeys(boolean enabled) {
+        this.interceptVolumeKeys = enabled;
     }
 
     @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        // ✅ نستهلك الـ UP برضه عشان نضمن عدم ظهور volume bar على بعض الأجهزة
-        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            return true;
+    protected void onCreate(Bundle savedInstanceState) {
+        registerPlugin(MizanNativePlugin.class);
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event != null && interceptVolumeKeys) {
+            int keyCode = event.getKeyCode();
+            if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
+                    if (bridge != null) {
+                        JSObject data = new JSObject();
+                        data.put("keyCode", keyCode);
+                        bridge.triggerWindowJSEvent("volumeButtonPress", data.toString());
+                    }
+                }
+                // نستهلك الحدث في DOWN و UP لمنع ظهور شريط الصوت وتغيير مستوى الصوت
+                return true;
+            }
         }
-        return super.onKeyUp(keyCode, event);
+        return super.dispatchKeyEvent(event);
     }
 }

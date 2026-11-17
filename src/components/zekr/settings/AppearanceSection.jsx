@@ -3,6 +3,7 @@ import {
   useVibrationEnabled,
   setVibrationEnabled,
 } from '@/hooks/useVibrationEnabled.js'
+import { triggerHapticFeedback } from '@/utils/haptics.js'
 import SettingsSection from './SettingsSection.jsx'
 import styles from './AppearanceSection.module.scss'
 
@@ -62,7 +63,11 @@ function AppearanceSection() {
   }
 
   const handleToggleVibration = () => {
-    setVibrationEnabled(!vibrationEnabled)
+    const next = !vibrationEnabled
+    setVibrationEnabled(next)
+    if (next) {
+      triggerHapticFeedback('medium')
+    }
   }
 
   return (
