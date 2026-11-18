@@ -1,65 +1,33 @@
+import { Sun, Moon, MoonStar, Check, Smartphone, Type } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext.jsx'
 import {
   useVibrationEnabled,
   setVibrationEnabled,
 } from '@/hooks/useVibrationEnabled.js'
+import {
+  ZEKR_FONT_SCALES,
+  useZekrFontPrefs,
+} from '@/hooks/useZekrFontScale.js'
 import { triggerHapticFeedback } from '@/utils/haptics.js'
 import SettingsSection from './SettingsSection.jsx'
 import styles from './AppearanceSection.module.scss'
 
-// ═══════════════════════════════════════
-// أيقونات
-// ═══════════════════════════════════════
-const SunIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="5" />
-    <line x1="12" y1="1" x2="12" y2="3" />
-    <line x1="12" y1="21" x2="12" y2="23" />
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-    <line x1="1" y1="12" x2="3" y2="12" />
-    <line x1="21" y1="12" x2="23" y2="12" />
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-  </svg>
-)
+const THEME_CARDS = [
+  { id: 'light', label: 'فاتح', className: 'lightCard', Icon: Sun },
+  { id: 'dark', label: 'داكن دافئ', className: 'darkCard', Icon: Moon },
+  { id: 'amoled', label: 'AMOLED', className: 'amoledCard', Icon: MoonStar },
+]
 
-const MoonIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </svg>
-)
-
-const CheckIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-)
-
-const VibrateIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="8" y="4" width="8" height="16" rx="2" />
-    <line x1="4" y1="8" x2="4" y2="16" />
-    <line x1="2" y1="10" x2="2" y2="14" />
-    <line x1="20" y1="8" x2="20" y2="16" />
-    <line x1="22" y1="10" x2="22" y2="14" />
-  </svg>
-)
-
-// ═══════════════════════════════════════
-// Component
-// ═══════════════════════════════════════
 function AppearanceSection() {
-  const { theme, toggleTheme, setTheme } = useTheme()
+  const { theme, setTheme } = useTheme()
   const vibrationEnabled = useVibrationEnabled()
+  const { scaleKey, scale, fontStyle, setScaleKey, setFontStyle } =
+    useZekrFontPrefs()
 
   const handleSelectTheme = (selectedTheme) => {
     if (theme === selectedTheme) return
-    if (setTheme) {
-      setTheme(selectedTheme)
-    } else {
-      toggleTheme()
-    }
+    triggerHapticFeedback('light')
+    setTheme(selectedTheme)
   }
 
   const handleToggleVibration = () => {
@@ -71,68 +39,148 @@ function AppearanceSection() {
   }
 
   return (
-    <SettingsSection id="appearance" title="المظهر">
+    <SettingsSection id="appearance" title="المظهر والخط">
       <div className={styles.container}>
         <p className={styles.hint}>
-          اختر المظهر المريح لعينيك أثناء التسبيح والقراءة:
+          اختر المظهر المريح لعينيك (وضع AMOLED يطفئ بكسلات الشاشة تماماً):
         </p>
 
-        {/* شبكة خيارات الثيم المرئية */}
-        <div className={styles.grid} role="radiogroup" aria-label="اختيار المظهر">
-          {/* خيار الوضع الفاتح */}
-          <button
-            type="button"
-            role="radio"
-            aria-checked={theme === 'light'}
-            className={`${styles.card} ${theme === 'light' ? styles.active : ''} ${styles.lightCard}`}
-            onClick={() => handleSelectTheme('light')}
-          >
-            <div className={styles.preview}>
-              <div className={styles.previewHeader} />
-              <div className={styles.previewCircle} />
-              <div className={styles.previewBar} />
-            </div>
-            <div className={styles.cardFooter}>
-              <div className={styles.cardLabel}>
-                <span className={styles.icon}><SunIcon /></span>
-                <span>فاتح</span>
-              </div>
-              {theme === 'light' && (
-                <div className={styles.checkBadge}><CheckIcon /></div>
-              )}
-            </div>
-          </button>
-
-          {/* خيار الوضع الداكن */}
-          <button
-            type="button"
-            role="radio"
-            aria-checked={theme === 'dark'}
-            className={`${styles.card} ${theme === 'dark' ? styles.active : ''} ${styles.darkCard}`}
-            onClick={() => handleSelectTheme('dark')}
-          >
-            <div className={styles.preview}>
-              <div className={styles.previewHeader} />
-              <div className={styles.previewCircle} />
-              <div className={styles.previewBar} />
-            </div>
-            <div className={styles.cardFooter}>
-              <div className={styles.cardLabel}>
-                <span className={styles.icon}><MoonIcon /></span>
-                <span>داكن</span>
-              </div>
-              {theme === 'dark' && (
-                <div className={styles.checkBadge}><CheckIcon /></div>
-              )}
-            </div>
-          </button>
+        {/* شبكة خيارات الثيم المرئية (3 أوضاع) */}
+        <div
+          className={styles.grid}
+          role="radiogroup"
+          aria-label="اختيار المظهر"
+        >
+          {THEME_CARDS.map(({ id, label, className, Icon }) => {
+            const isActive = theme === id
+            return (
+              <button
+                key={id}
+                type="button"
+                role="radio"
+                aria-checked={isActive}
+                className={`${styles.card} ${isActive ? styles.active : ''} ${
+                  styles[className]
+                }`}
+                onClick={() => handleSelectTheme(id)}
+              >
+                <div className={styles.preview}>
+                  <div className={styles.previewHeader} />
+                  <div className={styles.previewCircle} />
+                  <div className={styles.previewBar} />
+                </div>
+                <div className={styles.cardFooter}>
+                  <div className={styles.cardLabel}>
+                    <span className={styles.icon}>
+                      <Icon size={15} strokeWidth={2.1} aria-hidden="true" />
+                    </span>
+                    <span>{label}</span>
+                  </div>
+                  {isActive && (
+                    <div className={styles.checkBadge}>
+                      <Check size={11} strokeWidth={3} aria-hidden="true" />
+                    </div>
+                  )}
+                </div>
+              </button>
+            )
+          })}
         </div>
 
-        {/* 🆕 الاهتزاز عند التسبيح */}
+        {/* ═══ خط الأذكار وحجمه ═══ */}
+        <div className={styles.fontCard}>
+          <div className={styles.fontHeader}>
+            <span className={styles.toggleIcon} aria-hidden="true">
+              <Type size={17} strokeWidth={2.2} />
+            </span>
+            <div className={styles.toggleText}>
+              <span className={styles.toggleLabel}>خط الأذكار وحجم القراءة</span>
+              <span className={styles.toggleHint}>
+                خط النسخ «أميري» يعمل بدون إنترنت ويبرز التشكيل بوضوح
+              </span>
+            </div>
+          </div>
+
+          <div
+            className={styles.fontStyleRow}
+            role="radiogroup"
+            aria-label="نوع خط الأذكار"
+          >
+            {[
+              { id: 'naskh', label: 'نسخ مصحفي (أميري)' },
+              { id: 'modern', label: 'عصري (إسكندرية)' },
+            ].map((opt) => {
+              const active = fontStyle === opt.id
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  className={`${styles.stylePill} ${
+                    active ? styles.stylePillActive : ''
+                  }`}
+                  onClick={() => {
+                    triggerHapticFeedback('light')
+                    setFontStyle(opt.id)
+                  }}
+                >
+                  {opt.label}
+                </button>
+              )
+            })}
+          </div>
+
+          <div
+            className={styles.scaleRow}
+            role="radiogroup"
+            aria-label="حجم خط الأذكار"
+          >
+            {ZEKR_FONT_SCALES.map((opt) => {
+              const active = scaleKey === opt.id
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  className={`${styles.scalePill} ${
+                    active ? styles.scalePillActive : ''
+                  }`}
+                  onClick={() => {
+                    triggerHapticFeedback('light')
+                    setScaleKey(opt.id)
+                  }}
+                >
+                  {opt.label}
+                </button>
+              )
+            })}
+          </div>
+
+          <div className={styles.fontPreview} aria-label="معاينة خط الذكر">
+            <span
+              className={
+                fontStyle === 'naskh'
+                  ? styles.previewNaskh
+                  : styles.previewModern
+              }
+              style={{
+                fontSize: `${(
+                  (fontStyle === 'naskh' ? 1.28 : 1.12) * scale
+                ).toFixed(2)}rem`,
+              }}
+            >
+              سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ
+            </span>
+          </div>
+        </div>
+
+        {/* ═══ الاهتزاز عند التسبيح ═══ */}
         <div className={styles.toggleRow}>
           <div className={styles.toggleInfo}>
             <span className={styles.toggleIcon} aria-hidden="true">
-              <VibrateIcon />
+              <Smartphone size={17} strokeWidth={2.1} />
             </span>
             <div className={styles.toggleText}>
               <span className={styles.toggleLabel}>الاهتزاز عند التسبيح</span>
@@ -146,7 +194,9 @@ function AppearanceSection() {
             role="switch"
             aria-checked={vibrationEnabled}
             aria-label="تفعيل الاهتزاز عند التسبيح"
-            className={`${styles.switch} ${vibrationEnabled ? styles.switchOn : ''}`}
+            className={`${styles.switch} ${
+              vibrationEnabled ? styles.switchOn : ''
+            }`}
             onClick={handleToggleVibration}
           >
             <span className={styles.switchThumb} aria-hidden="true" />

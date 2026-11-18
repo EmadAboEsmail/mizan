@@ -79,15 +79,109 @@
   border-radius: var(--radius-lg);
 }
 
+.amountTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: 6px;
+}
+
 .amountLabel {
   display: block;
   font-family: var(--font-body);
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
+  margin: 0;
+}
+
+.calcPreview {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  color: var(--budget-text);
+  background: var(--budget-soft);
+  border: 1px solid var(--budget-border);
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-variant-numeric: tabular-nums;
+}
+
+.plusOpBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.94);
+  }
+}
+
+.quickAmounts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-subtle);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.quickAmountChip {
+  flex: 1;
+  min-width: 48px;
+  min-height: 32px;
+  padding: 4px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+
+  @media (hover: hover) {
+    &:hover {
+      border-color: var(--budget-border);
+      background: var(--budget-soft);
+      color: var(--budget-text);
+    }
+  }
+
+  &:active {
+    transform: scale(0.93);
+  }
+}
+
+.sectionHint {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-faint);
 }
 
 .amountWrapper {

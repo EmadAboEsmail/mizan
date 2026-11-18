@@ -5,13 +5,18 @@ import { setNativeSystemBarTheme } from '@/utils/haptics.js'
 
 const ThemeContext = createContext()
 
-const LIGHT_BG = '#FAF6F0'
-const DARK_BG = '#131210'
+const THEME_BG = {
+  light: '#FAF6F0',
+  dark: '#131210',
+  amoled: '#000000',
+}
+
+const VALID_THEMES = ['light', 'dark', 'amoled']
 
 function getInitialTheme() {
   try {
     const saved = localStorage.getItem('theme')
-    if (saved === 'dark' || saved === 'light') return saved
+    if (VALID_THEMES.includes(saved)) return saved
   } catch {
     // التخزين غير متاح
   }
@@ -24,47 +29,55 @@ function getInitialTheme() {
   return 'light'
 }
 
-function syncNativeStatusBar(isDark) {
+function syncNativeStatusBar(mode) {
   if (!Capacitor.isNativePlatform()) return
-  setNativeSystemBarTheme(isDark)
-  // Style.Light = أيقونات داكنة لخلفية فاتحة، Style.Dark = أيقونات فاتحة لخلفية داكنة
+  const isDark = mode === 'dark' || mode === 'amoled'
+  const isAmoled = mode === 'amoled'
+  setNativeSystemBarTheme(isDark, isAmoled)
   StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light }).catch(
     () => {}
   )
-  StatusBar.setBackgroundColor({ color: isDark ? DARK_BG : LIGHT_BG }).catch(
-    () => {}
-  )
+  StatusBar.setBackgroundColor({
+    color: THEME_BG[mode] || THEME_BG.light,
+  }).catch(() => {})
 }
 
 export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState(getInitialTheme)
 
   useEffect(() => {
-    const isDark = theme === 'dark'
+    const isDark = theme === 'dark' || theme === 'amoled'
+    const isAmoled = theme === 'amoled'
     document.body.classList.toggle('dark', isDark)
+    document.body.classList.toggle('amoled', isAmoled)
     document.documentElement.dataset.theme = theme
-    document.documentElement.style.colorScheme = theme
+    document.documentElement.style.colorScheme = isDark ? 'dark' : 'light'
 
     const meta = document.querySelector('meta[name="theme-color"]')
     if (meta) {
-      meta.setAttribute('content', isDark ? DARK_BG : LIGHT_BG)
+      meta.setAttribute('content', THEME_BG[theme] || THEME_BG.light)
     }
 
-    syncNativeStatusBar(isDark)
+    syncNativeStatusBar(theme)
 
     try {
       localStorage.setItem('theme', theme)
     } catch {
-      // تجاهل — التخزين غير متاح
+      // تجاهل
     }
   }, [theme])
 
   const setTheme = useCallback((next) => {
-    setThemeState(next === 'dark' ? 'dark' : 'light')
+    setThemeState(VALID_THEMES.includes(next) ? next : 'light')
   }, [])
 
+  // التبديل المتدرج: فاتح ← داكن دافئ ← أسود AMOLED ← فاتح
   const toggleTheme = useCallback(() => {
-    setThemeState((t) => (t === 'dark' ? 'light' : 'dark'))
+    setThemeState((t) => {
+      if (t === 'light') return 'dark'
+      if (t === 'dark') return 'amoled'
+      return 'light'
+    })
   }, [])
 
   return (

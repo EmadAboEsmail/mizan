@@ -6,6 +6,7 @@ import {
   Flame,
   ArrowLeftRight,
 } from 'lucide-react'
+import { usePrivacyMode, maskText } from '@/hooks/usePrivacyMode.js'
 import styles from './InsightsGrid.module.scss'
 
 const AR_MONTHS = [
@@ -51,7 +52,9 @@ function ChangeBadge({ value, invert = false }) {
 }
 
 function InsightsGrid({ insights, compareLabel = null }) {
+  const { isPrivate } = usePrivacyMode()
   if (!insights) return null
+  const money = (v) => (isPrivate ? maskText('') : formatAmount(v))
 
   const {
     avg_daily_expense = 0,
@@ -96,7 +99,7 @@ function InsightsGrid({ insights, compareLabel = null }) {
           </div>
           <span className={styles.label}>متوسط الصرف اليومي</span>
           <span className={styles.value}>
-            {formatAmount(avg_daily_expense)}
+            {money(avg_daily_expense)}
           </span>
           <span className={styles.sub}>
             خلال {days_elapsed} من {days_in_month} يوم
@@ -117,7 +120,7 @@ function InsightsGrid({ insights, compareLabel = null }) {
           </div>
           <span className={styles.label}>متوسط الدخل اليومي</span>
           <span className={`${styles.value} ${styles.success}`}>
-            {formatAmount(avg_daily_income)}
+            {money(avg_daily_income)}
           </span>
           <span className={styles.sub}>
             {transaction_count} معاملة مسجّلة
@@ -156,7 +159,7 @@ function InsightsGrid({ insights, compareLabel = null }) {
             </span>
           </div>
           <span className={styles.label}>متوسط آخر 7 أيام</span>
-          <span className={styles.value}>{formatAmount(last_7_days_avg)}</span>
+          <span className={styles.value}>{money(last_7_days_avg)}</span>
           <span className={styles.sub}>
             {last_7_days_avg > avg_daily_expense
               ? 'أعلى من متوسط الشهر'
@@ -178,7 +181,7 @@ function InsightsGrid({ insights, compareLabel = null }) {
             </div>
             <span className={styles.label}>أعلى يوم صرف</span>
             <span className={`${styles.value} ${styles.danger}`}>
-              {formatAmount(top_expense_day.amount)}
+              {money(top_expense_day.amount)}
             </span>
             <span className={styles.sub}>
               {formatDate(top_expense_day.date)}
@@ -201,7 +204,7 @@ function InsightsGrid({ insights, compareLabel = null }) {
               {top_expense_category.category_name}
             </span>
             <span className={styles.sub}>
-              {formatAmount(top_expense_category.amount)} ج.م
+              {money(top_expense_category.amount)} ج.م
             </span>
           </div>
         )}

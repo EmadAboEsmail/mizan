@@ -7,9 +7,11 @@
   box-shadow: var(--shadow-sm), var(--card-highlight);
   text-align: center;
   transition:
+    transform 220ms var(--ease-spring),
     border-color var(--duration-base) var(--ease-out),
     box-shadow var(--duration-base) var(--ease-out);
-  animation: fadeIn 0.3s var(--ease-out);
+  animation: fadeIn 0.28s var(--ease-out);
+  touch-action: pan-y;
 
   &.completeGlow {
     border-color: var(--zekr-border);
@@ -57,6 +59,13 @@
   letter-spacing: -0.01em;
   padding-inline: var(--space-1);
   word-break: break-word;
+}
+
+.naskhText {
+  font-family: var(--font-zekr);
+  font-weight: 700;
+  line-height: 1.95;
+  letter-spacing: 0;
 }
 
 .meta {

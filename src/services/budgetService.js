@@ -6,6 +6,12 @@ import {
   computeLimitsWithProgress,
   computeLimitItem,
 } from './budgetCalculator.js'
+import {
+  encodeExcelCsvBytes,
+  decodeCsvBytes,
+  parseCsvRecords,
+  buildXlsxBlob,
+} from '@/utils/csv.js'
 
 function genId(prefix) {
   const rand = Math.random().toString(16).substring(2, 14).padEnd(12, '0')
@@ -327,10 +333,10 @@ export async function deleteAllBudgetData(keepCategories = false) {
 }
 
 // ═══════════════════════════════════════
-// CSV Export / Import
+// CSV & Excel (.xlsx) Export / Import
 // ═══════════════════════════════════════
-export async function exportBudgetCsv() {
-  const rows = await query(`
+async function fetchExportRows() {
+  return query(`
     SELECT t.date, t.type, t.amount,
            c.name AS category, c.icon AS category_icon, c.color AS category_color,
            t.details, t.description
@@ -338,65 +344,141 @@ export async function exportBudgetCsv() {
     LEFT JOIN categories c ON t.category_id = c.id
     ORDER BY t.date DESC, t.created_at DESC
   `)
+}
 
-  const esc = (v) => {
-    const s = String(v ?? '')
-    if (s.includes(',') || s.includes('"') || s.includes('\n')) {
-      return `"${s.replace(/"/g, '""')}"`
-    }
-    return s
+export async function exportBudgetCsv() {
+  const rows = await fetchExportRows()
+
+  const headers = [
+    'التاريخ',
+    'النوع',
+    'المبلغ',
+    'التصنيف',
+    'الأيقونة',
+    'اللون',
+    'التفاصيل',
+    'الملاحظات',
+  ]
+
+  const dataRows = rows.map((r) => [
+    r.date || '',
+    r.type === 'income' ? 'دخل' : 'مصروف',
+    r.amount ?? 0,
+    r.category || '',
+    r.category_icon || '',
+    r.category_color || '',
+    r.details || '',
+    r.description || '',
+  ])
+
+  const bytes = encodeExcelCsvBytes(headers, dataRows)
+  return new Blob([bytes], { type: 'text/csv;charset=utf-16le' })
+}
+
+export async function exportBudgetXlsx() {
+  const rows = await fetchExportRows()
+
+  const headers = [
+    'التاريخ',
+    'النوع',
+    'المبلغ (ج.م)',
+    'التصنيف',
+    'التفاصيل',
+    'الملاحظات',
+  ]
+
+  const dataRows = rows.map((r) => [
+    r.date || '',
+    r.type === 'income' ? 'دخل' : 'مصروف',
+    Number(r.amount) || 0,
+    r.category || 'غير محدد',
+    r.details || '',
+    r.description || '',
+  ])
+
+  return buildXlsxBlob({
+    sheetName: 'معاملات ميزان',
+    headers,
+    rows: dataRows,
+  })
+}
+
+function findHeaderIndex(headers, aliases) {
+  for (const alias of aliases) {
+    const i = headers.indexOf(alias)
+    if (i !== -1) return i
   }
+  return -1
+}
 
-  const header = ['date', 'type', 'amount', 'category', 'category_icon', 'category_color', 'details', 'description']
-  const lines = [header.join(',')]
-
-  for (const r of rows) {
-    lines.push([
-      esc(r.date), esc(r.type), esc(r.amount),
-      esc(r.category || ''), esc(r.category_icon || ''), esc(r.category_color || ''),
-      esc(r.details || ''), esc(r.description || ''),
-    ].join(','))
+function normalizeTxnType(raw) {
+  const s = String(raw || '').trim().toLowerCase()
+  if (s === 'income' || s === 'دخل' || s === 'إيراد' || s === 'ايراد') {
+    return 'income'
   }
+  if (s === 'expense' || s === 'مصروف' || s === 'نفقة' || s === 'مصروفات') {
+    return 'expense'
+  }
+  return null
+}
 
-  const text = '\ufeff' + lines.join('\n')
-  return new Blob([text], { type: 'text/csv;charset=utf-8' })
+function toWesternDigits(str) {
+  return String(str || '').replace(/[٠-٩]/g, (d) =>
+    String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+  )
 }
 
 export async function importBudgetCsv(file, clearExisting = false) {
-  const text = await file.text()
-  const lines = text.split(/\r?\n/).filter((l) => l.trim())
-  if (lines.length < 2) throw new Error('الملف فاضي أو غير صالح')
+  const buffer = file.arrayBuffer
+    ? await file.arrayBuffer()
+    : new TextEncoder().encode(await file.text()).buffer
+  const text = decodeCsvBytes(buffer)
+  const records = parseCsvRecords(text)
 
-  const parseLine = (line) => {
-    const result = []
-    let current = '', inQuotes = false
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i]
-      if (ch === '"') {
-        if (inQuotes && line[i + 1] === '"') { current += '"'; i++ }
-        else inQuotes = !inQuotes
-      } else if (ch === ',' && !inQuotes) {
-        result.push(current); current = ''
-      } else current += ch
-    }
-    result.push(current)
-    return result
-  }
+  if (records.length < 2) throw new Error('الملف فارغ أو غير صالح')
 
-  const header = parseLine(lines[0]).map((h) => h.trim().replace(/^\ufeff/, ''))
+  const header = records[0].map((h) =>
+    h.trim().replace(/^\ufeff/, '').toLowerCase()
+  )
   const idx = {
-    date: header.indexOf('date'),
-    type: header.indexOf('type'),
-    amount: header.indexOf('amount'),
-    category: header.indexOf('category'),
-    category_icon: header.indexOf('category_icon'),
-    category_color: header.indexOf('category_color'),
-    details: header.indexOf('details'),
-    description: header.indexOf('description'),
+    date: findHeaderIndex(header, ['date', 'التاريخ', 'تاريخ']),
+    type: findHeaderIndex(header, ['type', 'النوع', 'نوع']),
+    amount: findHeaderIndex(header, [
+      'amount',
+      'المبلغ',
+      'المبلغ (ج.م)',
+      'مبلغ',
+      'القيمة',
+    ]),
+    category: findHeaderIndex(header, [
+      'category',
+      'التصنيف',
+      'تصنيف',
+      'الفئة',
+    ]),
+    category_icon: findHeaderIndex(header, [
+      'category_icon',
+      'الأيقونة',
+      'الايقونة',
+      'icon',
+    ]),
+    category_color: findHeaderIndex(header, ['category_color', 'اللون', 'color']),
+    details: findHeaderIndex(header, ['details', 'التفاصيل', 'تفاصيل']),
+    description: findHeaderIndex(header, [
+      'description',
+      'الملاحظات',
+      'ملاحظات',
+      'الوصف',
+    ]),
   }
 
-  if (idx.date === -1 || idx.type === -1 || idx.amount === -1 || idx.category === -1) {
-    throw new Error('أعمدة مفقودة: date, type, amount, category')
+  if (
+    idx.date === -1 ||
+    idx.type === -1 ||
+    idx.amount === -1 ||
+    idx.category === -1
+  ) {
+    throw new Error('أعمدة مفقودة: التاريخ، النوع، المبلغ، التصنيف')
   }
 
   const existingCats = await query('SELECT * FROM categories')
@@ -406,19 +488,31 @@ export async function importBudgetCsv(file, clearExisting = false) {
   const newCats = []
   const txnStatements = []
 
-  let imported = 0, createdCats = 0, skipped = 0
+  let imported = 0,
+    createdCats = 0,
+    skipped = 0
 
-  for (let i = 1; i < lines.length; i++) {
+  for (let i = 1; i < records.length; i++) {
     try {
-      const vals = parseLine(lines[i])
-      const type = (vals[idx.type] || '').trim()
-      if (!['income', 'expense'].includes(type)) { skipped++; continue }
+      const vals = records[i]
+      const type = normalizeTxnType(vals[idx.type])
+      if (!type) {
+        skipped++
+        continue
+      }
 
-      const amount = parseFloat((vals[idx.amount] || '').replace(/,/g, ''))
-      if (!Number.isFinite(amount) || amount <= 0) { skipped++; continue }
+      const rawAmount = toWesternDigits(vals[idx.amount] || '').replace(/,/g, '')
+      const amount = parseFloat(rawAmount)
+      if (!Number.isFinite(amount) || amount <= 0) {
+        skipped++
+        continue
+      }
 
-      const date = (vals[idx.date] || '').trim()
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { skipped++; continue }
+      const date = toWesternDigits(vals[idx.date] || '').trim()
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        skipped++
+        continue
+      }
 
       const catName = (vals[idx.category] || '').trim() || 'غير محدد'
       const key = `${catName}|${type}`
@@ -426,9 +520,17 @@ export async function importBudgetCsv(file, clearExisting = false) {
 
       if (!cat) {
         cat = {
-          id: genId('cat'), name: catName, type,
-          icon: (vals[idx.category_icon] || '📦').trim(),
-          color: (vals[idx.category_color] || '#64748b').trim(),
+          id: genId('cat'),
+          name: catName,
+          type,
+          icon:
+            (idx.category_icon !== -1 ? vals[idx.category_icon] : '')?.trim() ||
+            '📦',
+          color:
+            (idx.category_color !== -1
+              ? vals[idx.category_color]
+              : ''
+            )?.trim() || '#C68B3C',
           sort_order: 0,
         }
         catMap.set(key, cat)
@@ -441,14 +543,20 @@ export async function importBudgetCsv(file, clearExisting = false) {
           (id, amount, type, category_id, date, details, description, created_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         values: [
-          genId('txn'), Math.round(amount * 100) / 100, type, cat.id, date,
-          vals[idx.details]?.trim() || null,
-          vals[idx.description]?.trim() || null,
+          genId('txn'),
+          Math.round(amount * 100) / 100,
+          type,
+          cat.id,
+          date,
+          (idx.details !== -1 ? vals[idx.details] : '')?.trim() || null,
+          (idx.description !== -1 ? vals[idx.description] : '')?.trim() || null,
           nowMs(),
         ],
       })
       imported++
-    } catch { skipped++ }
+    } catch {
+      skipped++
+    }
   }
 
   const statements = []

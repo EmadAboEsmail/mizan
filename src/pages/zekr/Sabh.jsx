@@ -456,11 +456,20 @@ function ZekrSabh() {
       )
     }
 
+    const currentIdx = allAdhkar.findIndex(
+      (z) => String(z.id) === String(currentZekr.id)
+    )
+    const canSwipePrev = currentIdx > 0
+    const canSwipeNext =
+      currentIdx >= 0 && currentIdx < allAdhkar.length - 1
+
     return (
       <>
         {!isFocusMode && (
           <AdhkarSelect
             adhkar={allAdhkar}
+            counts={counts}
+            targets={targets}
             value={currentZekrId}
             onChange={handleZekrChange}
           />
@@ -474,6 +483,18 @@ function ZekrSabh() {
           target={currentTarget}
           onClickCount={() =>
             handleOpenNormalTargetModal(currentZekrId, currentTarget)
+          }
+          canSwipePrev={canSwipePrev}
+          canSwipeNext={canSwipeNext}
+          onSwipePrev={
+            canSwipePrev
+              ? () => handleZekrChange(allAdhkar[currentIdx - 1].id)
+              : undefined
+          }
+          onSwipeNext={
+            canSwipeNext
+              ? () => handleZekrChange(allAdhkar[currentIdx + 1].id)
+              : undefined
           }
           isComplete={isComplete}
           isFocusMode={isFocusMode}
@@ -583,13 +604,16 @@ function ZekrSabh() {
         title={
           targetModalConfig?.mode === 'group'
             ? 'هدف الذكر في المجموعة'
-            : 'الهدف للوضع الحر'
+            : 'تحديد هدف التسبيح'
         }
         defaultValue={targetModalConfig?.currentValue ?? ''}
         type="number"
         min={1}
         max={10000}
-        placeholder="1 - 10000"
+        presets={[33, 99, 100, 500, 1000]}
+        allowClear
+        clearLabel="بلا هدف"
+        placeholder="أو اكتب عدداً (1 - 10000)"
       />
 
       <ConfirmModal

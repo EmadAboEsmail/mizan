@@ -10,6 +10,8 @@ import { useBudgetUI } from '@/contexts/BudgetContext'
 import { useBudgetBootstrap } from '@/queries/budget'
 import TopAppBar from '@/components/ui/TopAppBar/TopAppBar.jsx'
 import BottomNav from '@/components/ui/BottomNav/BottomNav.jsx'
+import PageSkeleton from '@/components/ui/PageSkeleton.jsx'
+import PrivacyToggle from '@/components/ui/PrivacyToggle.jsx'
 import { BudgetIcon } from '@/components/ui/BrandIcons.jsx'
 import styles from './Layout.module.scss'
 
@@ -54,12 +56,7 @@ function BudgetLayout() {
   const meta = PAGE_META[pathname] || PAGE_META.default
 
   if (isPending && !error) {
-    return (
-      <div className={styles.loadingScreen}>
-        <div className={styles.spinner} />
-        <p className={styles.loadingText}>جاري تحميل الميزانية...</p>
-      </div>
-    )
+    return <PageSkeleton variant="budget" />
   }
 
   if (error) {
@@ -86,10 +83,18 @@ function BudgetLayout() {
 
   return (
     <div className={styles.budget}>
-      <TopAppBar title={meta.title} icon={meta.icon} accent="budget" />
+      <TopAppBar
+        title={meta.title}
+        icon={meta.icon}
+        accent="budget"
+        actions={<PrivacyToggle />}
+      />
 
       <div className={styles.container}>
-        <main className={styles.content}>
+        <main
+          key={pathname}
+          className={`${styles.content} mizan-page-enter`}
+        >
           <Outlet />
         </main>
       </div>

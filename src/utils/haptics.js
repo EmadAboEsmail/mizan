@@ -69,9 +69,12 @@ export function setNativeScreenDim(enabled) {
 /**
  * مزامنة لون وأيقونات الشريط العلوي والسفلي مع الوضع الفاتح/الداكن.
  */
-export function setNativeSystemBarTheme(isDark) {
+export function setNativeSystemBarTheme(isDark, isAmoled = false) {
   if (!Capacitor.isNativePlatform()) return
-  MizanNative.setSystemBarTheme({ dark: Boolean(isDark) }).catch(() => {})
+  MizanNative.setSystemBarTheme({
+    dark: Boolean(isDark),
+    amoled: Boolean(isAmoled),
+  }).catch(() => {})
 }
 
 // ═══════════════════════════════════════

@@ -6,12 +6,14 @@ import {
   useZekrStreakQuery,
 } from '@/queries/zekr'
 import { useAnimatedNumber } from '@/hooks/useAnimatedNumber'
+import { useToast } from '@/hooks/useToast.js'
 import { downloadCsv, getCsvFilename } from '@/utils/csv.js'
 import PeriodTabs from './PeriodTabs.jsx'
 import BarChart from './BarChart.jsx'
 import ZekrFilter from './ZekrFilter.jsx'
 import EmptyStats from './EmptyStats.jsx'
 import StreakCard from './StreakCard.jsx'
+import ActivityHeatmap from './ActivityHeatmap.jsx'
 import ComparisonCard from './ComparisonCard.jsx'
 import styles from './StatsTab.module.scss'
 
@@ -45,6 +47,7 @@ const DownloadIcon = () => (
 
 function StatsTab() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const { showToast } = useToast()
 
   // ===========================
   // URL state
@@ -193,7 +196,7 @@ function StatsTab() {
   // ===========================
   // تصدير CSV
   // ===========================
-  const handleExportCsv = () => {
+  const handleExportCsv = async () => {
     if (!stats) return
 
     const rows = []
@@ -215,7 +218,12 @@ function StatsTab() {
       zekrId ? 'filtered' : period
     )
 
-    downloadCsv(filename, ['النوع', 'التسمية', 'العدد', 'الذكر'], rows)
+    try {
+      await downloadCsv(filename, ['النوع', 'التسمية', 'العدد', 'الذكر'], rows)
+      showToast('تم تصدير إحصائيات الذكر بدعم كامل للعربية')
+    } catch {
+      showToast('تعذّر تصدير الملف', 'error')
+    }
   }
 
   // ===========================
@@ -351,6 +359,8 @@ function StatsTab() {
           </div>
 
           <BarChart labels={labels} values={values} />
+
+          {streak && <ActivityHeatmap dailyCounts={streak.daily_counts} />}
 
           {stats.breakdown && stats.breakdown.length > 0 ? (
             <div className={styles.breakdownSection}>

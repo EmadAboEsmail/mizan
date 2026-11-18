@@ -78,6 +78,25 @@
   line-height: var(--leading-snug);
 }
 
+.actionBtn {
+  flex-shrink: 0;
+  min-height: 32px;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--budget-border);
+  background: var(--budget-soft);
+  color: var(--budget-text);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+
+  &:active {
+    transform: scale(0.94);
+  }
+}
+
 @keyframes slideDown {
   from {
     opacity: 0;

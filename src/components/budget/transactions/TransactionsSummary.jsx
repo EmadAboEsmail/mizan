@@ -1,8 +1,10 @@
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react'
+import { usePrivacyMode, maskText } from '@/hooks/usePrivacyMode.js'
 import { formatAmount } from './lib/transactionsHelpers.js'
 import styles from './TransactionsSummary.module.scss'
 
 export default function TransactionsSummary({ summary, insights, isAllMonths }) {
+  const { isPrivate } = usePrivacyMode()
   if (!summary) return null
 
   const incomeChange = insights?.comparison?.income_change_percent
@@ -10,6 +12,7 @@ export default function TransactionsSummary({ summary, insights, isAllMonths }) 
   const net = Number(summary.net || 0)
   const netPositive = net >= 0
   const txnCount = summary.transaction_count || 0
+  const money = (val) => (isPrivate ? maskText('') : formatAmount(val))
 
   return (
     <section className={styles.heroCard} aria-label="ملخص الرصيد">
@@ -29,8 +32,11 @@ export default function TransactionsSummary({ summary, insights, isAllMonths }) 
             }`}
           >
             <span className={styles.netNumber}>
-              {net > 0 ? '+' : net < 0 ? '−' : ''}
-              {formatAmount(Math.abs(net))}
+              {isPrivate
+                ? maskText('')
+                : `${net > 0 ? '+' : net < 0 ? '−' : ''}${formatAmount(
+                    Math.abs(net)
+                  )}`}
             </span>
             <span className={styles.currency}>ج.م</span>
           </div>
@@ -68,7 +74,7 @@ export default function TransactionsSummary({ summary, insights, isAllMonths }) 
               )}
             </div>
             <span className={`${styles.metricValue} ${styles.valPositive}`}>
-              {formatAmount(summary.total_income)}
+              {money(summary.total_income)}
             </span>
           </div>
         </div>
@@ -101,7 +107,7 @@ export default function TransactionsSummary({ summary, insights, isAllMonths }) 
                 summary.total_expense > 0 ? styles.valNegative : ''
               }`}
             >
-              {formatAmount(summary.total_expense)}
+              {money(summary.total_expense)}
             </span>
           </div>
         </div>

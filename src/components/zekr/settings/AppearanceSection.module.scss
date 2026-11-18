@@ -21,8 +21,12 @@
 // ═══════════════════════════════════════
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+
+  @media (max-width: 350px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 // ═══════════════════════════════════════
@@ -143,6 +147,101 @@
   .previewBar {
     background: #252220;
   }
+}
+
+.amoledCard .preview {
+  background: #000000;
+  border-color: #24211E;
+
+  .previewHeader {
+    background: #2C2722;
+  }
+
+  .previewCircle {
+    border-color: #52A880;
+    background: #0B0A09;
+  }
+
+  .previewBar {
+    background: #181614;
+  }
+}
+
+.fontCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+}
+
+.fontHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.fontStyleRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.scaleRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.stylePill,
+.scalePill {
+  min-height: 34px;
+  padding: 6px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.stylePillActive,
+.scalePillActive {
+  background: var(--zekr);
+  border-color: var(--zekr);
+  color: var(--text-on-brand);
+  box-shadow: var(--shadow-brand);
+}
+
+.fontPreview {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.previewNaskh {
+  font-family: var(--font-zekr);
+  font-weight: 700;
+  line-height: 1.95;
+}
+
+.previewModern {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.75;
 }
 
 // ═══════════════════════════════════════

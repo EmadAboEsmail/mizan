@@ -1,25 +1,40 @@
-import { Sun, Moon } from 'lucide-react'
+import { Sun, Moon, MoonStar } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext.jsx'
 import styles from './ThemeToggle.module.scss'
 
+const THEME_META = {
+  light: {
+    nextLabel: 'التبديل للوضع الداكن الدافئ',
+    title: 'فاتح — اضغط للداكن الدافئ',
+    icon: Moon,
+  },
+  dark: {
+    nextLabel: 'التبديل للوضع الأسود النقي AMOLED',
+    title: 'داكن دافئ — اضغط للأسود AMOLED',
+    icon: MoonStar,
+  },
+  amoled: {
+    nextLabel: 'التبديل للوضع الفاتح',
+    title: 'أسود AMOLED — اضغط للوضع الفاتح',
+    icon: Sun,
+  },
+}
+
 export default function ThemeToggle() {
   const { theme, toggleTheme } = useTheme()
-  const isDark = theme === 'dark'
+  const meta = THEME_META[theme] || THEME_META.light
+  const IconComp = meta.icon
 
   return (
     <button
       type="button"
       className={styles.toggle}
       onClick={toggleTheme}
-      aria-label={isDark ? 'التبديل للوضع الفاتح' : 'التبديل للوضع الداكن'}
-      title={isDark ? 'الوضع الفاتح' : 'الوضع الداكن'}
+      aria-label={meta.nextLabel}
+      title={meta.title}
     >
       <span key={theme} className={styles.iconContainer}>
-        {isDark ? (
-          <Sun size={18} strokeWidth={2} aria-hidden="true" />
-        ) : (
-          <Moon size={18} strokeWidth={2} aria-hidden="true" />
-        )}
+        <IconComp size={18} strokeWidth={2} aria-hidden="true" />
       </span>
     </button>
   )

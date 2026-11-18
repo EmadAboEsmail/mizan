@@ -1,5 +1,6 @@
 import { Pencil, Trash2 } from 'lucide-react'
 import CategoryIcon from '../CategoryIcon.jsx'
+import { usePrivacyMode, maskText } from '@/hooks/usePrivacyMode.js'
 import { formatAmount } from '@/components/budget/transactions/lib/transactionsHelpers.js'
 import styles from './LimitProgressCard.module.scss'
 
@@ -10,15 +11,17 @@ function LimitProgressCard({
   onDelete,
   compact = false,
 }) {
+  const { isPrivate } = usePrivacyMode()
   const { category_name, monthly_limit, spent, remaining, percent, status } =
     limit
+  const fmtMoney = (v) => (isPrivate ? maskText('') : formatAmount(v))
 
   const barWidth = Math.min(percent, 100)
 
   const statusText = {
-    safe: `متبقي ${formatAmount(remaining)} ج.م`,
-    warning: `متبقي ${formatAmount(remaining)} ج.م · قريب من الحد`,
-    over: `تجاوز بمقدار ${formatAmount(Math.abs(remaining))} ج.م`,
+    safe: `متبقي ${fmtMoney(remaining)} ج.م`,
+    warning: `متبقي ${fmtMoney(remaining)} ج.م · قريب من الحد`,
+    over: `تجاوز بمقدار ${fmtMoney(Math.abs(remaining))} ج.م`,
   }[status]
 
   return (
@@ -33,8 +36,8 @@ function LimitProgressCard({
           <div className={styles.catText}>
             <span className={styles.catName}>{category_name}</span>
             <span className={styles.amounts}>
-              <strong>{formatAmount(spent)}</strong> من{' '}
-              {formatAmount(monthly_limit)} ج.م
+              <strong>{fmtMoney(spent)}</strong> من {fmtMoney(monthly_limit)}{' '}
+              ج.م
             </span>
           </div>
         </div>

@@ -194,30 +194,50 @@ export async function getStreak() {
     // ✅ حتى لو مفيش DB data، ممكن يكون فيه pending
     const pending = getPendingMap()
     if (Object.keys(pending).length === 0) {
-      return { current: 0, longest: 0, total_days: 0, last_date: null }
+      return {
+        current: 0,
+        longest: 0,
+        total_days: 0,
+        last_date: null,
+        daily_counts: {},
+        today_count: 0,
+      }
     }
   }
 
   const daysSet = new Set()
+  const dailyCounts = {}
   for (const r of rows) {
-    if (Number(r.total) === 0) continue
+    const cnt = Number(r.total) || 0
+    if (cnt === 0) continue
     const d = new Date(r.hour * 3600000)
-    daysSet.add(
-      `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
-    )
+    const key = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
+    daysSet.add(key)
+    dailyCounts[key] = (dailyCounts[key] || 0) + cnt
   }
 
   // ✅ زود الـ pending (بتاعة "النهارده")
   const pending = getPendingMap()
-  if (Object.keys(pending).length > 0) {
-    const today = new Date()
-    daysSet.add(
-      `${today.getFullYear()}-${pad2(today.getMonth() + 1)}-${pad2(today.getDate())}`
-    )
+  const pendingValues = Object.values(pending)
+  if (pendingValues.length > 0) {
+    const pendingSum = pendingValues.reduce((s, n) => s + (Number(n) || 0), 0)
+    if (pendingSum > 0) {
+      const today = new Date()
+      const todayKey = `${today.getFullYear()}-${pad2(today.getMonth() + 1)}-${pad2(today.getDate())}`
+      daysSet.add(todayKey)
+      dailyCounts[todayKey] = (dailyCounts[todayKey] || 0) + pendingSum
+    }
   }
 
   if (daysSet.size === 0) {
-    return { current: 0, longest: 0, total_days: 0, last_date: null }
+    return {
+      current: 0,
+      longest: 0,
+      total_days: 0,
+      last_date: null,
+      daily_counts: {},
+      today_count: 0,
+    }
   }
 
   const fmt = (d) =>
@@ -272,5 +292,7 @@ export async function getStreak() {
     longest: longestStreak,
     total_days: daysSet.size,
     last_date: sortedDesc[0],
+    daily_counts: dailyCounts,
+    today_count: dailyCounts[todayStr] || 0,
   }
 }

@@ -31,24 +31,42 @@
   }
 }
 
-.compareSelect {
+.comparePills {
   flex: 1;
-  min-width: 130px;
-  height: 36px;
-  padding-inline: 10px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-default);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
   background: var(--bg-subtle);
-  color: var(--text-primary);
-  font-family: var(--font-body);
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  min-width: 0;
+}
 
-  &:focus {
-    outline: none;
-    border-color: var(--budget);
+.comparePill {
+  flex: 1;
+  min-height: 30px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+
+  &:active {
+    transform: scale(0.95);
   }
+}
+
+.comparePillActive {
+  background: var(--bg-card);
+  color: var(--budget-text);
+  box-shadow: var(--shadow-xs);
 }
 
 .customMonthBtn {

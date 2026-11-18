@@ -119,9 +119,13 @@ public class MizanNativePlugin extends Plugin {
     @PluginMethod
     public void setSystemBarTheme(PluginCall call) {
         Boolean dark = call.getBoolean("dark", false);
+        Boolean amoled = call.getBoolean("amoled", false);
         Activity activity = getActivity();
         if (activity instanceof MainActivity) {
-            ((MainActivity) activity).setSystemBarTheme(Boolean.TRUE.equals(dark));
+            ((MainActivity) activity).setSystemBarTheme(
+                Boolean.TRUE.equals(dark),
+                Boolean.TRUE.equals(amoled)
+            );
         }
         call.resolve();
     }

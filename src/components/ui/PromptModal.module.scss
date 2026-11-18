@@ -1,3 +1,57 @@
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.presetChip {
+  min-height: 38px;
+  min-width: 56px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all var(--duration-fast) var(--ease-out);
+
+  @media (hover: hover) {
+    &:hover {
+      border-color: var(--zekr-border);
+      background: var(--zekr-soft);
+      color: var(--zekr-text);
+    }
+  }
+
+  &:active {
+    transform: scale(0.94);
+  }
+}
+
+.presetChipActive {
+  background: var(--zekr);
+  border-color: var(--zekr);
+  color: var(--text-on-brand);
+  box-shadow: var(--shadow-brand);
+}
+
+.clearChip {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
 .input {
   width: 100%;
   min-height: var(--touch-target);

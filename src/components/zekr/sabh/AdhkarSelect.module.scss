@@ -20,6 +20,8 @@
 }
 
 .chip {
+  position: relative;
+  overflow: hidden;
   flex-shrink: 0;
   min-height: 40px;
   display: inline-flex;
@@ -37,7 +39,7 @@
   white-space: nowrap;
   box-shadow: var(--shadow-xs);
   transition: all var(--duration-fast) var(--ease-out);
-  max-width: 230px;
+  max-width: 240px;
   scroll-snap-align: start;
 
   @media (hover: hover) {
@@ -46,6 +48,12 @@
       background: var(--zekr-soft);
       color: var(--zekr-text);
     }
+  }
+
+  &.completed {
+    border-color: var(--zekr-border);
+    background: var(--zekr-soft);
+    color: var(--zekr-text);
   }
 
   &.active {
@@ -71,11 +79,22 @@
   }
 }
 
+.progressBar {
+  position: absolute;
+  bottom: 0;
+  inset-inline-start: 0;
+  height: 2.5px;
+  background: var(--zekr);
+  border-radius: var(--radius-full);
+  transition: width 260ms var(--ease-out);
+  pointer-events: none;
+}
+
 .chipText {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 165px;
+  max-width: 158px;
 }
 
 .chipTarget {
@@ -88,8 +107,16 @@
   border-radius: var(--radius-full);
   background: var(--bg-subtle);
   color: var(--text-muted);
-  font-size: 0.68rem;
+  font-size: 0.67rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
+}
+
+.chipDone {
+  width: 20px;
+  min-width: 20px;
+  padding: 0;
+  background: var(--zekr);
+  color: var(--text-on-brand);
 }

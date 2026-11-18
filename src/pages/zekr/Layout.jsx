@@ -3,6 +3,7 @@ import { BarChart3, Settings, AlertTriangle, RotateCcw } from 'lucide-react'
 import { useZekrBootstrap } from '@/queries/zekr'
 import TopAppBar from '@/components/ui/TopAppBar/TopAppBar.jsx'
 import BottomNav from '@/components/ui/BottomNav/BottomNav.jsx'
+import PageSkeleton from '@/components/ui/PageSkeleton.jsx'
 import { TasbihIcon } from '@/components/ui/BrandIcons.jsx'
 import styles from './Layout.module.scss'
 
@@ -42,12 +43,7 @@ function ZekrLayout() {
   const meta = PAGE_META[pathname] || PAGE_META.default
 
   if (isPending && !error) {
-    return (
-      <div className={styles.loadingScreen}>
-        <div className={styles.spinner} />
-        <p className={styles.loadingText}>جاري تجهيز الأذكار...</p>
-      </div>
-    )
+    return <PageSkeleton variant="zekr" />
   }
 
   if (error) {
@@ -77,7 +73,10 @@ function ZekrLayout() {
       <TopAppBar title={meta.title} icon={meta.icon} accent="zekr" />
 
       <div className={styles.container}>
-        <main className={styles.content}>
+        <main
+          key={pathname}
+          className={`${styles.content} mizan-page-enter`}
+        >
           <Outlet />
         </main>
       </div>

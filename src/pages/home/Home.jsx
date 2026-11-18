@@ -3,9 +3,12 @@ import { Calendar } from 'lucide-react'
 import { useAdhkarQuery, useCountsQuery } from '@/queries/zekr'
 import { useSummaryQuery } from '@/queries/budget'
 import { getCurrentMonth } from '@/contexts/BudgetContext'
+import { usePrivacyMode, maskText } from '@/hooks/usePrivacyMode.js'
 import ThemeToggle from '@/components/ui/ThemeToggle.jsx'
+import PrivacyToggle from '@/components/ui/PrivacyToggle.jsx'
 import { MizanMark, TasbihIcon, BudgetIcon } from '@/components/ui/BrandIcons.jsx'
 import AppCard from './AppCard.jsx'
+import TodayBalanceCard from './TodayBalanceCard.jsx'
 import ContinueCard from './ContinueCard.jsx'
 import QuickStats from './QuickStats.jsx'
 import styles from './Home.module.scss'
@@ -45,6 +48,7 @@ export default function Home() {
   const hijri = getHijriDate()
   const thisMonth = useMemo(() => getCurrentMonth(), [])
 
+  const { isPrivate } = usePrivacyMode()
   const { data: adhkar = EMPTY_LIST } = useAdhkarQuery()
   const { data: counts = EMPTY_MAP } = useCountsQuery()
   const { data: monthSummary = null } = useSummaryQuery(thisMonth)
@@ -66,10 +70,12 @@ export default function Home() {
 
   const budgetStat = useMemo(() => {
     if (monthSummary && monthSummary.transaction_count > 0) {
-      return `صافي الشهر: ${formatCompactMoney(monthSummary.net)}`
+      return `صافي الشهر: ${
+        isPrivate ? maskText('ج.م') : formatCompactMoney(monthSummary.net)
+      }`
     }
     return 'سجّل دخلك ومصروفك بسهولة'
-  }, [monthSummary])
+  }, [monthSummary, isPrivate])
 
   const apps = [
     {
@@ -114,7 +120,10 @@ export default function Home() {
             <span className={styles.brandTag}>توازن يومك ومالك</span>
           </div>
         </div>
-        <ThemeToggle />
+        <div className={styles.topActions}>
+          <PrivacyToggle />
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className={styles.main}>
@@ -130,6 +139,8 @@ export default function Home() {
             سكينة الذكر ووضوح المال — في مساحة واحدة هادئة تعمل دون اتصال.
           </p>
         </section>
+
+        <TodayBalanceCard />
 
         <ContinueCard />
 

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { RotateCcw, Check } from 'lucide-react'
+import { RotateCcw, Check, Sparkles } from 'lucide-react'
 import { useAnimatedNumber } from '@/hooks/useAnimatedNumber'
 import styles from './ActionButtons.module.scss'
 
@@ -21,20 +21,35 @@ function ActionButtons({
   extraAction = null,
 }) {
   const [clicked, setClicked] = useState(false)
+  const [rippleKey, setRippleKey] = useState(0)
+  const [celebrating, setCelebrating] = useState(false)
   const timerRef = useRef(null)
+  const celebrateTimerRef = useRef(null)
   const animatedCount = useAnimatedNumber(count, 260)
 
   const handleClick = (e) => {
     e?.preventDefault()
     e?.stopPropagation()
+    const hitsExactTarget = Boolean(target && count + 1 === target)
     setClicked(true)
+    setRippleKey((k) => k + 1)
     clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => setClicked(false), 140)
+
+    if (hitsExactTarget) {
+      setCelebrating(true)
+      clearTimeout(celebrateTimerRef.current)
+      celebrateTimerRef.current = setTimeout(() => setCelebrating(false), 1400)
+    }
+
     onClick()
   }
 
   useEffect(() => {
-    return () => clearTimeout(timerRef.current)
+    return () => {
+      clearTimeout(timerRef.current)
+      clearTimeout(celebrateTimerRef.current)
+    }
   }, [])
 
   const resetDisabled = !onReset || count === 0
@@ -67,12 +82,23 @@ function ActionButtons({
   return (
     <div className={styles.buttons}>
       <div className={styles.counterWrap}>
+        {/* موجة هادئة مع كل تسبيحة */}
+        {rippleKey > 0 && (
+          <span key={rippleKey} className={styles.tapRipple} aria-hidden="true" />
+        )}
+
+        {/* هالة زمردية/ذهبية هادئة عند بلوغ الهدف */}
+        {celebrating && (
+          <span className={styles.celebrateHalo} aria-hidden="true" />
+        )}
+
         <button
           type="button"
           className={[
             styles.click,
             clicked ? styles.clicked : '',
             isComplete ? styles.complete : '',
+            celebrating ? styles.celebratePop : '',
           ]
             .filter(Boolean)
             .join(' ')}
@@ -113,9 +139,21 @@ function ActionButtons({
             </span>
 
             {isComplete && target ? (
-              <span className={styles.doneBadge}>
-                <Check size={12} strokeWidth={2.8} aria-hidden="true" />
-                <span>أتممت {target.toLocaleString('en')}</span>
+              <span
+                className={`${styles.doneBadge} ${
+                  celebrating ? styles.doneBadgeGlow : ''
+                }`}
+              >
+                {celebrating ? (
+                  <Sparkles size={12} strokeWidth={2.5} aria-hidden="true" />
+                ) : (
+                  <Check size={12} strokeWidth={2.8} aria-hidden="true" />
+                )}
+                <span>
+                  {celebrating
+                    ? 'تقبّل الله'
+                    : `أتممت ${target.toLocaleString('en')}`}
+                </span>
               </span>
             ) : target ? (
               <span className={styles.fromTarget}>

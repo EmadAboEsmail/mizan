@@ -1,11 +1,16 @@
 import { useState, useMemo } from 'react'
+import { usePrivacyMode, maskText } from '@/hooks/usePrivacyMode.js'
+import { triggerHapticFeedback } from '@/utils/haptics.js'
 import styles from './DonutChart.module.scss'
 
-/**
- * Donut chart بسيط بـ SVG — بدون مكتبات.
- * data: [{ label, value, color }]
- */
-function DonutChart({ data = [], size = 200, thickness = 38, centerLabel = 'الإجمالي' }) {
+function DonutChart({
+  data = [],
+  size = 200,
+  thickness = 38,
+  centerLabel = 'الإجمالي',
+}) {
+  const { isPrivate } = usePrivacyMode()
+  const [selectedIndex, setSelectedIndex] = useState(null)
   const [hoveredIndex, setHoveredIndex] = useState(null)
 
   const total = useMemo(
@@ -25,8 +30,8 @@ function DonutChart({ data = [], size = 200, thickness = 38, centerLabel = 'ال
       const value = Number(seg.value) || 0
       const percent = value / total
       const dash = percent * circumference
-      const gap = 2 // فجوة صغيرة بين الأجزاء
-      const offset = -(cumulative * circumference) + circumference / 4 // يبدأ من فوق
+      const gap = segmentsLengthGap(data.length)
+      const offset = -(cumulative * circumference) + circumference / 4
       cumulative += percent
 
       return {
@@ -54,7 +59,18 @@ function DonutChart({ data = [], size = 200, thickness = 38, centerLabel = 'ال
     )
   }
 
-  const hoveredSeg = hoveredIndex !== null ? segments[hoveredIndex] : null
+  const safeSelected =
+    selectedIndex !== null && selectedIndex < segments.length
+      ? selectedIndex
+      : null
+  const activeIndex = hoveredIndex !== null ? hoveredIndex : safeSelected
+  const activeSeg = activeIndex !== null ? segments[activeIndex] : null
+  const money = (v) => (isPrivate ? maskText('') : formatAmount(v))
+
+  const handleToggleIndex = (idx) => {
+    triggerHapticFeedback('light')
+    setSelectedIndex((prev) => (prev === idx ? null : idx))
+  }
 
   return (
     <div className={styles.wrapper}>
@@ -63,73 +79,112 @@ function DonutChart({ data = [], size = 200, thickness = 38, centerLabel = 'ال
           viewBox={`0 0 ${size} ${size}`}
           className={styles.svg}
           role="img"
-          aria-label="توزيع المصاريف حسب التصنيف"
+          aria-label="توزيع المصاريف حسب التصنيف — اضغط على أي شريحة للتفاصيل"
         >
-          {segments.map((seg, i) => (
-            <circle
-              key={seg.key}
-              cx={seg.cx}
-              cy={seg.cy}
-              r={seg.middleR}
-              fill="none"
-              stroke={seg.color}
-              strokeWidth={hoveredIndex === i ? thickness + 4 : thickness}
-              strokeDasharray={`${seg.dash} ${seg.gap}`}
-              strokeDashoffset={seg.offset}
-              className={styles.segment}
-              onMouseEnter={() => setHoveredIndex(i)}
-              onMouseLeave={() => setHoveredIndex(null)}
-              style={{
-                transition: 'stroke-width 0.2s ease',
-                opacity: hoveredIndex === null || hoveredIndex === i ? 1 : 0.5,
-              }}
-            />
-          ))}
+          {segments.map((seg, i) => {
+            const isActive = activeIndex === i
+            return (
+              <circle
+                key={seg.key}
+                cx={seg.cx}
+                cy={seg.cy}
+                r={seg.middleR}
+                fill="none"
+                stroke={seg.color}
+                strokeWidth={isActive ? thickness + 5 : thickness}
+                strokeDasharray={`${seg.dash} ${seg.gap}`}
+                strokeDashoffset={seg.offset}
+                className={styles.segment}
+                onClick={() => handleToggleIndex(i)}
+                onMouseEnter={() => setHoveredIndex(i)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                style={{
+                  transition: 'stroke-width 220ms ease, opacity 200ms ease',
+                  opacity: activeIndex === null || isActive ? 1 : 0.42,
+                }}
+              />
+            )
+          })}
         </svg>
 
-        {/* الوسط: إما الإجمالي أو القسم المرّر عليه */}
-        <div className={styles.center}>
-          {hoveredSeg ? (
+        {/* الوسط التفاعلي: يعرض القسم المختار (اسم + مبلغ + نسبة) أو الإجمالي */}
+        <button
+          type="button"
+          className={styles.center}
+          onClick={() => {
+            if (safeSelected !== null) {
+              triggerHapticFeedback('light')
+              setSelectedIndex(null)
+            }
+          }}
+          aria-label={
+            activeSeg ? 'إظهار الإجمالي الكلي' : `${centerLabel}: ${money(total)}`
+          }
+        >
+          {activeSeg ? (
             <>
-              <span className={styles.centerValue}>
-                {hoveredSeg.percent > 0
-                  ? `${(hoveredSeg.percent * 100).toFixed(1)}%`
-                  : '0%'}
+              <span
+                className={styles.centerPercent}
+                style={{ color: activeSeg.color }}
+              >
+                {(activeSeg.percent * 100).toFixed(1)}%
               </span>
-              <span className={styles.centerLabel}>{hoveredSeg.label}</span>
+              <span className={styles.centerValue}>
+                {money(activeSeg.value)}
+              </span>
+              <span className={styles.centerLabel}>{activeSeg.label}</span>
             </>
           ) : (
             <>
-              <span className={styles.centerValue}>{formatAmount(total)}</span>
+              <span className={styles.centerValue}>{money(total)}</span>
               <span className={styles.centerLabel}>{centerLabel}</span>
             </>
           )}
-        </div>
+        </button>
       </div>
 
-      {/* Legend */}
+      {/* Legend تفاعلي باللمس */}
       <ul className={styles.legend}>
-        {segments.map((seg, i) => (
-          <li
-            key={seg.key}
-            className={`${styles.legendItem} ${hoveredIndex === i ? styles.legendActive : ''
+        {segments.map((seg, i) => {
+          const isActive = activeIndex === i
+          return (
+            <li
+              key={seg.key}
+              role="button"
+              tabIndex={0}
+              aria-pressed={safeSelected === i}
+              className={`${styles.legendItem} ${
+                isActive ? styles.legendActive : ''
               }`}
-            onMouseEnter={() => setHoveredIndex(i)}
-            onMouseLeave={() => setHoveredIndex(null)}
-          >
-            <span
-              className={styles.legendDot}
-              style={{ backgroundColor: seg.color }}
-            />
-            <span className={styles.legendLabel}>{seg.label}</span>
-            <span className={styles.legendValue}>
-              {formatAmount(seg.value)}
-            </span>
-          </li>
-        ))}
+              onClick={() => handleToggleIndex(i)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  handleToggleIndex(i)
+                }
+              }}
+              onMouseEnter={() => setHoveredIndex(i)}
+              onMouseLeave={() => setHoveredIndex(null)}
+            >
+              <span
+                className={styles.legendDot}
+                style={{ backgroundColor: seg.color }}
+              />
+              <span className={styles.legendLabel}>{seg.label}</span>
+              <span className={styles.legendPct}>
+                {Math.round(seg.percent * 100)}%
+              </span>
+              <span className={styles.legendValue}>{money(seg.value)}</span>
+            </li>
+          )
+        })}
       </ul>
     </div>
   )
+}
+
+function segmentsLengthGap(len) {
+  return len <= 1 ? 0 : 2.2
 }
 
 function formatAmount(n) {

@@ -10,6 +10,53 @@ import { useVolumeButton } from '@/hooks/useVolumeButton.js'
 import { triggerHapticFeedback } from '@/utils/haptics.js'
 import styles from './GroupModeView.module.scss'
 
+const PROGRESS_STORAGE_KEY = 'mizan_group_progress_v1'
+
+function todayKey() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+    2,
+    '0'
+  )}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function readGroupProgress(groupId, maxItems) {
+  if (!groupId) return { index: 0, count: 0 }
+  try {
+    const raw = localStorage.getItem(PROGRESS_STORAGE_KEY)
+    if (!raw) return { index: 0, count: 0 }
+    const all = JSON.parse(raw)
+    const entry = all?.[String(groupId)]
+    if (!entry || entry.date !== todayKey()) return { index: 0, count: 0 }
+    const idx = Math.max(0, Number(entry.index) || 0)
+    const cnt = Math.max(0, Number(entry.count) || 0)
+    if (maxItems > 0 && idx >= maxItems) return { index: 0, count: 0 }
+    return { index: idx, count: cnt }
+  } catch {
+    return { index: 0, count: 0 }
+  }
+}
+
+function writeGroupProgress(groupId, index, count) {
+  if (!groupId) return
+  try {
+    const raw = localStorage.getItem(PROGRESS_STORAGE_KEY)
+    const all = raw ? JSON.parse(raw) : {}
+    if (index <= 0 && count <= 0) {
+      delete all[String(groupId)]
+    } else {
+      all[String(groupId)] = {
+        index,
+        count,
+        date: todayKey(),
+      }
+    }
+    localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(all))
+  } catch {
+    // تجاهل امتلاء التخزين
+  }
+}
+
 const ArrowRightIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="9 18 15 12 9 6" />
@@ -28,7 +75,6 @@ const CheckIcon = () => (
   </svg>
 )
 
-
 function vibrate(enabled, type = 'light') {
   if (!enabled) return
   triggerHapticFeedback(type)
@@ -43,22 +89,35 @@ function GroupModeView({
   onSetTarget,
   isModalOpen = false,
 }) {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [localCount, setLocalCount] = useState(0)
-  const [showTransition, setShowTransition] = useState(false)
-  const [isComplete, setIsComplete] = useState(false)
-  const [isFocusMode, setIsFocusMode] = useState(false)
-  const vibrationEnabled = useVibrationEnabled()
   const selectedGroup = groups.find(
     (g) => String(g.id) === String(selectedGroupId)
   )
   const items = selectedGroup?.items ?? []
+  const effectiveGroupId = selectedGroup?.id ?? selectedGroupId
 
-  // ═══════════════════════════════════════════════════════════
-  // ✅ Adjust during render — بدل الـ useEffect الأول
-  // ═══════════════════════════════════════════════════════════
+  const [currentIndex, setCurrentIndex] = useState(
+    () => readGroupProgress(effectiveGroupId, items.length).index
+  )
+  const [localCount, setLocalCount] = useState(
+    () => readGroupProgress(effectiveGroupId, items.length).count
+  )
+  const [showTransition, setShowTransition] = useState(false)
+  const [isComplete, setIsComplete] = useState(false)
+  const [isFocusMode, setIsFocusMode] = useState(false)
+  const vibrationEnabled = useVibrationEnabled()
+
+  // استعادة التقدم تلقائياً عند تغيير المجموعة أو تحميل عناصرها
+  const [trackedGroupId, setTrackedGroupId] = useState(effectiveGroupId)
   const [prevItemsLength, setPrevItemsLength] = useState(items.length)
-  if (items.length !== prevItemsLength) {
+  if (effectiveGroupId !== trackedGroupId) {
+    setTrackedGroupId(effectiveGroupId)
+    setPrevItemsLength(items.length)
+    const saved = readGroupProgress(effectiveGroupId, items.length)
+    setCurrentIndex(saved.index)
+    setLocalCount(saved.count)
+    setShowTransition(false)
+    setIsComplete(false)
+  } else if (items.length !== prevItemsLength) {
     setPrevItemsLength(items.length)
     if (items.length > 0 && currentIndex >= items.length) {
       setCurrentIndex(0)
@@ -67,22 +126,48 @@ function GroupModeView({
     }
   }
 
-  // ✅ وصول آمن — يمنع الكراش حتى في أول render
-  const currentItem = items[currentIndex] ?? items[0] ?? null
+  // حفظ التقدم تلقائياً عند أي خطوة
+  useEffect(() => {
+    if (!effectiveGroupId) return
+    if (isComplete) {
+      writeGroupProgress(effectiveGroupId, 0, 0)
+      return
+    }
+    const saveIdx = showTransition
+      ? Math.min(currentIndex + 1, Math.max(0, items.length - 1))
+      : currentIndex
+    const saveCnt = showTransition ? 0 : localCount
+    writeGroupProgress(effectiveGroupId, saveIdx, saveCnt)
+  }, [effectiveGroupId, currentIndex, localCount, showTransition, isComplete, items.length])
 
+  const currentItem = items[currentIndex] ?? items[0] ?? null
   const completedCount = showTransition ? currentIndex + 1 : currentIndex
 
   const currentTarget = currentItem
     ? currentItem.target ?? currentItem.default_target ?? null
     : null
 
-  // الخروج من وضع التركيز عند الاكتمال (setState داخل setTimeout — مسموح)
+  const stepProgressPct =
+    currentTarget && currentTarget > 0
+      ? Math.min(100, Math.round((localCount / currentTarget) * 100))
+      : localCount > 0
+        ? 100
+        : 0
+
   useEffect(() => {
     if (isFocusMode && isComplete) {
       const timer = setTimeout(() => setIsFocusMode(false), 3200)
       return () => clearTimeout(timer)
     }
   }, [isFocusMode, isComplete])
+
+  const goToStep = (idx) => {
+    if (idx < 0 || idx >= items.length || idx === currentIndex) return
+    vibrate(vibrationEnabled, 'light')
+    setShowTransition(false)
+    setCurrentIndex(idx)
+    setLocalCount(0)
+  }
 
   const goToNext = () => {
     setShowTransition(false)
@@ -104,6 +189,7 @@ function GroupModeView({
   }
 
   const restartGroup = () => {
+    writeGroupProgress(effectiveGroupId, 0, 0)
     setIsComplete(false)
     setCurrentIndex(0)
     setLocalCount(0)
@@ -112,16 +198,9 @@ function GroupModeView({
 
   const handleGroupChange = (newGroupId) => {
     onGroupChange(newGroupId)
-    setCurrentIndex(0)
-    setLocalCount(0)
-    setShowTransition(false)
-    setIsComplete(false)
     setIsFocusMode(false)
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // ✅ Effect 2: انتقال تلقائي (setState داخل setTimeout — مسموح)
-  // ═══════════════════════════════════════════════════════════
   useEffect(() => {
     if (!showTransition) return
     const timer = setTimeout(() => {
@@ -133,13 +212,10 @@ function GroupModeView({
         setIsComplete(true)
         vibrate(vibrationEnabled, 'medium')
       }
-    }, 2200)
+    }, 2000)
     return () => clearTimeout(timer)
   }, [showTransition, currentIndex, items.length, vibrationEnabled])
 
-  // ═══════════════════════════════════════════════════════════
-  // ✅ Effect 3: إعادة تلقائية بعد الاكتمال (setState داخل setTimeout)
-  // ═══════════════════════════════════════════════════════════
   useEffect(() => {
     if (!isComplete) return
     const timer = setTimeout(() => {
@@ -151,9 +227,6 @@ function GroupModeView({
     return () => clearTimeout(timer)
   }, [isComplete])
 
-  // ═══════════════════════════════════════════════════════════
-  // ✅ handleAddClick: كشف الاكتمال انتقل هنا (بدل الـ effect)
-  // ═══════════════════════════════════════════════════════════
   const handleAddClick = () => {
     if (!currentItem || showTransition || isComplete) return
     if (currentTarget && localCount >= currentTarget) return
@@ -175,7 +248,6 @@ function GroupModeView({
     }
   }
 
-  // التسبيح بأزرار رفع/خفض الصوت داخل وضع المجموعة ووضع التركيز أيضاً
   useVolumeButton(
     () => {
       if (showTransition) {
@@ -285,6 +357,9 @@ function GroupModeView({
       )
     }
 
+    const canSwipePrev = currentIndex > 0
+    const canSwipeNext = currentIndex < items.length - 1
+
     return (
       <div className={styles.content}>
         <div className={styles.headerRow}>
@@ -294,20 +369,55 @@ function GroupModeView({
             <span className={styles.counterTotal}>{items.length}</span>
             <span className={styles.counterLabel}>مكتملة</span>
           </span>
+
+          {!isFocusMode && (currentIndex > 0 || localCount > 0) && (
+            <button
+              type="button"
+              className={styles.restartMiniBtn}
+              onClick={restartGroup}
+              title="البدء من أول الورد"
+            >
+              <RotateCcw size={12} strokeWidth={2.3} aria-hidden="true" />
+              <span>من الأول</span>
+            </button>
+          )}
         </div>
 
-        <div className={styles.storyProgress} aria-label="تقدم المجموعة">
-          {items.map((_, idx) => (
-            <div
-              key={idx}
-              className={`${styles.progressBar} ${idx < currentIndex
-                ? styles.barCompleted
-                : idx === currentIndex
-                  ? styles.barActive
-                  : ''
+        {/* شريط خطوات تفاعلي يعرض اكتمال كل ذكر وتقدّم الذكر الحالي */}
+        <div
+          className={styles.storyProgress}
+          role="group"
+          aria-label="خطوات المجموعة"
+        >
+          {items.map((item, idx) => {
+            const isPast = idx < currentIndex
+            const isCurrent = idx === currentIndex
+            return (
+              <button
+                key={item.id ?? idx}
+                type="button"
+                className={`${styles.progressBar} ${
+                  isPast
+                    ? styles.barCompleted
+                    : isCurrent
+                      ? styles.barActive
+                      : ''
                 }`}
-            />
-          ))}
+                onClick={() => goToStep(idx)}
+                aria-label={`الذكر ${idx + 1} من ${items.length}`}
+                aria-current={isCurrent ? 'step' : undefined}
+                title={item.text}
+              >
+                {isCurrent && (
+                  <span
+                    className={styles.barFill}
+                    style={{ width: `${stepProgressPct}%` }}
+                    aria-hidden="true"
+                  />
+                )}
+              </button>
+            )
+          })}
         </div>
 
         {!isFocusMode && (
@@ -341,17 +451,22 @@ function GroupModeView({
         )}
 
         <ZekrDisplay
+          key={currentItem.id ?? currentIndex}
           zekrText={currentItem.text}
           count={localCount}
           target={currentTarget}
           onClickCount={handleSetTarget}
+          canSwipePrev={canSwipePrev}
+          canSwipeNext={canSwipeNext}
+          onSwipePrev={canSwipePrev ? goToPrev : undefined}
+          onSwipeNext={canSwipeNext ? goToNext : undefined}
           isComplete={!!currentTarget && localCount >= currentTarget}
           isFocusMode={isFocusMode}
         />
 
         {!currentTarget && !isFocusMode && (
           <div className={styles.openTargetAlert}>
-            <span>هذا الذكر بدون هدف محدد. اضغط "تخطي" عند الانتهاء.</span>
+            <span>هذا الذكر بدون هدف محدد. اضغط &quot;تخطي&quot; عند الانتهاء.</span>
           </div>
         )}
 

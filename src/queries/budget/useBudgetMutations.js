@@ -17,6 +17,7 @@ import {
   restoreBudgetBackup,
   deleteAllBudgetData,
   exportBudgetCsv,
+  exportBudgetXlsx,
   importBudgetCsv,
   importLegacyBudget,
 } from '@/services/budgetService.js'
@@ -546,6 +547,12 @@ export function useExportBudgetJsonMutation() {
 export function useExportBudgetCsvMutation() {
   return useMutation({
     mutationFn: () => exportBudgetCsv(),
+  })
+}
+
+export function useExportBudgetXlsxMutation() {
+  return useMutation({
+    mutationFn: () => exportBudgetXlsx(),
   })
 }
 

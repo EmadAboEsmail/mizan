@@ -20,8 +20,52 @@
   position: relative;
 }
 
+.activeBanner {
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+}
+
+.bannerMonth {
+  font-family: var(--font-display);
+  color: var(--budget-text);
+  font-weight: 800;
+}
+
+.bannerStat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+
+  strong {
+    color: var(--text-primary);
+    font-weight: 800;
+  }
+}
+
+.bannerHint {
+  color: var(--text-faint);
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-inline: auto;
+}
+
 .column {
   flex: 1;
+  padding: 0;
+  border: none;
+  background: transparent;
   display: flex;
   flex-direction: column;
   align-items: center;

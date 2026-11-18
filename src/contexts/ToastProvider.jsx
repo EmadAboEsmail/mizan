@@ -24,21 +24,36 @@ export function ToastProvider({ children }) {
     setToasts((prev) => prev.filter((t) => t.id !== id))
   }, [])
 
-  const showToast = useCallback(
-    (message, type = 'success') => {
-      counterRef.current += 1
-      const id = counterRef.current
+  const showToast = useCallback((message, typeOrOptions = 'success') => {
+    const opts =
+      typeof typeOrOptions === 'string'
+        ? { type: typeOrOptions }
+        : typeOrOptions || {}
+    const type = opts.type || 'success'
+    const actionLabel = opts.actionLabel || null
+    const onAction = typeof opts.onAction === 'function' ? opts.onAction : null
+    const duration =
+      typeof opts.duration === 'number'
+        ? opts.duration
+        : actionLabel
+          ? 4500
+          : 2800
 
-      setToasts((prev) => [...prev.slice(-2), { id, message, type }])
+    counterRef.current += 1
+    const id = counterRef.current
 
-      const timeoutId = setTimeout(() => {
-        timeoutsRef.current.delete(id)
-        setToasts((prev) => prev.filter((t) => t.id !== id))
-      }, 2800)
-      timeoutsRef.current.set(id, timeoutId)
-    },
-    []
-  )
+    setToasts((prev) => [
+      ...prev.slice(-2),
+      { id, message, type, actionLabel, onAction },
+    ])
+
+    const timeoutId = setTimeout(() => {
+      timeoutsRef.current.delete(id)
+      setToasts((prev) => prev.filter((t) => t.id !== id))
+    }, duration)
+    timeoutsRef.current.set(id, timeoutId)
+    return id
+  }, [])
 
   useEffect(() => {
     const pending = timeoutsRef.current
@@ -49,7 +64,7 @@ export function ToastProvider({ children }) {
   }, [])
 
   return (
-    <ToastContext.Provider value={{ showToast }}>
+    <ToastContext.Provider value={{ showToast, dismissToast }}>
       {children}
 
       <div className={styles.toastContainer} aria-live="polite">
@@ -66,6 +81,19 @@ export function ToastProvider({ children }) {
                 <IconComp size={18} strokeWidth={2.2} />
               </span>
               <span className={styles.message}>{toast.message}</span>
+              {toast.actionLabel && toast.onAction && (
+                <button
+                  type="button"
+                  className={styles.actionBtn}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    dismissToast(toast.id)
+                    toast.onAction()
+                  }}
+                >
+                  {toast.actionLabel}
+                </button>
+              )}
             </div>
           )
         })}

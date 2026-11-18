@@ -1,35 +1,55 @@
 .tabsWrapper {
-  display: flex;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--tab-count, 4), 1fr);
   background: var(--bg-subtle);
   padding: 4px;
-  border-radius: var(--radius-md);
-  gap: 4px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--border-subtle);
   width: 100%;
 }
 
+.slider {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  inset-inline-start: 4px;
+  width: calc((100% - 8px) / var(--tab-count, 4));
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-xs), var(--card-highlight);
+  transform: translateX(calc(var(--tab-index, 0) * -100%));
+  transition: transform 300ms var(--ease-spring);
+  pointer-events: none;
+  will-change: transform;
+}
+
 .tab {
-  flex: 1;
-  padding: 9px var(--space-2);
+  position: relative;
+  z-index: 1;
+  min-height: 36px;
+  padding: 8px var(--space-2);
   font-family: var(--font-body);
   font-size: var(--text-sm);
   font-weight: 700;
   border: none;
   background: transparent;
   color: var(--text-muted);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   cursor: pointer;
-  transition: all var(--duration-base) var(--ease-out);
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
   touch-action: manipulation;
 
-  &:hover:not(.active) {
-    color: var(--text-secondary);
+  @media (hover: hover) {
+    &:hover:not(.active) {
+      color: var(--text-secondary);
+    }
   }
 
   &.active {
-    background: var(--bg-card);
-    color: var(--zekr);
-    box-shadow: var(--shadow-xs);
+    color: var(--zekr-text);
   }
 
   &:active {

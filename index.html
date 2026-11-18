@@ -28,23 +28,40 @@
       ;(function () {
         try {
           var t = localStorage.getItem('theme')
+          var isAmoled = t === 'amoled'
           var isDark =
+            isAmoled ||
             t === 'dark' ||
             (!t &&
               window.matchMedia &&
               window.matchMedia('(prefers-color-scheme: dark)').matches)
           document.documentElement.style.colorScheme = isDark ? 'dark' : 'light'
-          document.documentElement.dataset.theme = isDark ? 'dark' : 'light'
+          document.documentElement.dataset.theme = isAmoled
+            ? 'amoled'
+            : isDark
+              ? 'dark'
+              : 'light'
           var meta = document.querySelector('meta[name="theme-color"]')
-          if (meta) meta.setAttribute('content', isDark ? '#131210' : '#FAF6F0')
+          if (meta) {
+            meta.setAttribute(
+              'content',
+              isAmoled ? '#000000' : isDark ? '#131210' : '#FAF6F0'
+            )
+          }
         } catch (_) {}
       })()
     </script>
   </head>
   <body>
     <script>
-      if (document.documentElement.dataset.theme === 'dark') {
+      if (
+        document.documentElement.dataset.theme === 'dark' ||
+        document.documentElement.dataset.theme === 'amoled'
+      ) {
         document.body.classList.add('dark')
+      }
+      if (document.documentElement.dataset.theme === 'amoled') {
+        document.body.classList.add('amoled')
       }
     </script>
     <div id="root"></div>

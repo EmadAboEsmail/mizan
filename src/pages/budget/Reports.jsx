@@ -17,6 +17,9 @@ import TransactionsTopBar from '@/components/budget/transactions/TransactionsTop
 import TransactionsSummary from '@/components/budget/transactions/TransactionsSummary.jsx'
 import MonthPickerSheet from '@/components/ui/MonthPickerSheet/MonthPickerSheet.jsx'
 import EmptyState from '@/components/ui/EmptyState.jsx'
+import Skeleton from '@/components/ui/Skeleton.jsx'
+import { usePrivacyMode, maskText } from '@/hooks/usePrivacyMode.js'
+import { triggerHapticFeedback } from '@/utils/haptics.js'
 import {
   AR_MONTHS_FULL,
   formatAmount,
@@ -55,8 +58,15 @@ const TREND_OPTIONS = [
   { id: 12, label: '12 شهر' },
 ]
 
+const COMPARE_OPTIONS = [
+  { id: 'prev', label: 'الشهر السابق' },
+  { id: 'prev_year', label: 'العام الماضي' },
+  { id: 'custom', label: 'مخصص' },
+]
+
 function BudgetReports() {
   const { currentMonth, setCurrentMonth, setCompareMonth } = useBudgetUI()
+  const { isPrivate } = usePrivacyMode()
 
   const [compareMode, setCompareMode] = useState('prev')
   const [customCompareMonth, setCustomCompareMonth] = useState('')
@@ -189,16 +199,32 @@ function BudgetReports() {
             <span>قارن بـ</span>
           </span>
 
-          <select
-            className={styles.compareSelect}
-            value={compareMode}
-            onChange={(e) => handleCompareModeChange(e.target.value)}
+          <div
+            className={styles.comparePills}
+            role="radiogroup"
             aria-label="فترة المقارنة"
           >
-            <option value="prev">الشهر السابق</option>
-            <option value="prev_year">نفس الشهر العام الماضي</option>
-            <option value="custom">شهر مخصص...</option>
-          </select>
+            {COMPARE_OPTIONS.map((opt) => {
+              const active = compareMode === opt.id
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  className={`${styles.comparePill} ${
+                    active ? styles.comparePillActive : ''
+                  }`}
+                  onClick={() => {
+                    triggerHapticFeedback('light')
+                    handleCompareModeChange(opt.id)
+                  }}
+                >
+                  {opt.label}
+                </button>
+              )
+            })}
+          </div>
 
           {compareMode === 'custom' && (
             <button
@@ -318,7 +344,7 @@ function BudgetReports() {
                             {cat.category_name}
                           </span>
                           <span className={styles.topAmount}>
-                            {formatAmount(cat.total)}
+                            {isPrivate ? maskText('') : formatAmount(cat.total)}
                           </span>
                         </div>
                         <div className={styles.topBarWrapper}>
@@ -362,7 +388,7 @@ function BudgetReports() {
         </div>
 
         {trendLoading ? (
-          <div className={styles.skeletonChart} />
+          <Skeleton width="100%" height="196px" borderRadius="14px" />
         ) : (
           <MonthlyBarChart data={trend} highlightMonth={currentMonth} />
         )}

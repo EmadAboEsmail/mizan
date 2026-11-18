@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Target, ChevronLeft } from 'lucide-react'
 import { useBudgetUI } from '@/contexts/BudgetContext'
 import { useLimitsQuery } from '@/queries/budget'
+import { usePrivacyMode, maskText } from '@/hooks/usePrivacyMode.js'
 import styles from './LimitsOverview.module.scss'
 
 function formatCompact(n) {
@@ -11,6 +12,7 @@ function formatCompact(n) {
 function LimitsOverview() {
   const { currentMonth } = useBudgetUI()
   const { data: limits } = useLimitsQuery(currentMonth)
+  const { isPrivate } = usePrivacyMode()
 
   if (!currentMonth || !limits || limits.limits.length === 0) return null
 
@@ -40,8 +42,14 @@ function LimitsOverview() {
             حد الميزانية · <strong className={styles.status}>{statusLabel}</strong>
           </span>
           <span className={styles.numbers}>
-            <strong>{formatCompact(total_spent)}</strong>
-            <span> / {formatCompact(total_limit)}</span>
+            {isPrivate ? (
+              <strong>{maskText('')}</strong>
+            ) : (
+              <>
+                <strong>{formatCompact(total_spent)}</strong>
+                <span> / {formatCompact(total_limit)}</span>
+              </>
+            )}
           </span>
         </div>
 

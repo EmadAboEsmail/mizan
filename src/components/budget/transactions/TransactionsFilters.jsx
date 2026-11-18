@@ -36,7 +36,16 @@ export default function TransactionsFilters({
     <div className={styles.filters}>
       {/* الصف الرئيسي المدمج: نوع المعاملة + زر البحث والتصنيف */}
       <div className={styles.topRow}>
-        <div className={styles.typeFilter} role="tablist" aria-label="نوع المعاملة">
+        <div
+          className={styles.typeFilter}
+          role="tablist"
+          aria-label="نوع المعاملة"
+          style={{
+            '--filter-index':
+              filterType === 'expense' ? 1 : filterType === 'income' ? 2 : 0,
+          }}
+        >
+          <span className={styles.filterSlider} aria-hidden="true" />
           <button
             type="button"
             role="tab"

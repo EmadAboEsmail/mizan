@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { triggerHapticFeedback } from '@/utils/haptics.js'
 import styles from './SabhModeTabs.module.scss'
 
 const SingleIcon = () => (
@@ -22,8 +23,22 @@ const MODES = [
 ]
 
 function SabhModeTabs({ value, onChange }) {
+  const activeIndex = Math.max(
+    0,
+    MODES.findIndex((m) => m.id === value)
+  )
+
   return (
-    <div className={styles.tabsWrapper} role="tablist" aria-label="وضع السبحة">
+    <div
+      className={styles.tabsWrapper}
+      role="tablist"
+      aria-label="وضع السبحة"
+      style={{
+        '--tab-count': MODES.length,
+        '--tab-index': activeIndex,
+      }}
+    >
+      <span className={styles.slider} aria-hidden="true" />
       {MODES.map((m) => {
         const isActive = value === m.id
         const IconComponent = m.Icon
@@ -35,7 +50,10 @@ function SabhModeTabs({ value, onChange }) {
             role="tab"
             aria-selected={isActive}
             className={`${styles.tab} ${isActive ? styles.active : ''}`}
-            onClick={() => onChange(m.id)}
+            onClick={() => {
+              if (!isActive) triggerHapticFeedback('light')
+              onChange(m.id)
+            }}
           >
             <span className={styles.icon}>
               <IconComponent />

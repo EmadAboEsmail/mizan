@@ -8,6 +8,7 @@ import { usePocketQueueSync } from '@/hooks/usePocketTasbih.js'
 // ═══════════════════════════════════════
 import Home from './pages/home/Home.jsx'
 import InstallPrompt from './components/pwa/InstallPrompt.jsx'
+import PageSkeleton from './components/ui/PageSkeleton.jsx'
 
 // ═══════════════════════════════════════
 // Lazy imports (يتحمل عند الحاجة)
@@ -42,45 +43,6 @@ const getAutoBackupFrequency = () =>
   localStorage.getItem('auto_backup_frequency') || 'daily'
 
 // ═══════════════════════════════════════
-// Loading Fallback
-// ═══════════════════════════════════════
-function PageLoader() {
-  return (
-    <div
-      style={{
-        minHeight: '60vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '1rem',
-        color: 'var(--text-muted)',
-        fontFamily: 'var(--font-body)',
-      }}
-    >
-      <div
-        style={{
-          width: 40,
-          height: 40,
-          border: '3px solid var(--border-default)',
-          borderTopColor: 'var(--budget)',
-          borderRadius: '50%',
-          animation: 'spin 0.8s linear infinite',
-        }}
-      />
-      <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600 }}>
-        جاري التحميل...
-      </p>
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
-    </div>
-  )
-}
-
-// ═══════════════════════════════════════
 // App
 // ═══════════════════════════════════════
 function App() {
@@ -97,7 +59,7 @@ function App() {
 
   return (
     <>
-      <Suspense fallback={<PageLoader />}>
+      <Suspense fallback={<PageSkeleton />}>
         <Routes>
           <Route path="/" element={<Home />} />
 

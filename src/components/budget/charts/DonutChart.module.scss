@@ -38,14 +38,25 @@
 // ═══════════════════════════════════════
 .center {
   position: absolute;
-  inset: 0;
+  inset: 22%;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  pointer-events: none;
   text-align: center;
-  padding: 0 var(--space-4);
+  padding: 0 var(--space-2);
+  cursor: pointer;
+}
+
+.centerPercent {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 2px;
 }
 
 .centerValue {
@@ -118,6 +129,17 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.legendPct {
+  font-family: var(--font-body);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  background: var(--bg-subtle);
 }
 
 .legendValue {

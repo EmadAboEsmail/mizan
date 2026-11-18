@@ -16,6 +16,8 @@ import { initDB } from "./db/index.js";
 import { initClickBuffer } from "./services/clickBuffer.js";
 import "@fontsource-variable/alexandria";
 import "@fontsource-variable/readex-pro";
+import "@fontsource/amiri/arabic-400.css";
+import "@fontsource/amiri/arabic-700.css";
 import App from "./App.jsx";
 import "./styles/main.scss";
 

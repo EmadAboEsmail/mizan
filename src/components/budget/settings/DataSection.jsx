@@ -1,19 +1,24 @@
 import { useState, useRef } from 'react'
-import { Capacitor } from '@capacitor/core'
-import { Filesystem, Directory } from '@capacitor/filesystem'
-import { Share } from '@capacitor/share'
 import {
   useExportBudgetJsonMutation,
   useExportBudgetCsvMutation,
+  useExportBudgetXlsxMutation,
   useRestoreBudgetBackupMutation,
   useImportBudgetCsvMutation,
   useImportLegacyBudgetMutation,
   useDeleteAllBudgetDataMutation,
 } from '@/queries/budget'
+import { downloadOrShareBlob } from '@/utils/fileExport.js'
 import { useToast } from '@/hooks/useToast.js'
 import Modal from '@/components/ui/Modal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import styles from './DataSection.module.scss'
+
+const FREQ_OPTIONS = [
+  { id: 'daily', label: 'يومي' },
+  { id: 'weekly', label: 'أسبوعي' },
+  { id: 'monthly', label: 'شهري' },
+]
 
 function DataSection() {
   const { showToast } = useToast()
@@ -21,6 +26,7 @@ function DataSection() {
   // ─── Mutations ───
   const exportJsonMutation = useExportBudgetJsonMutation()
   const exportCsvMutation = useExportBudgetCsvMutation()
+  const exportXlsxMutation = useExportBudgetXlsxMutation()
   const restoreBackupMutation = useRestoreBudgetBackupMutation()
   const importCsvMutation = useImportBudgetCsvMutation()
   const importLegacyMutation = useImportLegacyBudgetMutation()
@@ -29,6 +35,7 @@ function DataSection() {
   const loading =
     exportJsonMutation.isPending ||
     exportCsvMutation.isPending ||
+    exportXlsxMutation.isPending ||
     restoreBackupMutation.isPending ||
     importCsvMutation.isPending ||
     importLegacyMutation.isPending ||
@@ -80,25 +87,49 @@ function DataSection() {
     try {
       const data = await exportJsonMutation.mutateAsync()
       const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: 'application/json',
+        type: 'application/json;charset=utf-8',
       })
-      await triggerDownload(blob, `budget-backup-${todayStr()}.json`)
+      await downloadOrShareBlob(blob, `budget-backup-${todayStr()}.json`, {
+        mimeType: 'application/json;charset=utf-8',
+        title: 'نسخة احتياطية — ميزان',
+      })
       showToast('تم تصدير النسخة الاحتياطية')
     } catch {
-      showToast('فشل التصدير')
+      showToast('فشل التصدير', 'error')
     }
   }
 
   // ═══════════════════════════════════════
-  // CSV Export
+  // CSV & Excel Export
   // ═══════════════════════════════════════
   const handleExportCsv = async () => {
     try {
       const blob = await exportCsvMutation.mutateAsync()
-      await triggerDownload(blob, `budget-transactions-${todayStr()}.csv`)
-      showToast('تم تصدير CSV')
+      await downloadOrShareBlob(blob, `budget-transactions-${todayStr()}.csv`, {
+        mimeType: 'text/csv;charset=utf-16le',
+        title: 'معاملات ميزان (CSV)',
+      })
+      showToast('تم تصدير CSV بدعم كامل للعربية')
     } catch (err) {
-      showToast(err?.message || 'فشل التصدير')
+      showToast(err?.message || 'فشل التصدير', 'error')
+    }
+  }
+
+  const handleExportXlsx = async () => {
+    try {
+      const blob = await exportXlsxMutation.mutateAsync()
+      await downloadOrShareBlob(
+        blob,
+        `budget-transactions-${todayStr()}.xlsx`,
+        {
+          mimeType:
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          title: 'معاملات ميزان (Excel)',
+        }
+      )
+      showToast('تم تصدير ملف Excel بنجاح')
+    } catch (err) {
+      showToast(err?.message || 'فشل تصدير Excel', 'error')
     }
   }
 
@@ -256,16 +287,29 @@ function DataSection() {
           <span className={styles.cardTitle}>النسخ الاحتياطي التلقائي</span>
           <p className={styles.cardDesc}>حفظ نسخة تلقائية في ذاكرة الجهاز</p>
           {autoBackupEnabled && (
-            <select
-              value={autoBackupFrequency}
-              onChange={(e) => changeFrequency(e.target.value)}
-              className={styles.selectInput}
-              style={{ marginTop: '10px' }}
+            <div
+              className={styles.freqPills}
+              role="radiogroup"
+              aria-label="فترة النسخ الاحتياطي"
             >
-              <option value="daily">يومي</option>
-              <option value="weekly">أسبوعي</option>
-              <option value="monthly">شهري</option>
-            </select>
+              {FREQ_OPTIONS.map((opt) => {
+                const active = autoBackupFrequency === opt.id
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    className={`${styles.freqPill} ${
+                      active ? styles.freqPillActive : ''
+                    }`}
+                    onClick={() => changeFrequency(opt.id)}
+                  >
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
           )}
         </div>
         <button
@@ -366,16 +410,34 @@ function DataSection() {
       </div>
 
       {/* ═══════════════════════════════════════
-          CSV Export/Import
+          Excel & CSV Export/Import
       ═══════════════════════════════════════ */}
-      <div className={styles.groupLabel}>📊 معاملات (CSV — Excel)</div>
+      <div className={styles.groupLabel}>📊 جداول المعاملات (Excel و CSV)</div>
       <div className={styles.backupGrid}>
+        <div className={styles.card}>
+          <div className={styles.cardIcon}>📗</div>
+          <div className={styles.cardContent}>
+            <span className={styles.cardTitle}>تصدير Excel (.xlsx)</span>
+            <p className={styles.cardDesc}>
+              ملف Excel منسّق باتجاه عربي RTL جاهز للفتح مباشرة
+            </p>
+          </div>
+          <button
+            type="button"
+            className={styles.actionBtn}
+            onClick={handleExportXlsx}
+            disabled={loading}
+          >
+            تصدير
+          </button>
+        </div>
+
         <div className={styles.card}>
           <div className={styles.cardIcon}>📋</div>
           <div className={styles.cardContent}>
             <span className={styles.cardTitle}>تصدير CSV</span>
             <p className={styles.cardDesc}>
-              يفتح في Excel (تاريخ، نوع، مبلغ، تصنيف)
+              ترميز Unicode متوافق مع العربية وجميع إصدارات Excel
             </p>
           </div>
           <button
@@ -392,7 +454,9 @@ function DataSection() {
           <div className={styles.cardIcon}>📎</div>
           <div className={styles.cardContent}>
             <span className={styles.cardTitle}>استيراد CSV</span>
-            <p className={styles.cardDesc}>إضافة أو استبدال من ملف CSV</p>
+            <p className={styles.cardDesc}>
+              يدعم الأعمدة العربية والإنجليزية (إضافة أو استبدال)
+            </p>
           </div>
           <button
             type="button"
@@ -549,42 +613,6 @@ function todayStr() {
     2,
     '0'
   )}-${String(d.getDate()).padStart(2, '0')}`
-}
-
-async function triggerDownload(blob, filename) {
-  if (Capacitor.isNativePlatform()) {
-    try {
-      const reader = new FileReader()
-      const base64Data = await new Promise((resolve) => {
-        reader.onloadend = () => resolve(reader.result.split(',')[1])
-        reader.readAsDataURL(blob)
-      })
-
-      const savedFile = await Filesystem.writeFile({
-        path: filename,
-        data: base64Data,
-        directory: Directory.Cache,
-      })
-
-      await Share.share({
-        title: 'Export Mizan',
-        text: 'Backup file',
-        url: savedFile.uri,
-      })
-    } catch (err) {
-      console.error('Share failed', err)
-      throw new Error('فشل في مشاركة الملف', { cause: err })
-    }
-  } else {
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
 }
 
 export default DataSection

@@ -25,6 +25,7 @@ public class MainActivity extends BridgeActivity {
     private volatile boolean interceptVolumeKeys = false;
     private volatile boolean immersiveMode = false;
     private volatile boolean darkTheme = false;
+    private volatile boolean amoledTheme = false;
     private int defaultCutoutMode = 0;
 
     public void setInterceptVolumeKeys(boolean enabled) {
@@ -99,8 +100,9 @@ public class MainActivity extends BridgeActivity {
             });
     }
 
-    public void setSystemBarTheme(final boolean dark) {
+    public void setSystemBarTheme(final boolean dark, final boolean amoled) {
         this.darkTheme = dark;
+        this.amoledTheme = amoled;
         runOnUiThread(() -> {
             if (!immersiveMode) {
                 applyNormalSystemBars();
@@ -187,7 +189,9 @@ public class MainActivity extends BridgeActivity {
         if (window == null) return;
         View decorView = window.getDecorView();
 
-        int bgColor = darkTheme ? COLOR_DARK_BG : COLOR_LIGHT_BG;
+        int bgColor = darkTheme
+            ? (amoledTheme ? Color.BLACK : COLOR_DARK_BG)
+            : COLOR_LIGHT_BG;
         decorView.setBackgroundColor(bgColor);
         setSystemBarColors(window, bgColor);
 

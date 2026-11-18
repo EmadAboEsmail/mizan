@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { Copy, Check, Target, Pencil, Plus } from 'lucide-react'
 import { useAnimatedNumber } from '@/hooks/useAnimatedNumber'
+import { useZekrFontPrefs } from '@/hooks/useZekrFontScale.js'
+import { triggerHapticFeedback } from '@/utils/haptics.js'
 import styles from './ZekrDisplay.module.scss'
 
 const srOnly = {
@@ -15,15 +17,27 @@ const srOnly = {
   border: 0,
 }
 
+const SWIPE_THRESHOLD_PX = 52
 const fmt = (n) => n.toLocaleString('en')
 const cx = (...c) => c.filter(Boolean).join(' ')
 
-function getAdaptiveFontSize(text) {
+function getAdaptiveFontSize(text, scale = 1, isFocus = false) {
   const len = (text || '').length
-  if (len < 30) return 'clamp(1.55rem, 5.5vw, 2.15rem)'
-  if (len < 60) return 'clamp(1.32rem, 4.5vw, 1.8rem)'
-  if (len < 100) return 'clamp(1.12rem, 3.8vw, 1.5rem)'
-  return 'clamp(0.95rem, 3vw, 1.25rem)'
+  const s = Number.isFinite(scale) ? scale : 1
+  if (isFocus) {
+    if (len < 30)
+      return `clamp(${(1.55 * s).toFixed(2)}rem, ${(5.5 * s).toFixed(1)}vw, ${(2.2 * s).toFixed(2)}rem)`
+    if (len < 60)
+      return `clamp(${(1.32 * s).toFixed(2)}rem, ${(4.5 * s).toFixed(1)}vw, ${(1.85 * s).toFixed(2)}rem)`
+    if (len < 100)
+      return `clamp(${(1.12 * s).toFixed(2)}rem, ${(3.8 * s).toFixed(1)}vw, ${(1.52 * s).toFixed(2)}rem)`
+    return `clamp(${(0.96 * s).toFixed(2)}rem, ${(3.1 * s).toFixed(1)}vw, ${(1.28 * s).toFixed(2)}rem)`
+  }
+  if (len < 36)
+    return `clamp(${(1.34 * s).toFixed(2)}rem, ${(5.0 * s).toFixed(1)}vw, ${(1.78 * s).toFixed(2)}rem)`
+  if (len < 80)
+    return `clamp(${(1.18 * s).toFixed(2)}rem, ${(4.3 * s).toFixed(1)}vw, ${(1.52 * s).toFixed(2)}rem)`
+  return `clamp(${(1.04 * s).toFixed(2)}rem, ${(3.6 * s).toFixed(1)}vw, ${(1.32 * s).toFixed(2)}rem)`
 }
 
 async function copyText(text) {
@@ -51,24 +65,37 @@ function ZekrDisplay({
   sessionCount = 0,
   target,
   onClickCount,
+  onSwipeNext,
+  onSwipePrev,
+  canSwipeNext = false,
+  canSwipePrev = false,
   isComplete,
   isFocusMode = false,
 }) {
   const safeCount = count ?? 0
   const [copied, setCopied] = useState(false)
   const [ticking, setTicking] = useState(false)
+  const [swipeX, setSwipeX] = useState(0)
   const prevCountRef = useRef(safeCount)
   const copyTimerRef = useRef(null)
+  const touchRef = useRef({ active: false, startX: 0, startY: 0, locked: null })
   const animatedCount = useAnimatedNumber(safeCount, 280)
+  const { scale, fontStyle } = useZekrFontPrefs()
+
+  const swipeEnabled =
+    !isFocusMode && Boolean(onSwipeNext || onSwipePrev) && (canSwipeNext || canSwipePrev)
 
   useEffect(() => {
     const prev = prevCountRef.current
     prevCountRef.current = safeCount
     if (safeCount <= prev) return
 
-    setTicking(true)
-    const t = setTimeout(() => setTicking(false), 150)
-    return () => clearTimeout(t)
+    const startTimer = setTimeout(() => setTicking(true), 0)
+    const endTimer = setTimeout(() => setTicking(false), 150)
+    return () => {
+      clearTimeout(startTimer)
+      clearTimeout(endTimer)
+    }
   }, [safeCount])
 
   useEffect(() => () => clearTimeout(copyTimerRef.current), [])
@@ -91,7 +118,66 @@ function ZekrDisplay({
     onClickCount?.(e)
   }
 
-  const focusFontSize = isFocusMode ? getAdaptiveFontSize(zekrText) : undefined
+  // سحب أفقي للتنقل بين الأذكار (في RTL: السحب لليمين = التالي، السحب لليسار = السابق)
+  const handleTouchStart = (e) => {
+    if (!swipeEnabled) return
+    if (e.target?.closest?.('button')) return
+    const t = e.touches[0]
+    touchRef.current = {
+      active: true,
+      startX: t.clientX,
+      startY: t.clientY,
+      locked: null,
+    }
+  }
+
+  const handleTouchMove = (e) => {
+    const state = touchRef.current
+    if (!state.active) return
+    const t = e.touches[0]
+    const dx = t.clientX - state.startX
+    const dy = t.clientY - state.startY
+
+    if (!state.locked) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return
+      state.locked = Math.abs(dx) > Math.abs(dy) * 1.2 ? 'x' : 'y'
+    }
+    if (state.locked !== 'x') return
+
+    // مقاومة مطاطية لطيفة عند الأطراف
+    const allowDir = (dx > 0 && canSwipeNext) || (dx < 0 && canSwipePrev)
+    const damp = allowDir ? 0.42 : 0.12
+    setSwipeX(Math.max(-68, Math.min(68, dx * damp)))
+  }
+
+  const handleTouchEnd = (e) => {
+    const state = touchRef.current
+    if (!state.active) return
+    state.active = false
+
+    const changed = e.changedTouches?.[0]
+    const dx = changed ? changed.clientX - state.startX : 0
+    const wasHorizontal = state.locked === 'x'
+    setSwipeX(0)
+
+    if (!wasHorizontal) return
+    // في RTL القائمة تبدأ من اليمين وتتحرك لليسار:
+    // سحب الإصبع لليمين (dx > 0) يسحب البطاقة التالية من اليسار -> التالي
+    if (dx >= SWIPE_THRESHOLD_PX && canSwipeNext) {
+      triggerHapticFeedback('light')
+      onSwipeNext?.()
+    } else if (dx <= -SWIPE_THRESHOLD_PX && canSwipePrev) {
+      triggerHapticFeedback('light')
+      onSwipePrev?.()
+    }
+  }
+
+  const isNaskh = fontStyle === 'naskh'
+  const computedFontSize = getAdaptiveFontSize(
+    zekrText,
+    isNaskh ? scale * 1.08 : scale,
+    isFocusMode
+  )
 
   return (
     <div
@@ -100,6 +186,18 @@ function ZekrDisplay({
         isComplete && !isFocusMode && styles.completeGlow,
         isFocusMode && styles.focusDisplay
       )}
+      style={
+        swipeX !== 0
+          ? {
+              transform: `translateX(${swipeX}px)`,
+              transition: 'none',
+            }
+          : undefined
+      }
+      onTouchStart={swipeEnabled ? handleTouchStart : undefined}
+      onTouchMove={swipeEnabled ? handleTouchMove : undefined}
+      onTouchEnd={swipeEnabled ? handleTouchEnd : undefined}
+      onTouchCancel={swipeEnabled ? handleTouchEnd : undefined}
     >
       <div className={styles.textContainer}>
         {!isFocusMode && (
@@ -111,8 +209,8 @@ function ZekrDisplay({
         )}
 
         <h2
-          className={styles.text}
-          style={focusFontSize ? { fontSize: focusFontSize } : undefined}
+          className={cx(styles.text, isNaskh && styles.naskhText)}
+          style={{ fontSize: computedFontSize }}
         >
           {zekrText}
         </h2>

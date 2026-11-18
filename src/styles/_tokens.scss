@@ -230,6 +230,7 @@
   // ═══════════════════════════════════════════════════════
   --font-display: 'Alexandria Variable', 'Alexandria', system-ui, -apple-system, sans-serif;
   --font-body: 'Readex Pro Variable', 'Readex Pro', system-ui, -apple-system, sans-serif;
+  --font-zekr: 'Amiri', 'Alexandria Variable', serif;
   --font-main: var(--font-body);
   --font-heading: var(--font-display);
   --font-mono: 'SF Mono', 'Monaco', 'Consolas', monospace;
@@ -436,6 +437,35 @@ body.dark {
   --accent-border: var(--zekr-border);
   --ring-color: var(--brand-primary);
   --ring-bg: var(--bg-subtle);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Pure AMOLED Black Theme — صفر إضاءة خلفية لشاشات OLED
+// يُفعّل مع body.dark.amoled ليرث كل ألوان النص والبراند الدافئة
+// ═══════════════════════════════════════════════════════════════════
+body.dark.amoled {
+  --bg-base: #000000;
+  --bg-card: #0B0A09;
+  --bg-elevated: #121110;
+  --bg-subtle: #161412;
+  --bg-subtle-hover: #201D1A;
+  --bg-topbar: rgba(0, 0, 0, 0.9);
+  --bg-nav: rgba(8, 8, 7, 0.96);
+  --bg-overlay: rgba(0, 0, 0, 0.8);
+  --bg-muted: #161412;
+  --bg-muted-hover: #201D1A;
+
+  --bg-container-light: #0B0A09;
+  --bg-display-light: #000000;
+  --bg-btn-light: #161412;
+  --bg-btn-hover-light: #201D1A;
+
+  --border-subtle: #1A1816;
+  --border-default: #24211E;
+  --border-strong: #35302A;
+  --border-light: #24211E;
+  --border-color: #24211E;
+  --card-highlight: inset 0 1px 0 rgba(255, 250, 240, 0.035);
 }
 
 // ═══════════════════════════════════════════════════════════════════

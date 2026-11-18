@@ -139,6 +139,21 @@ svg {
   font-feature-settings: 'tnum';
 }
 
+@keyframes mizanPageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mizan-page-enter {
+  animation: mizanPageEnter 240ms var(--ease-out) both;
+}
+
 // احترام تفضيل تقليل الحركة
 @media (prefers-reduced-motion: reduce) {
   *,

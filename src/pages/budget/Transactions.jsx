@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback, useDeferredValue } from 'react'
+import { useState, useMemo, useCallback, useDeferredValue, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import { useBudgetUI, getCurrentMonth } from '@/contexts/BudgetContext'
 import {
@@ -10,20 +11,21 @@ import {
   useUpdateTransactionMutation,
   useDeleteTransactionMutation,
 } from '@/queries/budget'
+import { useToast } from '@/hooks/useToast.js'
 import TransactionFormModal from '@/components/budget/TransactionFormModal.jsx'
-import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
 import LimitsOverview from '@/components/budget/limits/LimitsOverview.jsx'
 import TransactionsTopBar from '@/components/budget/transactions/TransactionsTopBar.jsx'
 import TransactionsSummary from '@/components/budget/transactions/TransactionsSummary.jsx'
 import TransactionsFilters from '@/components/budget/transactions/TransactionsFilters.jsx'
 import TransactionsList from '@/components/budget/transactions/TransactionsList.jsx'
-import { formatAmount } from '@/components/budget/transactions/lib/transactionsHelpers.js'
 import styles from './Transactions.module.scss'
 
 const EMPTY_LIST = []
 
 function BudgetTransactions() {
   const { currentMonth, compareMonth, setCurrentMonth } = useBudgetUI()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { showToast } = useToast()
 
   // ─── Queries ───
   const { data: categories = EMPTY_LIST } = useCategoriesQuery()
@@ -36,13 +38,25 @@ function BudgetTransactions() {
     useCreateTransactionMutation(currentMonth)
   const { mutateAsync: updateTransaction } =
     useUpdateTransactionMutation(currentMonth)
-  const { mutateAsync: deleteTransaction, isPending: isDeleting } =
+  const { mutateAsync: deleteTransaction } =
     useDeleteTransactionMutation(currentMonth)
 
-  // ─── UI state ───
-  const [isFormOpen, setIsFormOpen] = useState(false)
+  // ─── UI state (يدعم ?add=1 للاختصار السريع من الرئيسية) ───
+  const quickAddRequested = searchParams.get('add') === '1'
+  const [isFormOpen, setIsFormOpen] = useState(quickAddRequested)
   const [editingTxn, setEditingTxn] = useState(null)
-  const [deleteTarget, setDeleteTarget] = useState(null)
+
+  useEffect(() => {
+    if (!quickAddRequested) return
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('add')
+        return next
+      },
+      { replace: true }
+    )
+  }, [quickAddRequested, setSearchParams])
 
   // ─── Filters ───
   const [filterType, setFilterType] = useState('all')
@@ -57,6 +71,17 @@ function BudgetTransactions() {
     () => Object.fromEntries(categories.map((c) => [c.id, c])),
     [categories]
   )
+
+  // حساب أكثر التصنيفات استخداماً لترتيبها في نافذة الإضافة السريعة
+  const categoryUsage = useMemo(() => {
+    const map = {}
+    for (const t of transactions) {
+      if (t.category_id) {
+        map[t.category_id] = (map[t.category_id] || 0) + 1
+      }
+    }
+    return map
+  }, [transactions])
 
   const filteredTxns = useMemo(() => {
     const filtered = transactions.filter((t) => {
@@ -94,17 +119,9 @@ function BudgetTransactions() {
     setIsFormOpen(true)
   }, [])
 
-  const handleDeleteClick = useCallback((txn) => {
-    setDeleteTarget(txn)
-  }, [])
-
   const handleCloseForm = useCallback(() => {
     setIsFormOpen(false)
     setEditingTxn(null)
-  }, [])
-
-  const handleCloseConfirm = useCallback(() => {
-    setDeleteTarget(null)
   }, [])
 
   const handleSubmit = useCallback(
@@ -120,15 +137,41 @@ function BudgetTransactions() {
     [editingTxn, createTransaction, updateTransaction]
   )
 
-  const handleDelete = useCallback(async () => {
-    if (!deleteTarget) return
-    try {
-      await deleteTransaction(deleteTarget.id)
-      setDeleteTarget(null)
-    } catch {
-      // التراجع ورسالة الخطأ يتمان داخل useDeleteTransactionMutation
-    }
-  }, [deleteTarget, deleteTransaction])
+  // حذف فوري مع زر «تراجع» (Undo) في إشعار هادئ
+  const handleDeleteWithUndo = useCallback(
+    async (txn) => {
+      if (!txn) return
+      const snapshot = {
+        amount: txn.amount,
+        type: txn.type,
+        category_id: txn.category_id,
+        date: txn.date,
+        details: txn.details || null,
+        description: txn.description || null,
+      }
+      const catName = catMap[txn.category_id]?.name || 'المعاملة'
+      try {
+        setExpandedId((prev) => (prev === txn.id ? null : prev))
+        await deleteTransaction(txn.id)
+        showToast(`تم حذف «${catName}»`, {
+          type: 'info',
+          duration: 5000,
+          actionLabel: 'تراجع',
+          onAction: async () => {
+            try {
+              await createTransaction(snapshot)
+              showToast('تم استرجاع المعاملة', 'success')
+            } catch {
+              showToast('تعذّر استرجاع المعاملة', 'error')
+            }
+          },
+        })
+      } catch {
+        // التراجع ورسالة الخطأ يتمان داخل useDeleteTransactionMutation
+      }
+    },
+    [catMap, deleteTransaction, createTransaction, showToast]
+  )
 
   const handleToggleMonthMode = useCallback(() => {
     if (currentMonth === null) {
@@ -174,7 +217,7 @@ function BudgetTransactions() {
         catMap={catMap}
         onAdd={handleOpenAdd}
         onEdit={handleOpenEdit}
-        onDelete={handleDeleteClick}
+        onDelete={handleDeleteWithUndo}
         expandedId={effectiveExpandedId}
         onToggle={handleToggleExpanded}
         totalTransactions={transactions.length}
@@ -206,19 +249,7 @@ function BudgetTransactions() {
         onConfirm={handleSubmit}
         initial={editingTxn}
         categories={categories}
-      />
-
-      <ConfirmModal
-        isOpen={deleteTarget !== null}
-        onClose={handleCloseConfirm}
-        onConfirm={handleDelete}
-        title="حذف المعاملة؟"
-        message={`سيتم حذف معاملة بقيمة ${formatAmount(
-          deleteTarget?.amount || 0
-        )} ج.م. لا يمكن التراجع.`}
-        confirmLabel={isDeleting ? 'جاري الحذف...' : 'نعم، احذف'}
-        cancelLabel="إلغاء"
-        danger
+        categoryUsage={categoryUsage}
       />
     </div>
   )

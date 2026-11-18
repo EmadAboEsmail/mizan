@@ -13,6 +13,81 @@
   justify-content: center;
 }
 
+.tapRipple {
+  position: absolute;
+  width: clamp(180px, 50vw, 212px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1.5px solid var(--zekr);
+  pointer-events: none;
+  opacity: 0;
+  animation: tapWave 520ms var(--ease-out) forwards;
+}
+
+.celebrateHalo {
+  position: absolute;
+  width: clamp(196px, 56vw, 232px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    rgba(212, 162, 76, 0.26) 0%,
+    rgba(82, 168, 128, 0.22) 52%,
+    transparent 74%
+  );
+  border: 2px solid var(--budget);
+  animation: celebrateBurst 1.3s var(--ease-out) forwards;
+}
+
+.celebratePop {
+  animation: celebrateScale 480ms var(--ease-spring);
+}
+
+.doneBadgeGlow {
+  background: linear-gradient(135deg, var(--zekr-soft), var(--budget-soft));
+  border: 1px solid var(--budget-border);
+  color: var(--zekr-text);
+}
+
+@keyframes tapWave {
+  0% {
+    transform: scale(0.88);
+    opacity: 0.42;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes celebrateBurst {
+  0% {
+    transform: scale(0.86);
+    opacity: 0.92;
+  }
+  60% {
+    transform: scale(1.18);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.32);
+    opacity: 0;
+  }
+}
+
+@keyframes celebrateScale {
+  0% {
+    transform: scale(0.95);
+  }
+  45% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 .click {
   position: relative;
   width: clamp(196px, 56vw, 232px);
