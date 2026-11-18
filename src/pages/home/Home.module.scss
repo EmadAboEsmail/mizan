@@ -70,13 +70,13 @@
   width: 42px;
   height: 42px;
   border-radius: var(--radius-medium);
-  background: linear-gradient(140deg, var(--zekr-soft-strong), var(--budget-soft-strong));
-  border: 1px solid var(--border-default);
+  background: linear-gradient(145deg, #317557 0%, #21553e 56%, #143728 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--zekr);
-  box-shadow: var(--shadow-xs);
+  color: #faf6f0;
+  box-shadow: var(--shadow-sm);
   flex-shrink: 0;
 }
 

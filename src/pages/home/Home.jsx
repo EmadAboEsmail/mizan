@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
-import { Calendar, Wallet } from 'lucide-react'
+import { Calendar } from 'lucide-react'
 import { useAdhkarQuery, useCountsQuery } from '@/queries/zekr'
 import { useSummaryQuery } from '@/queries/budget'
 import { getCurrentMonth } from '@/contexts/BudgetContext'
 import ThemeToggle from '@/components/ui/ThemeToggle.jsx'
-import { MizanMark, TasbihIcon } from '@/components/ui/BrandIcons.jsx'
+import { MizanMark, TasbihIcon, BudgetIcon } from '@/components/ui/BrandIcons.jsx'
 import AppCard from './AppCard.jsx'
 import ContinueCard from './ContinueCard.jsx'
 import QuickStats from './QuickStats.jsx'
@@ -94,7 +94,7 @@ export default function Home() {
       stat: budgetStat,
       ctaLabel: 'افتح الميزانية',
       path: '/budget/transactions',
-      icon: <Wallet size={24} strokeWidth={1.9} />,
+      icon: <BudgetIcon size={25} />,
       accent: 'budget',
       available: true,
     },
@@ -107,7 +107,7 @@ export default function Home() {
       <header className={styles.topBar}>
         <div className={styles.brand}>
           <div className={styles.logoMark}>
-            <MizanMark size={21} />
+            <MizanMark size={23} accentColor="#F0BC68" />
           </div>
           <div className={styles.brandText}>
             <span className={styles.brandName}>مِيزان</span>

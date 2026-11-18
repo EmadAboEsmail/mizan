@@ -10,6 +10,7 @@ import { useBudgetUI } from '@/contexts/BudgetContext'
 import { useBudgetBootstrap } from '@/queries/budget'
 import TopAppBar from '@/components/ui/TopAppBar/TopAppBar.jsx'
 import BottomNav from '@/components/ui/BottomNav/BottomNav.jsx'
+import { BudgetIcon } from '@/components/ui/BrandIcons.jsx'
 import styles from './Layout.module.scss'
 
 const NAV_ITEMS = [
@@ -41,7 +42,7 @@ const PAGE_META = {
   },
   default: {
     title: 'الميزانية',
-    icon: <ReceiptText size={15} strokeWidth={2.2} />,
+    icon: <BudgetIcon size={16} />,
   },
 }
 
