@@ -8,7 +8,13 @@ import {
   useRestoreZekrBackupMutation,
   useImportLegacyZekrMutation,
 } from '@/queries/zekr'
+import {
+  useExportUnifiedMizanMutation,
+  useRestoreUnifiedMizanMutation,
+  useRestoreLatestAutoBackupMutation,
+} from '@/queries/budget'
 import { exportJsonFile } from '@/utils/fileExport.js'
+import { getLastAutoBackupMeta } from '@/services/mizanBackupService.js'
 import { useToast } from '@/hooks/useToast.js'
 import SettingsSection from './SettingsSection.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
@@ -89,6 +95,16 @@ function DataSection() {
     restoreBackupMutation.isPending ||
     importLegacyMutation.isPending
 
+  const exportUnifiedMutation = useExportUnifiedMizanMutation()
+  const restoreUnifiedMutation = useRestoreUnifiedMizanMutation()
+  const restoreAutoMutation = useRestoreLatestAutoBackupMutation()
+  const busy =
+    loading ||
+    exportUnifiedMutation.isPending ||
+    restoreUnifiedMutation.isPending ||
+    restoreAutoMutation.isPending
+  const lastAuto = getLastAutoBackupMeta()
+
   // ─── UI State ───
   const [confirmType, setConfirmType] = useState(null)
   const [importStatus, setImportStatus] = useState(null)
@@ -140,11 +156,22 @@ function DataSection() {
 
     setImportStatus(null)
     try {
-      const result = await restoreBackupMutation.mutateAsync(pendingFileContent)
-      setImportStatus({
-        type: 'success',
-        text: `تم استرجاع البيانات بنجاح (${result.count} ذكر ومجموعاتها).`,
-      })
+      const parsed = JSON.parse(pendingFileContent)
+      if (parsed?.app === 'mizan' || (parsed?.zekr && parsed?.budget)) {
+        await restoreUnifiedMutation.mutateAsync(parsed)
+        setImportStatus({
+          type: 'success',
+          text: 'تم استرجاع نسخة مِيزان الشاملة (الأذكار + الميزانية) بنجاح.',
+        })
+      } else {
+        const result = await restoreBackupMutation.mutateAsync(
+          pendingFileContent
+        )
+        setImportStatus({
+          type: 'success',
+          text: `تم استرجاع البيانات بنجاح (${result.count} ذكر ومجموعاتها).`,
+        })
+      }
       showToast('تم استيراد النسخة الاحتياطية بنجاح!')
     } catch (err) {
       setImportStatus({
@@ -154,6 +181,26 @@ function DataSection() {
       })
     } finally {
       setPendingFileContent(null)
+    }
+  }
+
+  const handleExportUnifiedClick = async () => {
+    try {
+      const data = await exportUnifiedMutation.mutateAsync()
+      await exportJsonFile(`mizan-full-backup-${todayStr()}.json`, data)
+      showToast('تم تصدير نسخة مِيزان الشاملة (ذِكر + الميزانية)!')
+    } catch (err) {
+      console.error(err)
+      showToast('فشل تصدير النسخة الشاملة')
+    }
+  }
+
+  const handleRestoreLatestAuto = async () => {
+    try {
+      await restoreAutoMutation.mutateAsync()
+      showToast('تمت استعادة آخر نسخة تلقائية بنجاح')
+    } catch (err) {
+      showToast(err?.message || 'لا توجد نسخة تلقائية بعد')
     }
   }
 
@@ -218,10 +265,50 @@ function DataSection() {
           <div className={styles.backupGrid}>
             <div className={styles.backupCard}>
               <div className={styles.backupHeader}>
+                <span className={styles.backupIcon}>⚖️</span>
+                <div>
+                  <span className={styles.backupTitle}>
+                    نسخة مِيزان الشاملة (موصى بها)
+                  </span>
+                  <p className={styles.backupDesc}>
+                    ملف واحد يجمع كل بيانات «ذِكر» و«الميزانية» والتفضيلات معاً.
+                    {lastAuto
+                      ? ` آخر نسخ تلقائي: ${new Date(
+                          lastAuto.timestamp
+                        ).toLocaleDateString('ar-EG')}`
+                      : ''}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className={styles.exportBtn}
+                onClick={handleExportUnifiedClick}
+                disabled={busy}
+              >
+                {exportUnifiedMutation.isPending
+                  ? 'جاري التصدير...'
+                  : 'تصدير مِيزان كاملاً'}
+              </button>
+              {lastAuto && (
+                <button
+                  type="button"
+                  className={styles.importBtn}
+                  style={{ marginTop: '6px' }}
+                  onClick={handleRestoreLatestAuto}
+                  disabled={busy}
+                >
+                  استعادة آخر نسخة تلقائية
+                </button>
+              )}
+            </div>
+
+            <div className={styles.backupCard}>
+              <div className={styles.backupHeader}>
                 <span className={styles.backupIcon}>📥</span>
                 <div>
                   <span className={styles.backupTitle}>
-                    تصدير نسخة احتياطية
+                    تصدير الأذكار فقط
                   </span>
                   <p className={styles.backupDesc}>
                     حفظ ملف JSON يحوي كل أذكارك، أهدافك، ومجموعاتك لنقلها لأي

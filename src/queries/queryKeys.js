@@ -37,6 +37,10 @@ export const budgetKeys = {
     ...budgetKeys.trendsAll(),
     { months, endMonth: endMonth ?? 'current' },
   ],
+
+  wallets: () => [...budgetKeys.all, 'wallets'],
+  walletTransfers: () => [...budgetKeys.all, 'walletTransfers'],
+  recurring: () => [...budgetKeys.all, 'recurring'],
 }
 
 export const zekrKeys = {

@@ -1,13 +1,18 @@
 import { useState, useRef } from 'react'
 import {
   useExportBudgetJsonMutation,
+  useExportUnifiedMizanMutation,
   useExportBudgetCsvMutation,
   useExportBudgetXlsxMutation,
   useRestoreBudgetBackupMutation,
+  useRestoreUnifiedMizanMutation,
+  useRestoreLatestAutoBackupMutation,
   useImportBudgetCsvMutation,
   useImportLegacyBudgetMutation,
   useDeleteAllBudgetDataMutation,
 } from '@/queries/budget'
+import { useBudgetUI, getCurrentMonth } from '@/contexts/BudgetContext'
+import { getLastAutoBackupMeta } from '@/services/mizanBackupService.js'
 import { downloadOrShareBlob } from '@/utils/fileExport.js'
 import { useToast } from '@/hooks/useToast.js'
 import Modal from '@/components/ui/Modal.jsx'
@@ -22,24 +27,36 @@ const FREQ_OPTIONS = [
 
 function DataSection() {
   const { showToast } = useToast()
+  const { currentMonth } = useBudgetUI()
 
   // ─── Mutations ───
   const exportJsonMutation = useExportBudgetJsonMutation()
+  const exportUnifiedMutation = useExportUnifiedMizanMutation()
   const exportCsvMutation = useExportBudgetCsvMutation()
   const exportXlsxMutation = useExportBudgetXlsxMutation()
   const restoreBackupMutation = useRestoreBudgetBackupMutation()
+  const restoreUnifiedMutation = useRestoreUnifiedMizanMutation()
+  const restoreAutoMutation = useRestoreLatestAutoBackupMutation()
   const importCsvMutation = useImportBudgetCsvMutation()
   const importLegacyMutation = useImportLegacyBudgetMutation()
   const deleteAllMutation = useDeleteAllBudgetDataMutation()
 
   const loading =
     exportJsonMutation.isPending ||
+    exportUnifiedMutation.isPending ||
     exportCsvMutation.isPending ||
     exportXlsxMutation.isPending ||
     restoreBackupMutation.isPending ||
+    restoreUnifiedMutation.isPending ||
+    restoreAutoMutation.isPending ||
     importCsvMutation.isPending ||
     importLegacyMutation.isPending ||
     deleteAllMutation.isPending
+
+  const activeMonth = currentMonth || getCurrentMonth()
+  const [exportScope, setExportScope] = useState('all') // 'all' | 'month'
+  const scopedMonth = exportScope === 'month' ? activeMonth : null
+  const lastAuto = getLastAutoBackupMeta()
 
   // ─── Auto Backup Settings ───
   const [autoBackupEnabled, setAutoBackupEnabled] = useState(
@@ -83,6 +100,31 @@ function DataSection() {
   // ═══════════════════════════════════════
   // JSON Export
   // ═══════════════════════════════════════
+  const handleExportUnified = async () => {
+    try {
+      const data = await exportUnifiedMutation.mutateAsync()
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: 'application/json;charset=utf-8',
+      })
+      await downloadOrShareBlob(blob, `mizan-full-backup-${todayStr()}.json`, {
+        mimeType: 'application/json;charset=utf-8',
+        title: 'نسخة مِيزان الشاملة',
+      })
+      showToast('تم تصدير نسخة مِيزان الشاملة (ذِكر + الميزانية)')
+    } catch {
+      showToast('فشل التصدير', 'error')
+    }
+  }
+
+  const handleRestoreAuto = async () => {
+    try {
+      await restoreAutoMutation.mutateAsync()
+      showToast('تمت استعادة آخر نسخة تلقائية بنجاح')
+    } catch (err) {
+      showToast(err?.message || 'لا توجد نسخة تلقائية بعد', 'error')
+    }
+  }
+
   const handleExportJson = async () => {
     try {
       const data = await exportJsonMutation.mutateAsync()
@@ -100,12 +142,13 @@ function DataSection() {
   }
 
   // ═══════════════════════════════════════
-  // CSV & Excel Export
+  // CSV & Excel Export (الشهر المحدد أو كل الفترات)
   // ═══════════════════════════════════════
   const handleExportCsv = async () => {
     try {
-      const blob = await exportCsvMutation.mutateAsync()
-      await downloadOrShareBlob(blob, `budget-transactions-${todayStr()}.csv`, {
+      const blob = await exportCsvMutation.mutateAsync(scopedMonth)
+      const suffix = scopedMonth || todayStr()
+      await downloadOrShareBlob(blob, `budget-transactions-${suffix}.csv`, {
         mimeType: 'text/csv;charset=utf-16le',
         title: 'معاملات ميزان (CSV)',
       })
@@ -117,10 +160,11 @@ function DataSection() {
 
   const handleExportXlsx = async () => {
     try {
-      const blob = await exportXlsxMutation.mutateAsync()
+      const blob = await exportXlsxMutation.mutateAsync(scopedMonth)
+      const suffix = scopedMonth || todayStr()
       await downloadOrShareBlob(
         blob,
-        `budget-transactions-${todayStr()}.xlsx`,
+        `budget-transactions-${suffix}.xlsx`,
         {
           mimeType:
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -157,10 +201,18 @@ function DataSection() {
   const handleConfirmRestore = async () => {
     if (!pendingRestore) return
     try {
-      const result = await restoreBackupMutation.mutateAsync(pendingRestore)
-      showToast(
-        `تم الاستيراد: ${result.transactions} معاملة، ${result.categories} تصنيف`
-      )
+      if (
+        pendingRestore?.app === 'mizan' ||
+        (pendingRestore?.zekr && pendingRestore?.budget)
+      ) {
+        await restoreUnifiedMutation.mutateAsync(pendingRestore)
+        showToast('تمت استعادة نسخة مِيزان الشاملة بنجاح')
+      } else {
+        const result = await restoreBackupMutation.mutateAsync(pendingRestore)
+        showToast(
+          `تم الاستيراد: ${result.transactions} معاملة، ${result.categories} تصنيف`
+        )
+      }
       setConfirmType(null)
       setPendingRestore(null)
     } catch (err) {
@@ -284,8 +336,28 @@ function DataSection() {
       <div className={styles.groupLabel}>⚙️ الإعدادات</div>
       <div className={styles.card}>
         <div className={styles.cardContent}>
-          <span className={styles.cardTitle}>النسخ الاحتياطي التلقائي</span>
-          <p className={styles.cardDesc}>حفظ نسخة تلقائية في ذاكرة الجهاز</p>
+          <span className={styles.cardTitle}>
+            النسخ الاحتياطي التلقائي الشامل
+          </span>
+          <p className={styles.cardDesc}>
+            يحفظ بيانات ذِكر والميزانية معاً (يحتفظ بآخر 7 نسخ تلقائياً)
+            {lastAuto
+              ? ` · آخر نسخة: ${new Date(lastAuto.timestamp).toLocaleDateString(
+                  'ar-EG'
+                )}`
+              : ''}
+          </p>
+          {lastAuto && (
+            <button
+              type="button"
+              className={styles.actionBtn}
+              style={{ marginTop: '6px', alignSelf: 'flex-start' }}
+              onClick={handleRestoreAuto}
+              disabled={loading}
+            >
+              استعادة آخر نسخة تلقائية
+            </button>
+          )}
           {autoBackupEnabled && (
             <div
               className={styles.freqPills}
@@ -366,9 +438,27 @@ function DataSection() {
       <div className={styles.groupLabel}>📦 نسخة كاملة (JSON)</div>
       <div className={styles.backupGrid}>
         <div className={styles.card}>
+          <div className={styles.cardIcon}>⚖️</div>
+          <div className={styles.cardContent}>
+            <span className={styles.cardTitle}>نسخة مِيزان الشاملة</span>
+            <p className={styles.cardDesc}>
+              ذِكر + الميزانية + المحافظ + التفضيلات في ملف واحد
+            </p>
+          </div>
+          <button
+            type="button"
+            className={styles.actionBtn}
+            onClick={handleExportUnified}
+            disabled={loading}
+          >
+            تصدير
+          </button>
+        </div>
+
+        <div className={styles.card}>
           <div className={styles.cardIcon}>📥</div>
           <div className={styles.cardContent}>
-            <span className={styles.cardTitle}>تصدير JSON</span>
+            <span className={styles.cardTitle}>تصدير الميزانية فقط</span>
             <p className={styles.cardDesc}>
               تصنيفات + معاملات كاملة (لاستعادة كاملة)
             </p>
@@ -413,6 +503,33 @@ function DataSection() {
           Excel & CSV Export/Import
       ═══════════════════════════════════════ */}
       <div className={styles.groupLabel}>📊 جداول المعاملات (Excel و CSV)</div>
+      <div
+        className={styles.freqPills}
+        style={{ marginBottom: '8px', alignSelf: 'flex-start' }}
+        role="radiogroup"
+        aria-label="نطاق التصدير"
+      >
+        {[
+          { id: 'all', label: 'كل الفترات' },
+          { id: 'month', label: `شهر ${activeMonth}` },
+        ].map((opt) => {
+          const active = exportScope === opt.id
+          return (
+            <button
+              key={opt.id}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              className={`${styles.freqPill} ${
+                active ? styles.freqPillActive : ''
+              }`}
+              onClick={() => setExportScope(opt.id)}
+            >
+              {opt.label}
+            </button>
+          )
+        })}
+      </div>
       <div className={styles.backupGrid}>
         <div className={styles.card}>
           <div className={styles.cardIcon}>📗</div>

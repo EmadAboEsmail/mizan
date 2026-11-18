@@ -11,6 +11,8 @@ import {
 import Modal from '@/components/ui/Modal.jsx'
 import DatePickerSheet from '@/components/ui/DatePickerSheet/DatePickerSheet.jsx'
 import { triggerHapticFeedback } from '@/utils/haptics.js'
+import { useCurrency } from '@/hooks/useCurrency.js'
+import { useWalletsQuery } from '@/queries/budget'
 import CategoryIcon from './CategoryIcon.jsx'
 import styles from './TransactionFormModal.module.scss'
 
@@ -98,6 +100,7 @@ function buildFormState(initial) {
       type: initial.type || 'expense',
       amount: String(initial.amount ?? ''),
       categoryId: initial.category_id || '',
+      walletId: initial.wallet_id || '',
       date: initial.date || todayISO(),
       details: initial.details || '',
       description: initial.description || '',
@@ -108,6 +111,7 @@ function buildFormState(initial) {
     type: 'expense',
     amount: '',
     categoryId: readLastCategory('expense'),
+    walletId: localStorage.getItem('mizan_last_wallet_v1') || '',
     date: todayISO(),
     details: '',
     description: '',
@@ -123,10 +127,15 @@ function TransactionFormModal({
   categories = [],
   categoryUsage = EMPTY_MAP,
 }) {
+  const { symbol } = useCurrency()
+  const { data: wallets = [] } = useWalletsQuery()
   const [type, setType] = useState(() => buildFormState(initial).type)
   const [amount, setAmount] = useState(() => buildFormState(initial).amount)
   const [categoryId, setCategoryId] = useState(
     () => buildFormState(initial).categoryId
+  )
+  const [walletId, setWalletId] = useState(
+    () => buildFormState(initial).walletId
   )
   const [date, setDate] = useState(() => buildFormState(initial).date)
   const [details, setDetails] = useState(() => buildFormState(initial).details)
@@ -151,6 +160,7 @@ function TransactionFormModal({
       setType(fresh.type)
       setAmount(fresh.amount)
       setCategoryId(fresh.categoryId)
+      setWalletId(fresh.walletId)
       setDate(fresh.date)
       setDetails(fresh.details)
       setDescription(fresh.description)
@@ -234,6 +244,7 @@ function TransactionFormModal({
       amount: Math.round(numAmount * 100) / 100,
       type,
       category_id: effectiveCategoryId,
+      wallet_id: walletId || null,
       date,
       details: details.trim() || null,
       description: description.trim() || null,
@@ -242,6 +253,11 @@ function TransactionFormModal({
     try {
       setIsSubmitting(true)
       saveLastCategory(type, effectiveCategoryId)
+      try {
+        localStorage.setItem('mizan_last_wallet_v1', walletId || '')
+      } catch {
+        // تجاهل
+      }
       triggerHapticFeedback('success')
       await onConfirm(payload)
     } catch (err) {
@@ -303,7 +319,7 @@ function TransactionFormModal({
               </label>
               {evaluated.hasOperator && Number.isFinite(evaluated.value) ? (
                 <span className={styles.calcPreview}>
-                  = {evaluated.value.toLocaleString('en')} ج.م
+                  = {evaluated.value.toLocaleString('en')} {symbol}
                 </span>
               ) : (
                 <button
@@ -334,7 +350,7 @@ function TransactionFormModal({
                 placeholder="0"
                 autoFocus
               />
-              <span className={styles.amountCurrency}>ج.م</span>
+              <span className={styles.amountCurrency}>{symbol}</span>
             </div>
 
             <div className={styles.quickAmounts} aria-label="مبالغ سريعة">
@@ -437,6 +453,42 @@ function TransactionFormModal({
               </button>
             </div>
           </div>
+
+          {/* ─── 4b. Wallet (اختياري) ─── */}
+          {wallets.length > 0 && (
+            <div className={styles.section}>
+              <div className={styles.sectionHeader}>
+                <label className={styles.sectionLabel}>المحفظة</label>
+                <span className={styles.sectionHint}>اختياري</span>
+              </div>
+              <div className={styles.dateRow}>
+                <button
+                  type="button"
+                  className={`${styles.dateChip} ${
+                    !walletId ? styles.dateChipActive : ''
+                  }`}
+                  onClick={() => setWalletId('')}
+                >
+                  عام
+                </button>
+                {wallets.map((w) => (
+                  <button
+                    key={w.id}
+                    type="button"
+                    className={`${styles.dateChip} ${
+                      walletId === w.id ? styles.dateChipActive : ''
+                    }`}
+                    onClick={() => {
+                      triggerHapticFeedback('light')
+                      setWalletId(w.id)
+                    }}
+                  >
+                    {w.icon} {w.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* ─── 5. Extras (Collapsible) ─── */}
           <div className={styles.extras}>

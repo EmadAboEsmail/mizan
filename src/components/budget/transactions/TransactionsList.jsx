@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { ReceiptText, SearchX } from 'lucide-react'
 import TransactionRow from './TransactionRow.jsx'
 import EmptyState from '@/components/ui/EmptyState.jsx'
+import { usePrivacyMode, maskText } from '@/hooks/usePrivacyMode.js'
 import {
   formatAmount,
   formatDayHeader,
@@ -16,12 +17,14 @@ export default function TransactionsList({
   catMap,
   onAdd,
   onEdit,
+  onDuplicate,
   onDelete,
   expandedId,
   onToggle,
   totalTransactions,
   currentMonth,
 }) {
+  const { isPrivate } = usePrivacyMode()
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
   // إعادة ضبط العدد المعروض عند تغيير الشهر (أثناء الرسم)
@@ -95,8 +98,11 @@ export default function TransactionsList({
                       : ''
                 }`}
               >
-                {isPos ? '+' : isNeg ? '−' : ''}
-                {formatAmount(Math.abs(group.total))}
+                {isPrivate
+                  ? maskText('')
+                  : `${isPos ? '+' : isNeg ? '−' : ''}${formatAmount(
+                      Math.abs(group.total)
+                    )}`}
               </span>
             </div>
 
@@ -107,6 +113,7 @@ export default function TransactionsList({
                   txn={txn}
                   category={catMap[txn.category_id]}
                   onEdit={onEdit}
+                  onDuplicate={onDuplicate}
                   onDelete={onDelete}
                   isExpanded={expandedId === txn.id}
                   onToggle={() => onToggle(txn.id)}

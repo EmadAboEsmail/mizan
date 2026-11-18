@@ -139,3 +139,93 @@ export async function drainNativePocketClicks() {
     return []
   }
 }
+
+// ═══════════════════════════════════════
+// Biometric Auth (Android APK)
+// ═══════════════════════════════════════
+export async function isNativeBiometricAvailable() {
+  if (!Capacitor.isNativePlatform()) return false
+  try {
+    const res = await MizanNative.canAuthenticateBiometric()
+    return Boolean(res?.available)
+  } catch {
+    return false
+  }
+}
+
+export async function authenticateNativeBiometric(
+  title = 'قفل الميزانية',
+  subtitle = 'استخدم البصمة لفتح الميزانية'
+) {
+  if (!Capacitor.isNativePlatform()) return false
+  try {
+    const res = await MizanNative.authenticateBiometric({ title, subtitle })
+    return Boolean(res?.authenticated)
+  } catch {
+    return false
+  }
+}
+
+// ═══════════════════════════════════════
+// Offline Daily Reminders (AlarmManager)
+// ═══════════════════════════════════════
+export async function requestNotificationPermission() {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const res = await MizanNative.requestNotificationPermission()
+      return Boolean(res?.granted ?? true)
+    } catch {
+      return true
+    }
+  }
+  if (typeof Notification !== 'undefined') {
+    if (Notification.permission === 'granted') return true
+    if (Notification.permission === 'denied') return false
+    const perm = await Notification.requestPermission()
+    return perm === 'granted'
+  }
+  return false
+}
+
+export async function syncNativeReminders(remindersList = []) {
+  if (!Capacitor.isNativePlatform()) return
+  try {
+    await MizanNative.syncReminders({ items: remindersList })
+  } catch (err) {
+    console.warn('[Reminders] Sync failed:', err)
+  }
+}
+
+// ═══════════════════════════════════════
+// Home Screen Widget & App Shortcuts
+// ═══════════════════════════════════════
+export function updateNativeWidget({
+  todayZekr = 0,
+  streak = 0,
+  todayExpense = 0,
+  currency = 'ج.م',
+  isPrivate = false,
+  defaultZekrId = '',
+  defaultZekrText = 'سُبْحَانَ اللَّهِ',
+}) {
+  if (!Capacitor.isNativePlatform()) return
+  MizanNative.updateWidget({
+    todayZekr: Math.max(0, Number(todayZekr) || 0),
+    streak: Math.max(0, Number(streak) || 0),
+    todayExpense: Math.max(0, Number(todayExpense) || 0),
+    currency: String(currency || 'ج.م'),
+    isPrivate: Boolean(isPrivate),
+    defaultZekrId: String(defaultZekrId || ''),
+    defaultZekrText: String(defaultZekrText || 'سُبْحَانَ اللَّهِ'),
+  }).catch(() => {})
+}
+
+export async function consumeNativeDeepLink() {
+  if (!Capacitor.isNativePlatform()) return null
+  try {
+    const res = await MizanNative.consumeLaunchRoute()
+    return res?.route || null
+  } catch {
+    return null
+  }
+}

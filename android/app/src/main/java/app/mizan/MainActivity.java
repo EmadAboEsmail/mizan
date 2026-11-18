@@ -1,5 +1,6 @@
 package app.mizan;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,6 +18,8 @@ import com.getcapacitor.JSObject;
 
 public class MainActivity extends BridgeActivity {
 
+    public static final String EXTRA_MIZAN_ROUTE = "mizan_route";
+
     private static final int COLOR_LIGHT_BG = Color.parseColor("#FAF6F0");
     private static final int COLOR_DARK_BG = Color.parseColor("#131210");
     private static final int COLOR_FOCUS_BG = Color.parseColor("#070706");
@@ -27,6 +30,28 @@ public class MainActivity extends BridgeActivity {
     private volatile boolean darkTheme = false;
     private volatile boolean amoledTheme = false;
     private int defaultCutoutMode = 0;
+    private volatile String pendingRoute = null;
+
+    public String consumePendingRoute() {
+        String r = pendingRoute;
+        pendingRoute = null;
+        return r;
+    }
+
+    private void captureRouteIntent(Intent intent, boolean notifyWeb) {
+        if (intent == null) return;
+        String route = intent.getStringExtra(EXTRA_MIZAN_ROUTE);
+        if (route == null || !route.startsWith("/")) return;
+        intent.removeExtra(EXTRA_MIZAN_ROUTE);
+
+        if (notifyWeb && bridge != null) {
+            JSObject payload = new JSObject();
+            payload.put("route", route);
+            bridge.triggerWindowJSEvent("mizanDeepLink", payload.toString());
+        } else {
+            pendingRoute = route;
+        }
+    }
 
     public void setInterceptVolumeKeys(boolean enabled) {
         this.interceptVolumeKeys = enabled;
@@ -36,6 +61,7 @@ public class MainActivity extends BridgeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(MizanNativePlugin.class);
         super.onCreate(savedInstanceState);
+        captureRouteIntent(getIntent(), false);
 
         Window window = getWindow();
         if (window == null) return;
@@ -45,6 +71,13 @@ public class MainActivity extends BridgeActivity {
         }
 
         setupWindowInsetsHandler(window);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        captureRouteIntent(intent, true);
     }
 
     private void setupWindowInsetsHandler(Window window) {

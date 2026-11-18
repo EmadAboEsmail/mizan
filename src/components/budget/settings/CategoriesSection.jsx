@@ -1,11 +1,14 @@
 import { useState, useMemo } from 'react'
+import { ChevronUp, ChevronDown } from 'lucide-react'
 import {
   useCategoriesQuery,
   useTransactionsQuery,
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
+  useReorderCategoriesMutation,
   useDeleteCategoryMutation,
 } from '@/queries/budget'
+import { triggerHapticFeedback } from '@/utils/haptics.js'
 import CategoryIcon from '@/components/budget/CategoryIcon.jsx'
 import CategoryFormModal from './CategoryFormModal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
@@ -36,8 +39,18 @@ function CategoriesSection() {
   // ─── Mutations ───
   const { mutateAsync: createCategory } = useCreateCategoryMutation()
   const { mutateAsync: updateCategory } = useUpdateCategoryMutation()
+  const { mutateAsync: reorderCategories } = useReorderCategoriesMutation()
   const { mutateAsync: deleteCategory, isPending: isDeleting } =
     useDeleteCategoryMutation()
+
+  const handleMove = async (list, idx, dir) => {
+    const nextIdx = idx + dir
+    if (nextIdx < 0 || nextIdx >= list.length) return
+    const ids = list.map((c) => c.id)
+    ;[ids[idx], ids[nextIdx]] = [ids[nextIdx], ids[idx]]
+    triggerHapticFeedback('light')
+    await reorderCategories(ids)
+  }
 
   // ─── UI State ───
   const [formOpen, setFormOpen] = useState(false)
@@ -103,7 +116,7 @@ function CategoriesSection() {
 
     return (
       <ul className={styles.list}>
-        {list.map((cat) => {
+        {list.map((cat, idx) => {
           const count = txnCountByCategory[cat.id] || 0
           return (
             <li key={cat.id} className={styles.item}>
@@ -115,6 +128,30 @@ function CategoriesSection() {
                 </span>
               </div>
               <div className={styles.actions}>
+                {list.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      className={styles.iconBtn}
+                      onClick={() => handleMove(list, idx, -1)}
+                      disabled={idx === 0}
+                      title="تحريك لأعلى"
+                      aria-label={`تحريك ${cat.name} لأعلى`}
+                    >
+                      <ChevronUp size={14} strokeWidth={2.2} />
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.iconBtn}
+                      onClick={() => handleMove(list, idx, 1)}
+                      disabled={idx === list.length - 1}
+                      title="تحريك لأسفل"
+                      aria-label={`تحريك ${cat.name} لأسفل`}
+                    >
+                      <ChevronDown size={14} strokeWidth={2.2} />
+                    </button>
+                  </>
+                )}
                 <button
                   type="button"
                   className={`${styles.iconBtn} ${styles.edit}`}

@@ -12,6 +12,7 @@ import TopAppBar from '@/components/ui/TopAppBar/TopAppBar.jsx'
 import BottomNav from '@/components/ui/BottomNav/BottomNav.jsx'
 import PageSkeleton from '@/components/ui/PageSkeleton.jsx'
 import PrivacyToggle from '@/components/ui/PrivacyToggle.jsx'
+import BudgetLockGate from '@/components/budget/BudgetLockGate.jsx'
 import { BudgetIcon } from '@/components/ui/BrandIcons.jsx'
 import styles from './Layout.module.scss'
 
@@ -82,25 +83,27 @@ function BudgetLayout() {
   }
 
   return (
-    <div className={styles.budget}>
-      <TopAppBar
-        title={meta.title}
-        icon={meta.icon}
-        accent="budget"
-        actions={<PrivacyToggle />}
-      />
+    <BudgetLockGate>
+      <div className={styles.budget}>
+        <TopAppBar
+          title={meta.title}
+          icon={meta.icon}
+          accent="budget"
+          actions={<PrivacyToggle />}
+        />
 
-      <div className={styles.container}>
-        <main
-          key={pathname}
-          className={`${styles.content} mizan-page-enter`}
-        >
-          <Outlet />
-        </main>
+        <div className={styles.container}>
+          <main
+            key={pathname}
+            className={`${styles.content} mizan-page-enter`}
+          >
+            <Outlet />
+          </main>
+        </div>
+
+        <BottomNav items={NAV_ITEMS} accent="budget" />
       </div>
-
-      <BottomNav items={NAV_ITEMS} accent="budget" />
-    </div>
+    </BudgetLockGate>
   )
 }
 

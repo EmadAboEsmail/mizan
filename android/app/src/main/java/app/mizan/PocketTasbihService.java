@@ -133,7 +133,7 @@ public class PocketTasbihService extends Service {
         return true;
     }
 
-    private static void enqueueClick(Context context, String zekrId, long hour) {
+    public static void enqueueClick(Context context, String zekrId, long hour) {
         if (context == null || zekrId == null || zekrId.isEmpty()) return;
         String key = zekrId + "|" + hour;
         synchronized (QUEUE_LOCK) {

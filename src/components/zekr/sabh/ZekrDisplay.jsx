@@ -61,6 +61,7 @@ async function copyText(text) {
 
 function ZekrDisplay({
   zekrText,
+  virtue = null,
   count,
   sessionCount = 0,
   target,
@@ -214,6 +215,12 @@ function ZekrDisplay({
         >
           {zekrText}
         </h2>
+
+        {!isFocusMode && virtue && (
+          <p className={styles.virtue} title={virtue}>
+            {virtue}
+          </p>
+        )}
 
         {!isFocusMode && (
           <div className={styles.meta}>

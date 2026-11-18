@@ -8,10 +8,22 @@ import {
   deleteTransaction,
   createCategory,
   updateCategory,
+  reorderCategories,
   deleteCategory,
+  createWallet,
+  updateWallet,
+  deleteWallet,
+  createWalletTransfer,
+  deleteWalletTransfer,
+  createRecurringTransaction,
+  updateRecurringTransaction,
+  deleteRecurringTransaction,
+  applyRecurringNow,
+  processDueRecurringTransactions,
   createOrUpdateLimit,
   updateLimit,
   deleteLimit,
+  copyPreviousMonthLimits,
   getLimits,
   getBudgetBackup,
   restoreBudgetBackup,
@@ -21,8 +33,13 @@ import {
   importBudgetCsv,
   importLegacyBudget,
 } from '@/services/budgetService.js'
+import {
+  getUnifiedMizanBackup,
+  restoreUnifiedMizanBackup,
+  restoreLatestAutoBackup,
+} from '@/services/mizanBackupService.js'
 import { useToast } from '@/hooks/useToast.js'
-import { budgetKeys } from '../queryKeys.js'
+import { budgetKeys, zekrKeys } from '../queryKeys.js'
 
 // ═══════════════════════════════════════
 // Helpers
@@ -107,6 +124,7 @@ function invalidateTransactionDependents(queryClient) {
     queryClient.invalidateQueries({ queryKey: budgetKeys.limitsAll() }),
     queryClient.invalidateQueries({ queryKey: budgetKeys.insightsAll() }),
     queryClient.invalidateQueries({ queryKey: budgetKeys.trendsAll() }),
+    queryClient.invalidateQueries({ queryKey: budgetKeys.wallets() }),
   ])
 }
 
@@ -538,6 +556,191 @@ export function useDeleteLimitMutation(currentMonth = null) {
 // ═══════════════════════════════════════
 // Backup / Import / Export / Reset Mutations
 // ═══════════════════════════════════════
+export function useReorderCategoriesMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (orderedIds) => reorderCategories(orderedIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: budgetKeys.categoriesAll() })
+    },
+  })
+}
+
+export function useCopyPreviousMonthLimitsMutation() {
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+  return useMutation({
+    mutationFn: (targetMonth) => copyPreviousMonthLimits(targetMonth),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: budgetKeys.limitsAll() })
+      queryClient.invalidateQueries({ queryKey: budgetKeys.insightsAll() })
+      showToast(`تم نسخ ${res.copied} حد من شهر ${res.fromMonth}`)
+    },
+    onError: (err) => {
+      showToast(err?.message || 'تعذر نسخ حدود الشهر السابق')
+    },
+  })
+}
+
+export function useCreateWalletMutation() {
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+  return useMutation({
+    mutationFn: (data) => createWallet(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: budgetKeys.wallets() })
+      showToast('تمت إضافة المحفظة')
+    },
+    onError: (err) => showToast(err?.message || 'فشل إضافة المحفظة'),
+  })
+}
+
+export function useUpdateWalletMutation() {
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+  return useMutation({
+    mutationFn: ({ id, data }) => updateWallet(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: budgetKeys.wallets() })
+      showToast('تم تحديث المحفظة')
+    },
+    onError: (err) => showToast(err?.message || 'فشل تحديث المحفظة'),
+  })
+}
+
+export function useDeleteWalletMutation() {
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+  return useMutation({
+    mutationFn: (id) => deleteWallet(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: budgetKeys.wallets() })
+      queryClient.invalidateQueries({ queryKey: budgetKeys.walletTransfers() })
+      showToast('تم حذف المحفظة')
+    },
+    onError: (err) => showToast(err?.message || 'فشل حذف المحفظة'),
+  })
+}
+
+export function useCreateWalletTransferMutation() {
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+  return useMutation({
+    mutationFn: (data) => createWalletTransfer(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: budgetKeys.wallets() })
+      queryClient.invalidateQueries({ queryKey: budgetKeys.walletTransfers() })
+      showToast('تم تسجيل التحويل بين المحافظ')
+    },
+    onError: (err) => showToast(err?.message || 'فشل التحويل'),
+  })
+}
+
+export function useDeleteWalletTransferMutation() {
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+  return useMutation({
+    mutationFn: (id) => deleteWalletTransfer(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: budgetKeys.wallets() })
+      queryClient.invalidateQueries({ queryKey: budgetKeys.walletTransfers() })
+      showToast('تم حذف التحويل')
+    },
+  })
+}
+
+export function useCreateRecurringMutation() {
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+  return useMutation({
+    mutationFn: (data) => createRecurringTransaction(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: budgetKeys.recurring() })
+      showToast('تمت إضافة المعاملة المتكررة')
+    },
+    onError: (err) => showToast(err?.message || 'فشل الحفظ'),
+  })
+}
+
+export function useUpdateRecurringMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, patch }) => updateRecurringTransaction(id, patch),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: budgetKeys.recurring() })
+    },
+  })
+}
+
+export function useDeleteRecurringMutation() {
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+  return useMutation({
+    mutationFn: (id) => deleteRecurringTransaction(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: budgetKeys.recurring() })
+      showToast('تم حذف المعاملة المتكررة')
+    },
+  })
+}
+
+export function useApplyRecurringNowMutation() {
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+  return useMutation({
+    mutationFn: (id) => applyRecurringNow(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: budgetKeys.recurring() })
+      invalidateTransactionDependents(queryClient)
+      showToast('تم تسجيل المعاملة وتقديم موعد الاستحقاق القادم')
+    },
+    onError: (err) => showToast(err?.message || 'فشل التطبيق'),
+  })
+}
+
+export function useProcessDueRecurringMutation() {
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+  return useMutation({
+    mutationFn: () => processDueRecurringTransactions(),
+    onSuccess: (res) => {
+      if (res?.applied > 0) {
+        queryClient.invalidateQueries({ queryKey: budgetKeys.recurring() })
+        invalidateTransactionDependents(queryClient)
+        showToast(`تم تسجيل ${res.applied} معاملة متكررة مستحقة تلقائياً`)
+      }
+    },
+  })
+}
+
+export function useExportUnifiedMizanMutation() {
+  return useMutation({
+    mutationFn: () => getUnifiedMizanBackup(),
+  })
+}
+
+export function useRestoreUnifiedMizanMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data) => restoreUnifiedMizanBackup(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: budgetKeys.all })
+      queryClient.invalidateQueries({ queryKey: zekrKeys.all })
+    },
+  })
+}
+
+export function useRestoreLatestAutoBackupMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => restoreLatestAutoBackup(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: budgetKeys.all })
+      queryClient.invalidateQueries({ queryKey: zekrKeys.all })
+    },
+  })
+}
+
 export function useExportBudgetJsonMutation() {
   return useMutation({
     mutationFn: () => getBudgetBackup(),
@@ -546,13 +749,13 @@ export function useExportBudgetJsonMutation() {
 
 export function useExportBudgetCsvMutation() {
   return useMutation({
-    mutationFn: () => exportBudgetCsv(),
+    mutationFn: (month = null) => exportBudgetCsv(month),
   })
 }
 
 export function useExportBudgetXlsxMutation() {
   return useMutation({
-    mutationFn: () => exportBudgetXlsx(),
+    mutationFn: (month = null) => exportBudgetXlsx(month),
   })
 }
 

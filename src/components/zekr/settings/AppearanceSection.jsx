@@ -1,4 +1,4 @@
-import { Sun, Moon, MoonStar, Check, Smartphone, Type } from 'lucide-react'
+import { Sun, Moon, MoonStar, Check, Smartphone, Type, Target } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext.jsx'
 import {
   useVibrationEnabled,
@@ -8,6 +8,10 @@ import {
   ZEKR_FONT_SCALES,
   useZekrFontPrefs,
 } from '@/hooks/useZekrFontScale.js'
+import {
+  DAILY_GOAL_PRESETS,
+  useDailyZekrGoal,
+} from '@/hooks/useDailyZekrGoal.js'
 import { triggerHapticFeedback } from '@/utils/haptics.js'
 import SettingsSection from './SettingsSection.jsx'
 import styles from './AppearanceSection.module.scss'
@@ -23,6 +27,7 @@ function AppearanceSection() {
   const vibrationEnabled = useVibrationEnabled()
   const { scaleKey, scale, fontStyle, setScaleKey, setFontStyle } =
     useZekrFontPrefs()
+  const { dailyGoal, setDailyGoal } = useDailyZekrGoal()
 
   const handleSelectTheme = (selectedTheme) => {
     if (theme === selectedTheme) return
@@ -173,6 +178,48 @@ function AppearanceSection() {
             >
               سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ
             </span>
+          </div>
+        </div>
+
+        {/* ═══ هدف الذكر اليومي الإجمالي ═══ */}
+        <div className={styles.fontCard}>
+          <div className={styles.fontHeader}>
+            <span className={styles.toggleIcon} aria-hidden="true">
+              <Target size={17} strokeWidth={2.2} />
+            </span>
+            <div className={styles.toggleText}>
+              <span className={styles.toggleLabel}>هدف التسبيح اليومي</span>
+              <span className={styles.toggleHint}>
+                مجموع التسبيحات المستهدف يومياً (يظهر في الرئيسية والإحصائيات)
+              </span>
+            </div>
+          </div>
+
+          <div
+            className={styles.scaleRow}
+            role="radiogroup"
+            aria-label="هدف التسبيح اليومي"
+          >
+            {DAILY_GOAL_PRESETS.map((opt) => {
+              const active = dailyGoal === opt.value
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  className={`${styles.scalePill} ${
+                    active ? styles.scalePillActive : ''
+                  }`}
+                  onClick={() => {
+                    triggerHapticFeedback('light')
+                    setDailyGoal(opt.value)
+                  }}
+                >
+                  {opt.label}
+                </button>
+              )
+            })}
           </div>
         </div>
 

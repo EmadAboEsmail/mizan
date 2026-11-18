@@ -41,10 +41,19 @@ function BudgetTransactions() {
   const { mutateAsync: deleteTransaction } =
     useDeleteTransactionMutation(currentMonth)
 
-  // ─── UI state (يدعم ?add=1 للاختصار السريع من الرئيسية) ───
+  // ─── UI state (يدعم ?add=1 للاختصار السريع والودجت وأيقونة التطبيق) ───
   const quickAddRequested = searchParams.get('add') === '1'
   const [isFormOpen, setIsFormOpen] = useState(quickAddRequested)
   const [editingTxn, setEditingTxn] = useState(null)
+  const [lastQuickAdd, setLastQuickAdd] = useState(quickAddRequested)
+
+  if (quickAddRequested !== lastQuickAdd) {
+    setLastQuickAdd(quickAddRequested)
+    if (quickAddRequested) {
+      setEditingTxn(null)
+      setIsFormOpen(true)
+    }
+  }
 
   useEffect(() => {
     if (!quickAddRequested) return
@@ -137,6 +146,34 @@ function BudgetTransactions() {
     [editingTxn, createTransaction, updateTransaction]
   )
 
+  // تكرار معاملة بتاريخ اليوم بضغطة واحدة
+  const handleDuplicate = useCallback(
+    async (txn) => {
+      if (!txn) return
+      const d = new Date()
+      const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+        2,
+        '0'
+      )}-${String(d.getDate()).padStart(2, '0')}`
+      try {
+        await createTransaction({
+          amount: txn.amount,
+          type: txn.type,
+          category_id: txn.category_id,
+          wallet_id: txn.wallet_id || null,
+          date: today,
+          details: txn.details || null,
+          description: txn.description || null,
+        })
+        setExpandedId(null)
+        showToast('تم تكرار المعاملة بتاريخ اليوم')
+      } catch {
+        showToast('تعذّر تكرار المعاملة', 'error')
+      }
+    },
+    [createTransaction, showToast]
+  )
+
   // حذف فوري مع زر «تراجع» (Undo) في إشعار هادئ
   const handleDeleteWithUndo = useCallback(
     async (txn) => {
@@ -145,6 +182,7 @@ function BudgetTransactions() {
         amount: txn.amount,
         type: txn.type,
         category_id: txn.category_id,
+        wallet_id: txn.wallet_id || null,
         date: txn.date,
         details: txn.details || null,
         description: txn.description || null,
@@ -217,6 +255,7 @@ function BudgetTransactions() {
         catMap={catMap}
         onAdd={handleOpenAdd}
         onEdit={handleOpenEdit}
+        onDuplicate={handleDuplicate}
         onDelete={handleDeleteWithUndo}
         expandedId={effectiveExpandedId}
         onToggle={handleToggleExpanded}

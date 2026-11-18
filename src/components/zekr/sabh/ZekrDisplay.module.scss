@@ -68,6 +68,17 @@
   letter-spacing: 0;
 }
 
+.virtue {
+  margin: 0;
+  max-width: 44ch;
+  font-family: var(--font-body);
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.6;
+  padding: 2px var(--space-2);
+}
+
 .meta {
   display: flex;
   align-items: center;

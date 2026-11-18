@@ -2,9 +2,14 @@ package app.mizan;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.hardware.biometrics.BiometricManager;
+import android.hardware.biometrics.BiometricPrompt;
 import android.os.Build;
+import android.os.CancellationSignal;
 import android.os.Vibrator;
+import java.util.concurrent.atomic.AtomicBoolean;
 import com.getcapacitor.Bridge;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -274,6 +279,198 @@ public class MizanNativePlugin extends Plugin {
         JSArray items = PocketTasbihService.drainQueuedClicks(context);
         JSObject res = new JSObject();
         res.put("items", items);
+        call.resolve(res);
+    }
+
+    // ═══════════════════════════════════════
+    // Biometric Authentication (API 28+)
+    // ═══════════════════════════════════════
+    @SuppressWarnings("deprecation")
+    @PluginMethod
+    public void canAuthenticateBiometric(PluginCall call) {
+        boolean available = false;
+        Context context = getContext();
+        if (context != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            try {
+                BiometricManager bm = context.getSystemService(
+                    BiometricManager.class
+                );
+                if (bm != null) {
+                    available =
+                        bm.canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS;
+                }
+            } catch (Exception ignored) {}
+        }
+        JSObject res = new JSObject();
+        res.put("available", available);
+        call.resolve(res);
+    }
+
+    @PluginMethod
+    public void authenticateBiometric(final PluginCall call) {
+        final Context context = getContext();
+        Activity activity = getActivity();
+        if (
+            context == null ||
+            activity == null ||
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.P
+        ) {
+            JSObject res = new JSObject();
+            res.put("authenticated", false);
+            call.resolve(res);
+            return;
+        }
+
+        final String title = call.getString("title", "قفل الميزانية");
+        final String subtitle = call.getString(
+            "subtitle",
+            "أكّد هويتك بالبصمة للمتابعة"
+        );
+
+        final AtomicBoolean done = new AtomicBoolean(false);
+        activity.runOnUiThread(() -> {
+            try {
+                CancellationSignal signal = new CancellationSignal();
+                BiometricPrompt prompt = new BiometricPrompt.Builder(context)
+                    .setTitle(title != null ? title : "قفل الميزانية")
+                    .setSubtitle(subtitle != null ? subtitle : "")
+                    .setNegativeButton(
+                        "استخدام الرمز",
+                        context.getMainExecutor(),
+                        (DialogInterface dialog, int which) -> {
+                            if (done.compareAndSet(false, true)) {
+                                JSObject out = new JSObject();
+                                out.put("authenticated", false);
+                                call.resolve(out);
+                            }
+                        }
+                    )
+                    .build();
+
+                prompt.authenticate(
+                    signal,
+                    context.getMainExecutor(),
+                    new BiometricPrompt.AuthenticationCallback() {
+                        @Override
+                        public void onAuthenticationSucceeded(
+                            BiometricPrompt.AuthenticationResult result
+                        ) {
+                            if (done.compareAndSet(false, true)) {
+                                JSObject out = new JSObject();
+                                out.put("authenticated", true);
+                                call.resolve(out);
+                            }
+                        }
+
+                        @Override
+                        public void onAuthenticationError(
+                            int errorCode,
+                            CharSequence errString
+                        ) {
+                            if (done.compareAndSet(false, true)) {
+                                JSObject out = new JSObject();
+                                out.put("authenticated", false);
+                                call.resolve(out);
+                            }
+                        }
+                    }
+                );
+            } catch (Exception ex) {
+                if (done.compareAndSet(false, true)) {
+                    JSObject out = new JSObject();
+                    out.put("authenticated", false);
+                    call.resolve(out);
+                }
+            }
+        });
+    }
+
+    // ═══════════════════════════════════════
+    // Offline Daily Reminders (AlarmManager)
+    // ═══════════════════════════════════════
+    @PluginMethod
+    public void requestNotificationPermission(PluginCall call) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            JSObject res = new JSObject();
+            res.put("granted", true);
+            call.resolve(res);
+            return;
+        }
+        if (getPermissionState("notifications") == PermissionState.GRANTED) {
+            JSObject res = new JSObject();
+            res.put("granted", true);
+            call.resolve(res);
+            return;
+        }
+        requestPermissionForAlias(
+            "notifications",
+            call,
+            "onExplicitNotifPermResult"
+        );
+    }
+
+    @PermissionCallback
+    private void onExplicitNotifPermResult(PluginCall call) {
+        if (call == null) return;
+        JSObject res = new JSObject();
+        res.put(
+            "granted",
+            getPermissionState("notifications") == PermissionState.GRANTED
+        );
+        call.resolve(res);
+    }
+
+    @PluginMethod
+    public void syncReminders(PluginCall call) {
+        Context context = getContext();
+        JSArray items = call.getArray("items");
+        if (context != null) {
+            MizanReminderReceiver.saveAndSchedule(context, items);
+        }
+        call.resolve();
+    }
+
+    // ═══════════════════════════════════════
+    // Home Screen Widget & Launch Shortcuts
+    // ═══════════════════════════════════════
+    @PluginMethod
+    public void updateWidget(PluginCall call) {
+        Context context = getContext();
+        if (context != null) {
+            Integer todayZekr = call.getInt("todayZekr", 0);
+            Integer streak = call.getInt("streak", 0);
+            Double todayExp = call.getDouble("todayExpense", 0.0);
+            String currency = call.getString("currency", "ج.م");
+            Boolean isPrivate = call.getBoolean("isPrivate", false);
+            String defaultZekrId = call.getString("defaultZekrId", "");
+            String defaultZekrText = call.getString(
+                "defaultZekrText",
+                "سُبْحَانَ اللَّهِ"
+            );
+
+            MizanWidgetProvider.saveStateAndRefresh(
+                context,
+                todayZekr != null ? todayZekr : 0,
+                streak != null ? streak : 0,
+                todayExp != null ? todayExp.floatValue() : 0f,
+                currency,
+                Boolean.TRUE.equals(isPrivate),
+                defaultZekrId,
+                defaultZekrText
+            );
+        }
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void consumeLaunchRoute(PluginCall call) {
+        String route = null;
+        Activity activity = getActivity();
+        if (activity instanceof MainActivity) {
+            route = ((MainActivity) activity).consumePendingRoute();
+        }
+        JSObject res = new JSObject();
+        res.put("route", route);
         call.resolve(res);
     }
 }

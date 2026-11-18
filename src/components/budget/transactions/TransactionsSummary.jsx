@@ -1,10 +1,12 @@
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react'
 import { usePrivacyMode, maskText } from '@/hooks/usePrivacyMode.js'
+import { useCurrency } from '@/hooks/useCurrency.js'
 import { formatAmount } from './lib/transactionsHelpers.js'
 import styles from './TransactionsSummary.module.scss'
 
 export default function TransactionsSummary({ summary, insights, isAllMonths }) {
   const { isPrivate } = usePrivacyMode()
+  const { symbol } = useCurrency()
   if (!summary) return null
 
   const incomeChange = insights?.comparison?.income_change_percent
@@ -38,7 +40,7 @@ export default function TransactionsSummary({ summary, insights, isAllMonths }) 
                     Math.abs(net)
                   )}`}
             </span>
-            <span className={styles.currency}>ج.م</span>
+            <span className={styles.currency}>{symbol}</span>
           </div>
         </div>
 

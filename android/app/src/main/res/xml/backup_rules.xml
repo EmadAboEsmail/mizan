@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- حفظ قاعدة بيانات SQLite والنسخ التلقائية فقط (يستبعد تلقائياً ملفات الكاش ورموز القفل) -->
+    <include domain="database" path="." />
+    <include domain="file" path="backups" />
+</full-backup-content>

@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { Copy } from 'lucide-react'
 import { useBudgetUI } from '@/contexts/BudgetContext'
 import {
   useCategoriesQuery,
@@ -6,7 +7,10 @@ import {
   useCreateOrUpdateLimitMutation,
   useUpdateLimitMutation,
   useDeleteLimitMutation,
+  useCopyPreviousMonthLimitsMutation,
 } from '@/queries/budget'
+import { usePrivacyMode, maskText } from '@/hooks/usePrivacyMode.js'
+import { useCurrency } from '@/hooks/useCurrency.js'
 import LimitFormModal from './LimitFormModal.jsx'
 import LimitProgressCard from './LimitProgressCard.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
@@ -31,6 +35,8 @@ function formatAmount(n) {
 
 function BudgetLimitsSection() {
   const { currentMonth } = useBudgetUI()
+  const { isPrivate } = usePrivacyMode()
+  const { symbol } = useCurrency()
 
   // ─── Queries ───
   const { data: categories = EMPTY_LIST } = useCategoriesQuery()
@@ -41,6 +47,9 @@ function BudgetLimitsSection() {
   const { mutateAsync: updateLimit } = useUpdateLimitMutation(currentMonth)
   const { mutateAsync: deleteLimit, isPending: isDeleting } =
     useDeleteLimitMutation(currentMonth)
+  const copyPrevLimits = useCopyPreviousMonthLimitsMutation()
+
+  const fmt = (n) => (isPrivate ? maskText(symbol) : formatAmount(n))
 
   // ─── UI State ───
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -110,15 +119,32 @@ function BudgetLimitsSection() {
             {limits?.month || currentMonth} — {currentLimits.length} تصنيف
           </p>
         </div>
-        <button
-          type="button"
-          className={styles.addBtn}
-          onClick={handleOpenAdd}
-          title="إضافة ميزانية"
-        >
-          <PlusIcon />
-          <span>إضافة</span>
-        </button>
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className={styles.addBtn}
+            style={{
+              background: 'var(--bg-subtle)',
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--border-default)',
+            }}
+            onClick={() => copyPrevLimits.mutate(currentMonth)}
+            disabled={copyPrevLimits.isPending}
+            title="نسخ حدود الشهر السابق"
+          >
+            <Copy size={13} strokeWidth={2.2} />
+            <span>نسخ السابق</span>
+          </button>
+          <button
+            type="button"
+            className={styles.addBtn}
+            onClick={handleOpenAdd}
+            title="إضافة ميزانية"
+          >
+            <PlusIcon />
+            <span>إضافة</span>
+          </button>
+        </div>
       </div>
 
       {/* إجمالي الشهر */}
@@ -128,13 +154,13 @@ function BudgetLimitsSection() {
             <div className={styles.totalItem}>
               <span className={styles.totalLabel}>إجمالي الميزانية</span>
               <span className={styles.totalValue}>
-                {formatAmount(limits.total_limit)}
+                {fmt(limits.total_limit)}
               </span>
             </div>
             <div className={styles.totalItem}>
               <span className={styles.totalLabel}>صُرف</span>
               <span className={styles.totalValue}>
-                {formatAmount(limits.total_spent)}
+                {fmt(limits.total_spent)}
               </span>
             </div>
             <div className={styles.totalItem}>
@@ -146,7 +172,7 @@ function BudgetLimitsSection() {
                   limits.total_remaining < 0 ? styles.negative : ''
                 }`}
               >
-                {formatAmount(Math.abs(limits.total_remaining))}
+                {fmt(Math.abs(limits.total_remaining))}
               </span>
             </div>
           </div>
@@ -177,13 +203,28 @@ function BudgetLimitsSection() {
           <p className={styles.emptySub}>
             أضف ميزانية لتصنيف مصروف لتتبع نفقاتك
           </p>
-          <button
-            type="button"
-            className={styles.emptyAddBtn}
-            onClick={handleOpenAdd}
-          >
-            إضافة أول ميزانية
-          </button>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <button
+              type="button"
+              className={styles.emptyAddBtn}
+              onClick={handleOpenAdd}
+            >
+              إضافة أول ميزانية
+            </button>
+            <button
+              type="button"
+              className={styles.emptyAddBtn}
+              style={{
+                background: 'var(--bg-subtle)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-default)',
+              }}
+              onClick={() => copyPrevLimits.mutate(currentMonth)}
+              disabled={copyPrevLimits.isPending}
+            >
+              نسخ حدود الشهر السابق
+            </button>
+          </div>
         </div>
       ) : (
         <div className={styles.limitsList}>

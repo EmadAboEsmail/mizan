@@ -15,6 +15,7 @@ function AdhkarFormModalBody({ isOpen, onClose, onConfirm, initial = null }) {
   const [target, setTarget] = useState(
     initial?.default_target ? String(initial.default_target) : ''
   )
+  const [virtue, setVirtue] = useState(initial?.virtue ?? '')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const handleSubmit = async (e) => {
@@ -39,7 +40,7 @@ function AdhkarFormModalBody({ isOpen, onClose, onConfirm, initial = null }) {
 
     try {
       setIsSubmitting(true)
-      await onConfirm(trimmedText, targetValue)
+      await onConfirm(trimmedText, targetValue, virtue.trim() || null)
     } catch (err) {
       setError(err?.message || 'حدث خطأ أثناء الحفظ، يرجى المحاولة ثانية')
     } finally {
@@ -115,6 +116,25 @@ function AdhkarFormModalBody({ isOpen, onClose, onConfirm, initial = null }) {
             placeholder="أو اكتب رقمًا مخصصًا (مثال: 70)"
             min={1}
             max={10000}
+          />
+        </div>
+
+        {/* حقل فضل الذكر */}
+        <div className={styles.fieldGroup}>
+          <div className={styles.labelRow}>
+            <label htmlFor="zekr-virtue" className={styles.label}>
+              فضل الذكر
+            </label>
+            <span className={styles.optionalHint}>اختياري</span>
+          </div>
+          <input
+            id="zekr-virtue"
+            className={styles.input}
+            type="text"
+            value={virtue}
+            onChange={(e) => setVirtue(e.target.value)}
+            placeholder="مثال: الحمد لله تملأ الميزان..."
+            maxLength={220}
           />
         </div>
 

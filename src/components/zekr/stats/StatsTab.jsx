@@ -6,8 +6,11 @@ import {
   useZekrStreakQuery,
 } from '@/queries/zekr'
 import { useAnimatedNumber } from '@/hooks/useAnimatedNumber'
+import { useDailyZekrGoal } from '@/hooks/useDailyZekrGoal.js'
 import { useToast } from '@/hooks/useToast.js'
 import { downloadCsv, getCsvFilename } from '@/utils/csv.js'
+import { downloadOrShareBlob } from '@/utils/fileExport.js'
+import { exportZekrStatsXlsx } from '@/services/zekrService.js'
 import PeriodTabs from './PeriodTabs.jsx'
 import BarChart from './BarChart.jsx'
 import ZekrFilter from './ZekrFilter.jsx'
@@ -48,6 +51,7 @@ const DownloadIcon = () => (
 function StatsTab() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { showToast } = useToast()
+  const { dailyGoal } = useDailyZekrGoal()
 
   // ===========================
   // URL state
@@ -194,25 +198,46 @@ function StatsTab() {
   }, [zekrId, allAdhkar])
 
   // ===========================
-  // تصدير CSV
+  // تصدير Excel (.xlsx) و CSV
   // ===========================
-  const handleExportCsv = async () => {
-    if (!stats) return
-
+  const buildExportRows = () => {
     const rows = []
-
     labels.forEach((label, i) => {
       rows.push(['فترة', label, values[i] ?? 0, ''])
     })
-
-    ;(stats.breakdown ?? []).forEach((item) => {
+    ;(stats?.breakdown ?? []).forEach((item) => {
       rows.push(['ذكر', '', item.count, item.text])
     })
-
     if (rows.length === 0) {
       rows.push(['—', 'لا توجد بيانات', 0, ''])
     }
+    return rows
+  }
 
+  const handleExportXlsx = async () => {
+    if (!stats) return
+    try {
+      const headers = ['النوع', 'التسمية', 'العدد', 'الذكر']
+      const blob = exportZekrStatsXlsx(headers, buildExportRows())
+      const base = getCsvFilename(
+        'zekr-stats',
+        zekrId ? 'filtered' : period
+      ).replace(/\.csv$/i, '.xlsx')
+      await downloadOrShareBlob(blob, base, {
+        mimeType:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        title: 'إحصائيات الذكر — مِيزان',
+      })
+      showToast('تم تصدير ملف Excel بنجاح')
+    } catch {
+      showToast('تعذّر تصدير ملف Excel', 'error')
+    }
+  }
+
+  const handleExportCsv = async () => {
+    if (!stats) return
+
+    const rows = buildExportRows()
     const filename = getCsvFilename(
       'zekr-stats',
       zekrId ? 'filtered' : period
@@ -225,6 +250,11 @@ function StatsTab() {
       showToast('تعذّر تصدير الملف', 'error')
     }
   }
+
+  const dailyGoalPct =
+    period === 'day' && !zekrId && dailyGoal > 0
+      ? Math.min(100, Math.round(((stats?.total || 0) / dailyGoal) * 100))
+      : null
 
   // ===========================
   // Render
@@ -239,12 +269,44 @@ function StatsTab() {
           <button
             type="button"
             className={styles.exportBtn}
+            onClick={handleExportXlsx}
+            title="تنزيل الإحصائيات كملف Excel"
+          >
+            <DownloadIcon />
+            <span>تصدير Excel</span>
+          </button>
+          <button
+            type="button"
+            className={styles.exportBtn}
             onClick={handleExportCsv}
             title="تنزيل الإحصائيات كملف CSV"
           >
             <DownloadIcon />
-            <span>تصدير CSV</span>
+            <span>CSV</span>
           </button>
+        </div>
+      )}
+
+      {stats && dailyGoalPct !== null && (
+        <div className={styles.dailyGoalCard}>
+          <div className={styles.dailyGoalTop}>
+            <span className={styles.dailyGoalLabel}>هدف الذكر اليومي</span>
+            <span className={styles.dailyGoalNums}>
+              {formatNumber(stats.total)} / {formatNumber(dailyGoal)} ({dailyGoalPct}%)
+            </span>
+          </div>
+          <div
+            className={styles.dailyGoalTrack}
+            role="progressbar"
+            aria-valuenow={dailyGoalPct}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
+            <div
+              className={styles.dailyGoalFill}
+              style={{ width: `${dailyGoalPct}%` }}
+            />
+          </div>
         </div>
       )}
 

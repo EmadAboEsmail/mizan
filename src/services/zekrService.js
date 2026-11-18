@@ -22,46 +22,92 @@ function nowMs() {
 }
 
 // ═══════════════════════════════════════
+import { buildXlsxBlob } from '@/utils/csv.js'
+
 // Adhkar
 // ═══════════════════════════════════════
 export async function getAdhkar() {
-  const rows = await query('SELECT * FROM adhkar ORDER BY id ASC')
+  const rows = await query(
+    'SELECT * FROM adhkar ORDER BY sort_order ASC, created_at ASC, id ASC'
+  )
   return rows.map((r) => ({
     id: String(r.id),
     text: r.text,
     default_target: r.default_target,
+    virtue: r.virtue ?? null,
+    sort_order: Number(r.sort_order) || 0,
   }))
 }
 
-export async function createAdhkar(text, default_target = null) {
+export async function createAdhkar(
+  text,
+  default_target = null,
+  virtue = null
+) {
   const trimmed = String(text || '').trim()
   if (!trimmed) throw new Error('النص مطلوب')
+  const cleanVirtue = virtue ? String(virtue).trim() || null : null
 
+  const maxRow = await queryOne(
+    'SELECT COALESCE(MAX(sort_order), 0) AS m FROM adhkar'
+  )
+  const sortOrder = (Number(maxRow?.m) || 0) + 1
   const id = genId('zekr')
 
   await run(
-    'INSERT INTO adhkar (id, text, default_target) VALUES (?, ?, ?)',
-    [id, trimmed, default_target]
+    'INSERT INTO adhkar (id, text, default_target, virtue, sort_order) VALUES (?, ?, ?, ?, ?)',
+    [id, trimmed, default_target, cleanVirtue, sortOrder]
   )
   await run('INSERT OR IGNORE INTO counts (zekr_id, count) VALUES (?, 0)', [id])
 
-  return { id, text: trimmed, default_target }
+  return {
+    id,
+    text: trimmed,
+    default_target,
+    virtue: cleanVirtue,
+    sort_order: sortOrder,
+  }
 }
 
-export async function updateAdhkar(id, text, default_target = null) {
+export async function updateAdhkar(
+  id,
+  text,
+  default_target = null,
+  virtue = undefined
+) {
   const trimmed = String(text || '').trim()
   if (!trimmed) throw new Error('النص مطلوب')
 
-  const existing = await queryOne('SELECT id FROM adhkar WHERE id = ?', [id])
+  const existing = await queryOne('SELECT * FROM adhkar WHERE id = ?', [id])
   if (!existing) throw new Error('الذكر غير موجود')
 
-  await run('UPDATE adhkar SET text = ?, default_target = ? WHERE id = ?', [
-    trimmed,
-    default_target,
-    id,
-  ])
+  const nextVirtue =
+    virtue === undefined
+      ? (existing.virtue ?? null)
+      : String(virtue || '').trim() || null
 
-  return { id: String(id), text: trimmed, default_target }
+  await run(
+    'UPDATE adhkar SET text = ?, default_target = ?, virtue = ? WHERE id = ?',
+    [trimmed, default_target, nextVirtue, id]
+  )
+
+  return {
+    id: String(id),
+    text: trimmed,
+    default_target,
+    virtue: nextVirtue,
+    sort_order: Number(existing.sort_order) || 0,
+  }
+}
+
+export async function reorderAdhkar(orderedIds = []) {
+  if (!Array.isArray(orderedIds) || orderedIds.length === 0) return { ok: true }
+  const statements = orderedIds.map((id, idx) => ({
+    statement: 'UPDATE adhkar SET sort_order = ? WHERE id = ?',
+    values: [idx + 1, String(id)],
+  }))
+  await transaction(statements)
+  return { ok: true }
 }
 
 export async function deleteAdhkar(id) {
@@ -206,13 +252,14 @@ async function buildGroupResponse(group) {
   const itemsResponse = []
   for (const item of items) {
     const zekr = await queryOne(
-      'SELECT text, default_target FROM adhkar WHERE id = ?',
+      'SELECT text, default_target, virtue FROM adhkar WHERE id = ?',
       [item.zekr_id]
     )
     itemsResponse.push({
       id: item.id,
       zekr_id: item.zekr_id,
       text: zekr?.text ?? item.zekr_id,
+      virtue: zekr?.virtue ?? null,
       position: item.position,
       target: item.target,
       default_target: zekr?.default_target ?? null,
@@ -275,6 +322,100 @@ export async function deleteGroup(id) {
   const existing = await queryOne('SELECT id FROM groups WHERE id = ?', [id])
   if (!existing) throw new Error('المجموعة غير موجودة')
   await run('DELETE FROM groups WHERE id = ?', [id])
+}
+
+/**
+ * إضافة قالب ورد جاهز (مثل أذكار الصباح/المساء/بعد الصلاة/النوم) بضغطة واحدة.
+ * يعيد استخدام الأذكار الموجودة إن تطابقت، ويضيف الناقص مع فضله.
+ */
+export async function installPresetGroup(pack) {
+  if (!pack?.name || !Array.isArray(pack.items) || pack.items.length === 0) {
+    throw new Error('قالب الورد غير صالح')
+  }
+
+  const dupGroup = await queryOne('SELECT id FROM groups WHERE name = ?', [
+    pack.name,
+  ])
+  if (dupGroup) {
+    throw new Error(`مجموعة «${pack.name}» مضافة بالفعل`)
+  }
+
+  const existingAdhkar = await query('SELECT id, text, virtue FROM adhkar')
+  const byText = new Map(
+    existingAdhkar.map((a) => [String(a.text).trim(), a])
+  )
+  const maxRow = await queryOne(
+    'SELECT COALESCE(MAX(sort_order), 0) AS m FROM adhkar'
+  )
+  let nextSort = Number(maxRow?.m) || 0
+
+  const groupId = genId('grp')
+  const createdAt = nowMs()
+  const statements = [
+    {
+      statement:
+        'INSERT INTO groups (id, name, description, created_at) VALUES (?, ?, ?, ?)',
+      values: [groupId, pack.name, pack.description || null, createdAt],
+    },
+  ]
+
+  pack.items.forEach((item, idx) => {
+    const cleanText = String(item.text || '').trim()
+    if (!cleanText) return
+    let zekrId
+    const found = byText.get(cleanText)
+    if (found) {
+      zekrId = found.id
+      if (!found.virtue && item.virtue) {
+        statements.push({
+          statement: 'UPDATE adhkar SET virtue = ? WHERE id = ?',
+          values: [item.virtue, zekrId],
+        })
+      }
+    } else {
+      zekrId = genId('zekr')
+      nextSort += 1
+      statements.push({
+        statement:
+          'INSERT INTO adhkar (id, text, default_target, virtue, sort_order) VALUES (?, ?, ?, ?, ?)',
+        values: [
+          zekrId,
+          cleanText,
+          item.target ?? null,
+          item.virtue || null,
+          nextSort,
+        ],
+      })
+      statements.push({
+        statement: 'INSERT OR IGNORE INTO counts (zekr_id, count) VALUES (?, 0)',
+        values: [zekrId],
+      })
+      byText.set(cleanText, { id: zekrId, text: cleanText, virtue: item.virtue })
+    }
+
+    statements.push({
+      statement:
+        'INSERT INTO group_items (id, group_id, zekr_id, position, target) VALUES (?, ?, ?, ?, ?)',
+      values: [genId('gi'), groupId, zekrId, idx + 1, item.target ?? null],
+    })
+  })
+
+  await transaction(statements)
+  return buildGroupResponse({
+    id: groupId,
+    name: pack.name,
+    description: pack.description || null,
+    created_at: createdAt,
+  })
+}
+
+export function exportZekrStatsXlsx(headers, rows) {
+  return buildXlsxBlob({
+    sheetName: 'إحصائيات الذكر',
+    headers,
+    rows,
+    colWidths: [14, 18, 14, 44],
+  })
 }
 
 // ═══════════════════════════════════════
@@ -401,7 +542,9 @@ export async function deleteAllData() {
 export async function getBackup() {
   await flushClicks()
 
-  const adhkar = await query('SELECT id, text, default_target FROM adhkar')
+  const adhkar = await query(
+    'SELECT id, text, default_target, virtue, sort_order FROM adhkar ORDER BY sort_order ASC, id ASC'
+  )
   const counts = await query('SELECT zekr_id, count FROM counts')
   const targets = await query(
     'SELECT zekr_id, target FROM targets WHERE target IS NOT NULL'
@@ -439,13 +582,19 @@ export async function restoreBackup(data) {
   statements.push({ statement: 'DELETE FROM targets', values: [] })
   statements.push({ statement: 'DELETE FROM adhkar', values: [] })
 
-  for (const a of data.adhkar || []) {
+  ;(data.adhkar || []).forEach((a, idx) => {
     statements.push({
       statement:
-        'INSERT INTO adhkar (id, text, default_target) VALUES (?, ?, ?)',
-      values: [a.id, a.text, a.default_target ?? null],
+        'INSERT INTO adhkar (id, text, default_target, virtue, sort_order) VALUES (?, ?, ?, ?, ?)',
+      values: [
+        a.id,
+        a.text,
+        a.default_target ?? null,
+        a.virtue ?? null,
+        a.sort_order ?? idx + 1,
+      ],
     })
-  }
+  })
 
   for (const c of data.counts || []) {
     statements.push({

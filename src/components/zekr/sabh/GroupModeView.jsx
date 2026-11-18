@@ -453,6 +453,7 @@ function GroupModeView({
         <ZekrDisplay
           key={currentItem.id ?? currentIndex}
           zekrText={currentItem.text}
+          virtue={currentItem.virtue}
           count={localCount}
           target={currentTarget}
           onClickCount={handleSetTarget}

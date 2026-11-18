@@ -1,14 +1,19 @@
 import { useState, useMemo, useCallback } from 'react'
+import { Sparkles, Check, Plus } from 'lucide-react'
 import {
   useGroupsQuery,
   useAdhkarQuery,
   useCreateGroupMutation,
+  useInstallPresetGroupMutation,
   useUpdateGroupMutation,
   useDeleteGroupMutation,
   useAddGroupItemMutation,
   useUpdateGroupItemMutation,
   useDeleteGroupItemMutation,
 } from '@/queries/zekr'
+import { ADHKAR_PRESET_PACKS } from '@/data/adhkarPresets.js'
+import { useToast } from '@/hooks/useToast.js'
+import { triggerHapticFeedback } from '@/utils/haptics.js'
 import SettingsSection from './SettingsSection.jsx'
 import GroupFormModal from './GroupFormModal.jsx'
 import GroupEditorModal from './GroupEditorModal.jsx'
@@ -51,7 +56,10 @@ function GroupsSection() {
   const { data: allAdhkar = EMPTY_LIST } = useAdhkarQuery()
 
   // ─── Mutations ───
+  const { showToast } = useToast()
   const { mutateAsync: createGroup } = useCreateGroupMutation()
+  const { mutateAsync: installPreset, isPending: isInstallingPreset } =
+    useInstallPresetGroupMutation()
   const { mutateAsync: updateGroup } = useUpdateGroupMutation()
   const { mutateAsync: deleteGroup, isPending: isDeleting } =
     useDeleteGroupMutation()
@@ -119,6 +127,25 @@ function GroupsSection() {
     setLastKnownGroup(null)
   }
 
+  const existingNames = useMemo(
+    () => new Set(groups.map((g) => g.name.trim())),
+    [groups]
+  )
+
+  const handleInstallPreset = async (pack) => {
+    if (existingNames.has(pack.name)) {
+      showToast(`مجموعة «${pack.name}» مضافة بالفعل`)
+      return
+    }
+    try {
+      triggerHapticFeedback('medium')
+      await installPreset(pack)
+      showToast(`تمت إضافة «${pack.name}» بأذكارها وأعدادها`)
+    } catch (err) {
+      showToast(err?.message || 'تعذر إضافة الورد', 'error')
+    }
+  }
+
   return (
     <SettingsSection id="groups" title={`المجموعات (${groups.length})`}>
       <div className={styles.container}>
@@ -135,6 +162,42 @@ function GroupsSection() {
             <span>+</span>
             <span>مجموعة جديدة</span>
           </button>
+        </div>
+
+        {/* مكتبة الأوراد الجاهزة بضغطة واحدة */}
+        <div className={styles.presetBox}>
+          <div className={styles.presetHeader}>
+            <Sparkles size={15} strokeWidth={2.2} aria-hidden="true" />
+            <span>أوراد جاهزة بضغطة واحدة (مضبوطة التشكيل والعدد)</span>
+          </div>
+          <div className={styles.presetGrid}>
+            {ADHKAR_PRESET_PACKS.map((pack) => {
+              const added = existingNames.has(pack.name)
+              return (
+                <button
+                  key={pack.id}
+                  type="button"
+                  className={`${styles.presetBtn} ${
+                    added ? styles.presetAdded : ''
+                  }`}
+                  onClick={() => handleInstallPreset(pack)}
+                  disabled={added || isInstallingPreset}
+                >
+                  <div className={styles.presetMeta}>
+                    <span className={styles.presetName}>{pack.name}</span>
+                    <span className={styles.presetCount}>{pack.badge}</span>
+                  </div>
+                  <span className={styles.presetAction} aria-hidden="true">
+                    {added ? (
+                      <Check size={14} strokeWidth={2.6} />
+                    ) : (
+                      <Plus size={15} strokeWidth={2.4} />
+                    )}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         {groups.length === 0 ? (

@@ -19,6 +19,7 @@ import "@fontsource-variable/readex-pro";
 import "@fontsource/amiri/arabic-400.css";
 import "@fontsource/amiri/arabic-700.css";
 import App from "./App.jsx";
+import ErrorBoundary from "./components/ui/ErrorBoundary.jsx";
 import "./styles/main.scss";
 
 // ═══════════════════════════════════════════════════════════════
@@ -41,19 +42,21 @@ async function bootstrap() {
 
     ReactDOM.createRoot(document.getElementById("root")).render(
       <React.StrictMode>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider>
-            <ToastProvider>
-              <ZekrDataProvider>
-                <BudgetProvider>
-                  <Router>
-                    <App />
-                  </Router>
-                </BudgetProvider>
-              </ZekrDataProvider>
-            </ToastProvider>
-          </ThemeProvider>
-        </QueryClientProvider>
+        <ErrorBoundary>
+          <QueryClientProvider client={queryClient}>
+            <ThemeProvider>
+              <ToastProvider>
+                <ZekrDataProvider>
+                  <BudgetProvider>
+                    <Router>
+                      <App />
+                    </Router>
+                  </BudgetProvider>
+                </ZekrDataProvider>
+              </ToastProvider>
+            </ThemeProvider>
+          </QueryClientProvider>
+        </ErrorBoundary>
       </React.StrictMode>
     );
 

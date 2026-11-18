@@ -1,10 +1,13 @@
 import { useState, useMemo } from 'react'
+import { ChevronUp, ChevronDown } from 'lucide-react'
 import {
   useAdhkarQuery,
   useCreateAdhkarMutation,
   useUpdateAdhkarMutation,
+  useReorderAdhkarMutation,
   useDeleteAdhkarMutation,
 } from '@/queries/zekr'
+import { triggerHapticFeedback } from '@/utils/haptics.js'
 import SettingsSection from './SettingsSection.jsx'
 import AdhkarFormModal from './AdhkarFormModal.jsx'
 import ConfirmModal from '@/components/ui/ConfirmModal.jsx'
@@ -35,6 +38,7 @@ function AdhkarSection() {
   // ─── Mutations ───
   const { mutateAsync: createAdhkar } = useCreateAdhkarMutation()
   const { mutateAsync: updateAdhkar } = useUpdateAdhkarMutation()
+  const { mutateAsync: reorderAdhkar } = useReorderAdhkarMutation()
   const { mutateAsync: deleteAdhkar, isPending: isDeleting } =
     useDeleteAdhkarMutation()
 
@@ -51,18 +55,30 @@ function AdhkarSection() {
     )
   }, [allAdhkar, search])
 
-  const handleAdd = async (text, target) => {
-    await createAdhkar({ text, defaultTarget: target })
+  const handleAdd = async (text, target, virtue = null) => {
+    await createAdhkar({ text, defaultTarget: target, virtue })
     setFormMode(null)
   }
 
-  const handleUpdate = async (text, target) => {
+  const handleUpdate = async (text, target, virtue = null) => {
     await updateAdhkar({
       id: formMode.editing.id,
       text,
       defaultTarget: target,
+      virtue,
     })
     setFormMode(null)
+  }
+
+  const canReorder = !search.trim() && allAdhkar.length > 1
+
+  const handleMove = async (index, dir) => {
+    const nextIdx = index + dir
+    if (nextIdx < 0 || nextIdx >= allAdhkar.length) return
+    const ids = allAdhkar.map((z) => z.id)
+    ;[ids[index], ids[nextIdx]] = [ids[nextIdx], ids[index]]
+    triggerHapticFeedback('light')
+    await reorderAdhkar(ids)
   }
 
   const handleDelete = async () => {
@@ -103,10 +119,13 @@ function AdhkarSection() {
         {/* قائمة الأذكار */}
         {filteredAdhkar.length > 0 ? (
           <ul className={styles.list}>
-            {filteredAdhkar.map((z) => (
+            {filteredAdhkar.map((z, idx) => (
               <li key={z.id} className={styles.item}>
                 <div className={styles.info}>
                   <span className={styles.text}>{z.text}</span>
+                  {z.virtue && (
+                    <span className={styles.virtueNote}>{z.virtue}</span>
+                  )}
                   {z.default_target ? (
                     <span className={styles.targetBadge}>
                       🎯 الهدف: {z.default_target.toLocaleString('en')}
@@ -117,6 +136,30 @@ function AdhkarSection() {
                 </div>
 
                 <div className={styles.actions}>
+                  {canReorder && (
+                    <>
+                      <button
+                        type="button"
+                        className={styles.actionBtn}
+                        onClick={() => handleMove(idx, -1)}
+                        disabled={idx === 0}
+                        title="تحريك لأعلى"
+                        aria-label={`تحريك ${z.text} لأعلى`}
+                      >
+                        <ChevronUp size={15} strokeWidth={2.2} />
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.actionBtn}
+                        onClick={() => handleMove(idx, 1)}
+                        disabled={idx === filteredAdhkar.length - 1}
+                        title="تحريك لأسفل"
+                        aria-label={`تحريك ${z.text} لأسفل`}
+                      >
+                        <ChevronDown size={15} strokeWidth={2.2} />
+                      </button>
+                    </>
+                  )}
                   <button
                     type="button"
                     className={`${styles.actionBtn} ${styles.edit}`}

@@ -478,6 +478,7 @@ function ZekrSabh() {
         <ZekrDisplay
           key={currentZekr.id}
           zekrText={currentZekr.text}
+          virtue={currentZekr.virtue}
           count={currentCount}
           sessionCount={sessionCount}
           target={currentTarget}

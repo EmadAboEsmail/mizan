@@ -1,13 +1,10 @@
 // ═══════════════════════════════════════════════════════════════
-// src/db/index.js — Schema init + migrations
+// src/db/index.js — Schema init + migrations (v1..v4)
 // ═══════════════════════════════════════════════════════════════
-import { initAdapter, exec, queryOne, isReady } from './adapter.js'
+import { initAdapter, exec, query, queryOne, isReady } from './adapter.js'
 import { CREATE_TABLES, SCHEMA_VERSION } from './schema.js'
 import { seedIfEmpty } from './seed.js'
 
-// ═══════════════════════════════════════════════════════════════
-// Helpers
-// ═══════════════════════════════════════════════════════════════
 async function getCurrentVersion() {
   try {
     const row = await queryOne(
@@ -15,7 +12,6 @@ async function getCurrentVersion() {
     )
     return parseInt(row?.value, 10) || 0
   } catch {
-    // meta table نفسها مش موجودة = fresh install
     return 0
   }
 }
@@ -28,28 +24,31 @@ async function tableExists(name) {
   return !!row
 }
 
+async function columnExists(table, column) {
+  const cols = await query(`PRAGMA table_info(${table})`)
+  return cols.some((c) => c.name === column)
+}
+
+async function ensureColumn(table, column, definition) {
+  if (!(await columnExists(table, column))) {
+    await exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`)
+  }
+}
+
 async function setSchemaVersion(v) {
   await exec(
     `INSERT OR REPLACE INTO meta (key, value) VALUES ('schema_version', '${v}')`
   )
 }
 
-// ═══════════════════════════════════════════════════════════════
 // Migration v1/v2 → v3: clicks (per-click) → clicks_hourly (aggregated)
-// ═══════════════════════════════════════════════════════════════
 async function migrateClicksToHourly() {
-  // clicks_hourly already created by CREATE_TABLES — نتحقق فقط
-  if (!(await tableExists('clicks'))) {
-    console.log('[DB] No legacy "clicks" table — nothing to migrate')
-    return
-  }
+  if (!(await tableExists('clicks'))) return
 
   const oldRow = await queryOne('SELECT COUNT(*) as c FROM clicks')
   const oldCount = Number(oldRow?.c) || 0
-  console.log(`[DB] Found ${oldCount} legacy clicks to compress`)
 
   if (oldCount > 0) {
-    // نستخدم INSERT OR IGNORE عشان لو حصل retry ميضاعفش
     await exec(`
       INSERT OR IGNORE INTO clicks_hourly (zekr_id, hour, count)
       SELECT
@@ -59,23 +58,41 @@ async function migrateClicksToHourly() {
       FROM clicks
       GROUP BY zekr_id, CAST(clicked_at / 3600000 AS INTEGER);
     `)
-
-    const summary = await queryOne(
-      'SELECT COUNT(*) as c, COALESCE(SUM(count),0) as total FROM clicks_hourly'
-    )
-    console.log(
-      `[DB] ✅ Compressed → ${summary?.c || 0} rows (${summary?.total || 0} total clicks)`
-    )
   }
 
-  // أهم خطوة: نحذف الجدول القديم
   await exec('DROP TABLE clicks')
-  console.log('[DB] ✅ Legacy "clicks" table dropped')
 }
 
-// ═══════════════════════════════════════════════════════════════
-// Verify: تأكد إن كل الجداول المتوقعة موجودة
-// ═══════════════════════════════════════════════════════════════
+// Migration v3 → v4: adhkar.virtue/sort_order, transactions.wallet_id,
+// wallets, wallet_transfers, recurring_transactions
+async function migrateToV4() {
+  await ensureColumn('adhkar', 'virtue', 'TEXT')
+  await ensureColumn('adhkar', 'sort_order', 'INTEGER NOT NULL DEFAULT 0')
+  await ensureColumn('transactions', 'wallet_id', 'TEXT')
+
+  await exec(`
+    CREATE INDEX IF NOT EXISTS idx_txn_wallet
+      ON transactions(wallet_id);
+  `)
+
+  // تهيئة ترتيب الأذكار الحالية إن كانت كلها 0
+  const adhkarRows = await query(
+    'SELECT id, sort_order FROM adhkar ORDER BY created_at ASC, id ASC'
+  )
+  const needsOrder =
+    adhkarRows.length > 1 &&
+    adhkarRows.every((r) => !r.sort_order || Number(r.sort_order) === 0)
+  if (needsOrder) {
+    for (let i = 0; i < adhkarRows.length; i += 1) {
+      await exec(
+        `UPDATE adhkar SET sort_order = ${i + 1} WHERE id = '${String(
+          adhkarRows[i].id
+        ).replace(/'/g, "''")}'`
+      )
+    }
+  }
+}
+
 const EXPECTED_TABLES = [
   'adhkar',
   'counts',
@@ -84,7 +101,10 @@ const EXPECTED_TABLES = [
   'groups',
   'group_items',
   'categories',
+  'wallets',
   'transactions',
+  'wallet_transfers',
+  'recurring_transactions',
   'limits',
   'meta',
 ]
@@ -99,12 +119,8 @@ async function verifySchema() {
       `[DB] Schema verification failed — missing tables: ${missing.join(', ')}`
     )
   }
-  console.log('[DB] ✅ Schema verified')
 }
 
-// ═══════════════════════════════════════════════════════════════
-// Init
-// ═══════════════════════════════════════════════════════════════
 export async function initDB() {
   if (isReady()) return
 
@@ -116,11 +132,7 @@ export async function initDB() {
     `[DB] Current schema: v${currentVersion} → target: v${SCHEMA_VERSION}`
   )
 
-  // ─────────────────────────────────────────────
-  // Path A: up to date
-  // ─────────────────────────────────────────────
   if (currentVersion >= SCHEMA_VERSION) {
-    console.log('[DB] Schema up to date — running safety checks')
     await verifySchema()
     await setSchemaVersion(SCHEMA_VERSION)
     await seedIfEmpty()
@@ -128,42 +140,30 @@ export async function initDB() {
     return
   }
 
-  // ─────────────────────────────────────────────
-  // Path B: needs migration or fresh install
-  // ─────────────────────────────────────────────
   try {
-    // 1. دائمًا نضمن وجود كل الجداول (IF NOT EXISTS = آمن حتى لو موجودة)
-    console.log('[DB] Ensuring base tables exist...')
     await exec(CREATE_TABLES)
 
-    // 2. لو فيه clicks قديمة (v1 أو v2) → نحوّلها
     if (currentVersion > 0) {
       await migrateClicksToHourly()
+      await migrateToV4()
     } else {
-      console.log('[DB] Fresh install — no legacy data to migrate')
+      await exec(`
+        CREATE INDEX IF NOT EXISTS idx_txn_wallet
+          ON transactions(wallet_id);
+      `)
     }
 
-    // 3. تحقق نهائي
     await verifySchema()
-
-    // 4. سجّل الـ version الجديدة (بعد ما كل حاجة نجحت)
     await setSchemaVersion(SCHEMA_VERSION)
     console.log(`[DB] ✅ Migration complete → v${SCHEMA_VERSION}`)
   } catch (err) {
     console.error('[DB] ❌ Migration failed:', err)
-    // مانسجلش schema_version لو فشلنا — عشان نحاول تاني في الإقلاع القادم
     throw err
   }
 
-  // 5. Seed (دائمًا نشغلها للتأكد)
-  console.log('[DB] Running seedIfEmpty...')
   await seedIfEmpty()
-
   console.log('[DB] Ready ✅')
 }
 
-// ═══════════════════════════════════════════════════════════════
-// Re-exports
-// ═══════════════════════════════════════════════════════════════
 export * from './adapter.js'
 export { SCHEMA_VERSION } from './schema.js'

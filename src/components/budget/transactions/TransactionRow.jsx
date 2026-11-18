@@ -1,5 +1,5 @@
 import { memo, useRef, useState } from 'react'
-import { ChevronDown, Pencil, Trash2, Calendar } from 'lucide-react'
+import { ChevronDown, Pencil, Trash2, Calendar, Copy } from 'lucide-react'
 import CategoryIcon from '@/components/budget/CategoryIcon.jsx'
 import { usePrivacyMode, maskText } from '@/hooks/usePrivacyMode.js'
 import { triggerHapticFeedback } from '@/utils/haptics.js'
@@ -12,6 +12,7 @@ const TransactionRow = memo(function TransactionRow({
   txn,
   category,
   onEdit,
+  onDuplicate,
   onDelete,
   isExpanded = false,
   onToggle,
@@ -238,6 +239,20 @@ const TransactionRow = memo(function TransactionRow({
               <Pencil size={14} strokeWidth={2.2} aria-hidden="true" />
               <span>تعديل</span>
             </button>
+            {onDuplicate && (
+              <button
+                type="button"
+                className={styles.editBtn}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  triggerHapticFeedback('light')
+                  onDuplicate(txn)
+                }}
+              >
+                <Copy size={14} strokeWidth={2.2} aria-hidden="true" />
+                <span>تكرار اليوم</span>
+              </button>
+            )}
             <button
               type="button"
               className={styles.deleteBtn}

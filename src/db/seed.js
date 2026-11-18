@@ -6,11 +6,31 @@ function genId(prefix) {
 }
 
 const DEFAULT_ADHKAR = [
-  { text: 'سُبْحَانَ اللَّهِ', default_target: 33 },
-  { text: 'الْحَمْدُ لِلَّهِ', default_target: 33 },
-  { text: 'اللَّهُ أَكْبَرُ', default_target: 33 },
-  { text: 'لَا إِلَٰهَ إِلَّا اللَّهُ', default_target: 100 },
-  { text: 'أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ', default_target: 100 },
+  {
+    text: 'سُبْحَانَ اللَّهِ',
+    default_target: 33,
+    virtue: 'تُكتَب له ألفُ حسنة أو تُحَطّ عنه ألفُ خطيئة في مائة تسبيحة',
+  },
+  {
+    text: 'الْحَمْدُ لِلَّهِ',
+    default_target: 33,
+    virtue: 'الْحَمْدُ لِلَّهِ تَمْلَأُ الْمِيزَانَ',
+  },
+  {
+    text: 'اللَّهُ أَكْبَرُ',
+    default_target: 33,
+    virtue: 'أحبّ الكلام إلى الله: سبحان الله والحمد لله ولا إله إلا الله والله أكبر',
+  },
+  {
+    text: 'لَا إِلَٰهَ إِلَّا اللَّهُ',
+    default_target: 100,
+    virtue: 'أفضلُ الذِّكر لا إله إلا الله',
+  },
+  {
+    text: 'أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ',
+    default_target: 100,
+    virtue: 'كان النبي ﷺ يستغفر الله ويتوب إليه في اليوم أكثر من سبعين مرة',
+  },
 ]
 
 const DEFAULT_CATEGORIES = [
@@ -26,12 +46,29 @@ const DEFAULT_CATEGORIES = [
   { id: 'cat_gift', name: 'هدية', type: 'income', icon: '🎁', color: '#10b981', sort_order: 2 },
 ]
 
+export const DEFAULT_WALLETS = [
+  { id: 'wallet_cash', name: 'كاش', icon: '💵', color: '#2D6A4F', sort_order: 1 },
+  { id: 'wallet_bank', name: 'حساب بنكي', icon: '🏦', color: '#B57B2A', sort_order: 2 },
+  { id: 'wallet_ewallet', name: 'محفظة إلكترونية', icon: '📱', color: '#0284C7', sort_order: 3 },
+]
+
+export async function seedDefaultWalletsIfEmpty() {
+  const existing = await query('SELECT COUNT(*) as c FROM wallets')
+  if ((existing[0]?.c || 0) > 0) return
+  const stmts = DEFAULT_WALLETS.map((w) => ({
+    statement: `INSERT OR IGNORE INTO wallets (id, name, icon, color, initial_balance, sort_order)
+                VALUES (?, ?, ?, ?, 0, ?)`,
+    values: [w.id, w.name, w.icon, w.color, w.sort_order],
+  }))
+  await transaction(stmts)
+}
+
 export async function seedIfEmpty() {
   const existingAdhkar = await query('SELECT COUNT(*) as c FROM adhkar')
   const count = existingAdhkar[0]?.c || 0
 
   if (count > 0) {
-    console.log('[Seed] Already seeded, skipping')
+    await seedDefaultWalletsIfEmpty()
     return
   }
 
@@ -39,18 +76,19 @@ export async function seedIfEmpty() {
 
   const statements = []
 
-  // Adhkar + counts (IDs نصية)
-  for (const z of DEFAULT_ADHKAR) {
+  // Adhkar + counts
+  DEFAULT_ADHKAR.forEach((z, idx) => {
     const id = genId('zekr')
     statements.push({
-      statement: `INSERT INTO adhkar (id, text, default_target) VALUES (?, ?, ?)`,
-      values: [id, z.text, z.default_target],
+      statement: `INSERT INTO adhkar (id, text, default_target, virtue, sort_order)
+                  VALUES (?, ?, ?, ?, ?)`,
+      values: [id, z.text, z.default_target, z.virtue || null, idx + 1],
     })
     statements.push({
       statement: `INSERT INTO counts (zekr_id, count) VALUES (?, 0)`,
       values: [id],
     })
-  }
+  })
 
   // Categories
   for (const c of DEFAULT_CATEGORIES) {
@@ -61,7 +99,15 @@ export async function seedIfEmpty() {
     })
   }
 
-  // Seed marker
+  // Wallets
+  for (const w of DEFAULT_WALLETS) {
+    statements.push({
+      statement: `INSERT OR IGNORE INTO wallets (id, name, icon, color, initial_balance, sort_order)
+                  VALUES (?, ?, ?, ?, 0, ?)`,
+      values: [w.id, w.name, w.icon, w.color, w.sort_order],
+    })
+  }
+
   statements.push({
     statement: `INSERT OR REPLACE INTO meta (key, value) VALUES ('seeded_at', ?)`,
     values: [new Date().toISOString()],

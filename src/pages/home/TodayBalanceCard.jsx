@@ -5,6 +5,8 @@ import { useZekrStreakQuery } from '@/queries/zekr'
 import { useTransactionsQuery, useLimitsQuery } from '@/queries/budget'
 import { getCurrentMonth } from '@/contexts/BudgetContext'
 import { usePrivacyMode, maskText } from '@/hooks/usePrivacyMode.js'
+import { useCurrency } from '@/hooks/useCurrency.js'
+import { useDailyZekrGoal } from '@/hooks/useDailyZekrGoal.js'
 import { TasbihIcon, BudgetIcon } from '@/components/ui/BrandIcons.jsx'
 import styles from './TodayBalanceCard.module.scss'
 
@@ -22,6 +24,8 @@ export default function TodayBalanceCard() {
   const thisMonth = useMemo(() => getCurrentMonth(), [])
   const today = useMemo(() => todayISO(), [])
   const { isPrivate } = usePrivacyMode()
+  const { symbol } = useCurrency()
+  const { dailyGoal } = useDailyZekrGoal()
 
   const { data: streak = null } = useZekrStreakQuery()
   const { data: txns = EMPTY_LIST } = useTransactionsQuery(thisMonth)
@@ -58,8 +62,8 @@ export default function TodayBalanceCard() {
 
   const fmtMoney = (n) =>
     isPrivate
-      ? maskText('ج.م')
-      : `${Math.abs(n).toLocaleString('en', { maximumFractionDigits: 0 })} ج.م`
+      ? maskText(symbol)
+      : `${Math.abs(n).toLocaleString('en', { maximumFractionDigits: 0 })} ${symbol}`
 
   return (
     <section className={styles.card} aria-label="توازن اليوم">
@@ -94,8 +98,16 @@ export default function TodayBalanceCard() {
                   {streakDays === 1
                     ? 'يوم مداومة'
                     : `${streakDays.toLocaleString('en')} أيام متتالية`}
+                  {dailyGoal > 0
+                    ? ` · ${Math.min(
+                        100,
+                        Math.round((todayCount / dailyGoal) * 100)
+                      )}% من الهدف`
+                    : ''}
                 </span>
               </span>
+            ) : dailyGoal > 0 ? (
+              `الهدف اليومي ${dailyGoal.toLocaleString('en')} تسبيحة`
             ) : (
               'ابدأ تسبيحات يومك'
             )}
@@ -123,7 +135,7 @@ export default function TodayBalanceCard() {
             {isPrivate
               ? maskText('')
               : todayExpense.toLocaleString('en', { maximumFractionDigits: 0 })}
-            <span className={styles.unit}>ج.م</span>
+            <span className={styles.unit}>{symbol}</span>
           </strong>
 
           <span className={styles.halfMeta}>

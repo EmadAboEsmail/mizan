@@ -1,10 +1,12 @@
-export const SCHEMA_VERSION = 3  // ← اترفعت من 2 لـ 3
+export const SCHEMA_VERSION = 4
 
 export const CREATE_TABLES = `
   CREATE TABLE IF NOT EXISTS adhkar (
     id TEXT PRIMARY KEY,
     text TEXT NOT NULL,
     default_target INTEGER,
+    virtue TEXT,
+    sort_order INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
   );
 
@@ -21,12 +23,11 @@ export const CREATE_TABLES = `
   );
 
   -- ═══════════════════════════════════════
-  -- 🆕 Clicks hourly — صف واحد لكل ساعة بدل صف لكل click
-  -- التوفير: ~99% (من ~30 bytes لكل click إلى ~30 bytes لكل ساعة)
+  -- Clicks hourly — صف واحد لكل ساعة لكل ذكر
   -- ═══════════════════════════════════════
   CREATE TABLE IF NOT EXISTS clicks_hourly (
     zekr_id TEXT NOT NULL,
-    hour INTEGER NOT NULL,          -- Unix hour (Math.floor(timestamp / 3600000))
+    hour INTEGER NOT NULL,
     count INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (zekr_id, hour),
     FOREIGN KEY (zekr_id) REFERENCES adhkar(id) ON DELETE CASCADE
@@ -62,7 +63,7 @@ export const CREATE_TABLES = `
     ON group_items(group_id, position);
 
   -- ═══════════════════════════════════════
-  -- Budget
+  -- Budget — Categories & Wallets
   -- ═══════════════════════════════════════
   CREATE TABLE IF NOT EXISTS categories (
     id TEXT PRIMARY KEY,
@@ -76,16 +77,28 @@ export const CREATE_TABLES = `
   CREATE INDEX IF NOT EXISTS idx_categories_type
     ON categories(type);
 
+  CREATE TABLE IF NOT EXISTS wallets (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    icon TEXT,
+    color TEXT,
+    initial_balance REAL NOT NULL DEFAULT 0,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+  );
+
   CREATE TABLE IF NOT EXISTS transactions (
     id TEXT PRIMARY KEY,
     amount REAL NOT NULL,
     type TEXT NOT NULL CHECK(type IN ('income','expense')),
     category_id TEXT,
+    wallet_id TEXT,
     date TEXT NOT NULL,
     details TEXT,
     description TEXT,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
-    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
+    FOREIGN KEY (wallet_id) REFERENCES wallets(id) ON DELETE SET NULL
   );
 
   CREATE INDEX IF NOT EXISTS idx_txn_date
@@ -96,6 +109,42 @@ export const CREATE_TABLES = `
 
   CREATE INDEX IF NOT EXISTS idx_txn_type
     ON transactions(type);
+
+  CREATE TABLE IF NOT EXISTS wallet_transfers (
+    id TEXT PRIMARY KEY,
+    from_wallet_id TEXT NOT NULL,
+    to_wallet_id TEXT NOT NULL,
+    amount REAL NOT NULL,
+    date TEXT NOT NULL,
+    note TEXT,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    FOREIGN KEY (from_wallet_id) REFERENCES wallets(id) ON DELETE CASCADE,
+    FOREIGN KEY (to_wallet_id) REFERENCES wallets(id) ON DELETE CASCADE
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_transfer_date
+    ON wallet_transfers(date);
+
+  CREATE TABLE IF NOT EXISTS recurring_transactions (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    amount REAL NOT NULL,
+    type TEXT NOT NULL CHECK(type IN ('income','expense')),
+    category_id TEXT,
+    wallet_id TEXT,
+    frequency TEXT NOT NULL CHECK(frequency IN ('daily','weekly','monthly','yearly')),
+    next_due_date TEXT NOT NULL,
+    auto_apply INTEGER NOT NULL DEFAULT 1,
+    active INTEGER NOT NULL DEFAULT 1,
+    details TEXT,
+    last_applied_date TEXT,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
+    FOREIGN KEY (wallet_id) REFERENCES wallets(id) ON DELETE SET NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_recurring_due
+    ON recurring_transactions(active, next_due_date);
 
   CREATE TABLE IF NOT EXISTS limits (
     id TEXT PRIMARY KEY,

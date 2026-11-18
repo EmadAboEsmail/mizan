@@ -4,4 +4,15 @@
     <string name="title_activity_main">ميزان</string>
     <string name="package_name">app.mizan</string>
     <string name="custom_url_scheme">app.mizan</string>
+
+    <!-- App Shortcuts -->
+    <string name="shortcut_add_expense_short">مصروف سريع</string>
+    <string name="shortcut_add_expense_long">إضافة مصروف أو دخل جديد</string>
+    <string name="shortcut_tasbih_short">السبحة</string>
+    <string name="shortcut_tasbih_long">فتح السبحة والأوراد</string>
+    <string name="shortcut_reports_short">التقارير</string>
+    <string name="shortcut_reports_long">تقارير وإحصائيات الميزانية</string>
+
+    <!-- Home Screen Widget -->
+    <string name="widget_description">ذِكر اليوم وصرف اليوم مع تسبيح مباشر وإضافة مصروف سريع</string>
 </resources>

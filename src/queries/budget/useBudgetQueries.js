@@ -14,6 +14,9 @@ import {
   getLimits,
   getInsights,
   getMonthlyTrend,
+  getWalletsWithBalances,
+  getWalletTransfers,
+  getRecurringTransactions,
 } from '@/services/budgetService.js'
 import { budgetKeys } from '../queryKeys.js'
 
@@ -91,6 +94,27 @@ export function useInsightsQuery(month, compareMonth = null) {
 
 export function useMonthlyTrendQuery(months = 6, endMonth = null) {
   return useQuery(monthlyTrendQueryOptions(months, endMonth))
+}
+
+export function useWalletsQuery() {
+  return useQuery({
+    queryKey: budgetKeys.wallets(),
+    queryFn: () => getWalletsWithBalances(),
+  })
+}
+
+export function useWalletTransfersQuery() {
+  return useQuery({
+    queryKey: budgetKeys.walletTransfers(),
+    queryFn: () => getWalletTransfers(),
+  })
+}
+
+export function useRecurringTransactionsQuery() {
+  return useQuery({
+    queryKey: budgetKeys.recurring(),
+    queryFn: () => getRecurringTransactions(),
+  })
 }
 
 // ═══════════════════════════════════════

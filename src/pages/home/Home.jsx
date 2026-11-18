@@ -4,6 +4,7 @@ import { useAdhkarQuery, useCountsQuery } from '@/queries/zekr'
 import { useSummaryQuery } from '@/queries/budget'
 import { getCurrentMonth } from '@/contexts/BudgetContext'
 import { usePrivacyMode, maskText } from '@/hooks/usePrivacyMode.js'
+import { useCurrency } from '@/hooks/useCurrency.js'
 import ThemeToggle from '@/components/ui/ThemeToggle.jsx'
 import PrivacyToggle from '@/components/ui/PrivacyToggle.jsx'
 import { MizanMark, TasbihIcon, BudgetIcon } from '@/components/ui/BrandIcons.jsx'
@@ -37,10 +38,10 @@ function getHijriDate() {
   }
 }
 
-function formatCompactMoney(n) {
+function formatCompactMoney(n, sym = 'ج.م') {
   const num = Number(n || 0)
   const sign = num > 0 ? '+' : num < 0 ? '−' : ''
-  return `${sign}${Math.abs(num).toLocaleString('en', { maximumFractionDigits: 0 })} ج.م`
+  return `${sign}${Math.abs(num).toLocaleString('en', { maximumFractionDigits: 0 })} ${sym}`
 }
 
 export default function Home() {
@@ -49,6 +50,7 @@ export default function Home() {
   const thisMonth = useMemo(() => getCurrentMonth(), [])
 
   const { isPrivate } = usePrivacyMode()
+  const { symbol } = useCurrency()
   const { data: adhkar = EMPTY_LIST } = useAdhkarQuery()
   const { data: counts = EMPTY_MAP } = useCountsQuery()
   const { data: monthSummary = null } = useSummaryQuery(thisMonth)
@@ -71,11 +73,13 @@ export default function Home() {
   const budgetStat = useMemo(() => {
     if (monthSummary && monthSummary.transaction_count > 0) {
       return `صافي الشهر: ${
-        isPrivate ? maskText('ج.م') : formatCompactMoney(monthSummary.net)
+        isPrivate
+          ? maskText(symbol)
+          : formatCompactMoney(monthSummary.net, symbol)
       }`
     }
     return 'سجّل دخلك ومصروفك بسهولة'
-  }, [monthSummary, isPrivate])
+  }, [monthSummary, isPrivate, symbol])
 
   const apps = [
     {

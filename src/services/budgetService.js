@@ -12,6 +12,7 @@ import {
   parseCsvRecords,
   buildXlsxBlob,
 } from '@/utils/csv.js'
+import { getCurrencySymbol } from '@/hooks/useCurrency.js'
 
 function genId(prefix) {
   const rand = Math.random().toString(16).substring(2, 14).padEnd(12, '0')
@@ -98,6 +99,390 @@ export async function deleteCategory(id) {
   await run('DELETE FROM categories WHERE id = ?', [id])
 }
 
+export async function reorderCategories(orderedIds = []) {
+  if (!Array.isArray(orderedIds) || orderedIds.length === 0) return { ok: true }
+  const stmts = orderedIds.map((id, idx) => ({
+    statement: 'UPDATE categories SET sort_order = ? WHERE id = ?',
+    values: [idx + 1, String(id)],
+  }))
+  await transaction(stmts)
+  return { ok: true }
+}
+
+// ═══════════════════════════════════════
+// Wallets & Transfers
+// ═══════════════════════════════════════
+export async function getWalletsWithBalances() {
+  const wallets = await query(
+    'SELECT * FROM wallets ORDER BY sort_order ASC, created_at ASC, id ASC'
+  )
+  const txnAgg = await query(
+    `SELECT wallet_id,
+            SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) AS inc,
+            SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) AS exp
+     FROM transactions
+     WHERE wallet_id IS NOT NULL
+     GROUP BY wallet_id`
+  )
+  const outAgg = await query(
+    'SELECT from_wallet_id AS wid, SUM(amount) AS total FROM wallet_transfers GROUP BY from_wallet_id'
+  )
+  const inAgg = await query(
+    'SELECT to_wallet_id AS wid, SUM(amount) AS total FROM wallet_transfers GROUP BY to_wallet_id'
+  )
+
+  const txnMap = Object.fromEntries(
+    txnAgg.map((r) => [
+      r.wallet_id,
+      { inc: Number(r.inc) || 0, exp: Number(r.exp) || 0 },
+    ])
+  )
+  const outMap = Object.fromEntries(
+    outAgg.map((r) => [r.wid, Number(r.total) || 0])
+  )
+  const inMap = Object.fromEntries(
+    inAgg.map((r) => [r.wid, Number(r.total) || 0])
+  )
+
+  return wallets.map((w) => {
+    const init = Number(w.initial_balance) || 0
+    const inc = txnMap[w.id]?.inc || 0
+    const exp = txnMap[w.id]?.exp || 0
+    const tIn = inMap[w.id] || 0
+    const tOut = outMap[w.id] || 0
+    const balance = Math.round((init + inc - exp + tIn - tOut) * 100) / 100
+    return {
+      id: String(w.id),
+      name: w.name,
+      icon: w.icon || '💳',
+      color: w.color || '#2D6A4F',
+      initial_balance: init,
+      sort_order: Number(w.sort_order) || 0,
+      balance,
+    }
+  })
+}
+
+export async function createWallet(data) {
+  const name = String(data?.name || '').trim()
+  if (!name) throw new Error('اسم المحفظة مطلوب')
+  const id = genId('wallet')
+  const initBal = Math.round((Number(data.initial_balance) || 0) * 100) / 100
+  const maxRow = await queryOne(
+    'SELECT COALESCE(MAX(sort_order), 0) AS m FROM wallets'
+  )
+  await run(
+    `INSERT INTO wallets (id, name, icon, color, initial_balance, sort_order, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id,
+      name,
+      data.icon || '💳',
+      data.color || '#2D6A4F',
+      initBal,
+      (Number(maxRow?.m) || 0) + 1,
+      nowMs(),
+    ]
+  )
+  return queryOne('SELECT * FROM wallets WHERE id = ?', [id])
+}
+
+export async function updateWallet(id, data) {
+  const existing = await queryOne('SELECT * FROM wallets WHERE id = ?', [id])
+  if (!existing) throw new Error('المحفظة غير موجودة')
+  const name =
+    data.name !== undefined ? String(data.name).trim() : existing.name
+  if (!name) throw new Error('اسم المحفظة مطلوب')
+  const icon = data.icon !== undefined ? data.icon : existing.icon
+  const color = data.color !== undefined ? data.color : existing.color
+  const initBal =
+    data.initial_balance !== undefined
+      ? Math.round((Number(data.initial_balance) || 0) * 100) / 100
+      : Number(existing.initial_balance) || 0
+  await run(
+    'UPDATE wallets SET name = ?, icon = ?, color = ?, initial_balance = ? WHERE id = ?',
+    [name, icon, color, initBal, id]
+  )
+  return queryOne('SELECT * FROM wallets WHERE id = ?', [id])
+}
+
+export async function deleteWallet(id) {
+  const countRow = await queryOne('SELECT COUNT(*) AS c FROM wallets')
+  if ((Number(countRow?.c) || 0) <= 1) {
+    throw new Error('يجب الإبقاء على محفظة واحدة على الأقل')
+  }
+  await run('DELETE FROM wallets WHERE id = ?', [id])
+  return { ok: true }
+}
+
+export async function getWalletTransfers(limit = 30) {
+  return query(
+    `SELECT wt.*, wf.name AS from_name, wf.icon AS from_icon,
+            wto.name AS to_name, wto.icon AS to_icon
+     FROM wallet_transfers wt
+     LEFT JOIN wallets wf ON wt.from_wallet_id = wf.id
+     LEFT JOIN wallets wto ON wt.to_wallet_id = wto.id
+     ORDER BY wt.date DESC, wt.created_at DESC
+     LIMIT ?`,
+    [limit]
+  )
+}
+
+export async function createWalletTransfer(data) {
+  if (!data?.from_wallet_id || !data?.to_wallet_id) {
+    throw new Error('اختر المحفظتين أولاً')
+  }
+  if (data.from_wallet_id === data.to_wallet_id) {
+    throw new Error('لا يمكن التحويل لنفس المحفظة')
+  }
+  const amount = Math.round((Number(data.amount) || 0) * 100) / 100
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error('المبلغ يجب أن يكون أكبر من صفر')
+  }
+  const d = new Date()
+  const fallbackDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+    2,
+    '0'
+  )}-${String(d.getDate()).padStart(2, '0')}`
+  const id = genId('trf')
+  await run(
+    `INSERT INTO wallet_transfers
+     (id, from_wallet_id, to_wallet_id, amount, date, note, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id,
+      data.from_wallet_id,
+      data.to_wallet_id,
+      amount,
+      data.date || fallbackDate,
+      data.note?.trim() || null,
+      nowMs(),
+    ]
+  )
+  return queryOne('SELECT * FROM wallet_transfers WHERE id = ?', [id])
+}
+
+export async function deleteWalletTransfer(id) {
+  await run('DELETE FROM wallet_transfers WHERE id = ?', [id])
+  return { ok: true }
+}
+
+// ═══════════════════════════════════════
+// Recurring Transactions
+// ═══════════════════════════════════════
+function advanceIsoDate(iso, frequency) {
+  const [y, m, d] = String(iso).split('-').map(Number)
+  const dt = new Date(y, (m || 1) - 1, d || 1)
+  if (frequency === 'daily') {
+    dt.setDate(dt.getDate() + 1)
+  } else if (frequency === 'weekly') {
+    dt.setDate(dt.getDate() + 7)
+  } else if (frequency === 'yearly') {
+    dt.setFullYear(dt.getFullYear() + 1)
+  } else {
+    // شهري مع حماية نهاية الشهر (مثلاً 31 -> 28 فبراير)
+    const targetMonth = dt.getMonth() + 1
+    const origDay = dt.getDate()
+    const nextFirst = new Date(dt.getFullYear(), targetMonth, 1)
+    const maxDay = new Date(
+      nextFirst.getFullYear(),
+      nextFirst.getMonth() + 1,
+      0
+    ).getDate()
+    nextFirst.setDate(Math.min(origDay, maxDay))
+    return `${nextFirst.getFullYear()}-${String(
+      nextFirst.getMonth() + 1
+    ).padStart(2, '0')}-${String(nextFirst.getDate()).padStart(2, '0')}`
+  }
+  return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(
+    2,
+    '0'
+  )}-${String(dt.getDate()).padStart(2, '0')}`
+}
+
+function localTodayIso() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+    2,
+    '0'
+  )}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+export async function getRecurringTransactions() {
+  return query(
+    `SELECT r.*, c.name AS category_name, c.icon AS category_icon, c.color AS category_color
+     FROM recurring_transactions r
+     LEFT JOIN categories c ON r.category_id = c.id
+     ORDER BY r.active DESC, r.next_due_date ASC, r.created_at DESC`
+  )
+}
+
+export async function createRecurringTransaction(data) {
+  const title = String(data?.title || '').trim()
+  if (!title) throw new Error('اسم المعاملة المتكررة مطلوب')
+  const amount = Math.round((Number(data.amount) || 0) * 100) / 100
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error('المبلغ يجب أن يكون أكبر من صفر')
+  }
+  if (!['income', 'expense'].includes(data.type)) {
+    throw new Error('نوع المعاملة غير صالح')
+  }
+  const freq = ['daily', 'weekly', 'monthly', 'yearly'].includes(data.frequency)
+    ? data.frequency
+    : 'monthly'
+  const nextDue = /^\d{4}-\d{2}-\d{2}$/.test(data.next_due_date || '')
+    ? data.next_due_date
+    : localTodayIso()
+  const id = genId('rec')
+  await run(
+    `INSERT INTO recurring_transactions
+     (id, title, amount, type, category_id, wallet_id, frequency, next_due_date, auto_apply, active, details, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
+    [
+      id,
+      title,
+      amount,
+      data.type,
+      data.category_id || null,
+      data.wallet_id || null,
+      freq,
+      nextDue,
+      data.auto_apply === false ? 0 : 1,
+      data.details?.trim() || title,
+      nowMs(),
+    ]
+  )
+  return queryOne('SELECT * FROM recurring_transactions WHERE id = ?', [id])
+}
+
+export async function updateRecurringTransaction(id, patch) {
+  const existing = await queryOne(
+    'SELECT * FROM recurring_transactions WHERE id = ?',
+    [id]
+  )
+  if (!existing) throw new Error('العنصر غير موجود')
+  const sets = []
+  const vals = []
+  if (patch.active !== undefined) {
+    sets.push('active = ?')
+    vals.push(patch.active ? 1 : 0)
+  }
+  if (patch.auto_apply !== undefined) {
+    sets.push('auto_apply = ?')
+    vals.push(patch.auto_apply ? 1 : 0)
+  }
+  if (patch.amount !== undefined) {
+    sets.push('amount = ?')
+    vals.push(Math.round((Number(patch.amount) || 0) * 100) / 100)
+  }
+  if (patch.title !== undefined) {
+    sets.push('title = ?')
+    vals.push(String(patch.title).trim())
+  }
+  if (patch.next_due_date !== undefined) {
+    sets.push('next_due_date = ?')
+    vals.push(patch.next_due_date)
+  }
+  if (sets.length > 0) {
+    vals.push(id)
+    await run(
+      `UPDATE recurring_transactions SET ${sets.join(', ')} WHERE id = ?`,
+      vals
+    )
+  }
+  return queryOne('SELECT * FROM recurring_transactions WHERE id = ?', [id])
+}
+
+export async function deleteRecurringTransaction(id) {
+  await run('DELETE FROM recurring_transactions WHERE id = ?', [id])
+  return { ok: true }
+}
+
+export async function applyRecurringNow(id) {
+  const rec = await queryOne(
+    'SELECT * FROM recurring_transactions WHERE id = ?',
+    [id]
+  )
+  if (!rec) throw new Error('العنصر غير موجود')
+  const useDate = rec.next_due_date || localTodayIso()
+  const nextDate = advanceIsoDate(useDate, rec.frequency)
+  const txnId = genId('txn')
+  await transaction([
+    {
+      statement: `INSERT INTO transactions
+        (id, amount, type, category_id, wallet_id, date, details, description, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      values: [
+        txnId,
+        rec.amount,
+        rec.type,
+        rec.category_id || null,
+        rec.wallet_id || null,
+        useDate,
+        rec.details || rec.title,
+        'معاملة متكررة',
+        nowMs(),
+      ],
+    },
+    {
+      statement:
+        'UPDATE recurring_transactions SET next_due_date = ?, last_applied_date = ? WHERE id = ?',
+      values: [nextDate, useDate, rec.id],
+    },
+  ])
+  return { applied: 1, next_due_date: nextDate }
+}
+
+export async function processDueRecurringTransactions() {
+  const today = localTodayIso()
+  const due = await query(
+    `SELECT * FROM recurring_transactions
+     WHERE active = 1 AND auto_apply = 1 AND next_due_date <= ?`,
+    [today]
+  )
+  if (due.length === 0) return { applied: 0 }
+
+  const stmts = []
+  let applied = 0
+
+  for (const rec of due) {
+    let cursor = rec.next_due_date
+    let guard = 0
+    let lastUsed = cursor
+    // حد أمان 12 دورة متأخرة حتى لا يُنشئ مئات الصفوف لو فُتح بعد سنوات
+    while (cursor <= today && guard < 12) {
+      stmts.push({
+        statement: `INSERT INTO transactions
+          (id, amount, type, category_id, wallet_id, date, details, description, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        values: [
+          genId('txn'),
+          rec.amount,
+          rec.type,
+          rec.category_id || null,
+          rec.wallet_id || null,
+          cursor,
+          rec.details || rec.title,
+          'معاملة متكررة تلقائية',
+          nowMs(),
+        ],
+      })
+      lastUsed = cursor
+      cursor = advanceIsoDate(cursor, rec.frequency)
+      applied += 1
+      guard += 1
+    }
+    stmts.push({
+      statement:
+        'UPDATE recurring_transactions SET next_due_date = ?, last_applied_date = ? WHERE id = ?',
+      values: [cursor, lastUsed, rec.id],
+    })
+  }
+
+  if (stmts.length > 0) await transaction(stmts)
+  return { applied }
+}
+
 // ═══════════════════════════════════════
 // Transactions
 // ═══════════════════════════════════════
@@ -113,6 +498,7 @@ export async function getTransactions(filters = {}) {
   if (filters.to_date) { conditions.push('date <= ?'); params.push(filters.to_date) }
   if (filters.type) { conditions.push('type = ?'); params.push(filters.type) }
   if (filters.category_id) { conditions.push('category_id = ?'); params.push(filters.category_id) }
+  if (filters.wallet_id) { conditions.push('wallet_id = ?'); params.push(filters.wallet_id) }
   if (filters.search) {
     conditions.push('(details LIKE ? OR description LIKE ?)')
     const p = `%${filters.search.trim()}%`
@@ -139,13 +525,14 @@ export async function createTransaction(data) {
   const id = genId('txn')
   await run(
     `INSERT INTO transactions
-     (id, amount, type, category_id, date, details, description, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+     (id, amount, type, category_id, wallet_id, date, details, description, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       Math.round(data.amount * 100) / 100,
       data.type,
       data.category_id,
+      data.wallet_id || null,
       data.date,
       data.details?.trim() || null,
       data.description?.trim() || null,
@@ -178,6 +565,7 @@ export async function updateTransaction(id, data) {
   }
   if (data.type !== undefined) { updates.push('type = ?'); params.push(data.type) }
   if (data.category_id !== undefined) { updates.push('category_id = ?'); params.push(data.category_id) }
+  if (data.wallet_id !== undefined) { updates.push('wallet_id = ?'); params.push(data.wallet_id || null) }
   if (data.date !== undefined) { updates.push('date = ?'); params.push(data.date) }
   if (data.details !== undefined) { updates.push('details = ?'); params.push(data.details?.trim() || null) }
   if (data.description !== undefined) { updates.push('description = ?'); params.push(data.description?.trim() || null) }
@@ -259,31 +647,107 @@ export async function deleteLimit(id) {
   await run('DELETE FROM limits WHERE id = ?', [id])
 }
 
+/**
+ * نسخ حدود الميزانية من أحدث شهر سابق إلى الشهر الحالي بضغطة واحدة.
+ */
+export async function copyPreviousMonthLimits(targetMonth) {
+  if (!/^\d{4}-\d{2}$/.test(targetMonth || '')) {
+    throw new Error('اختر شهراً صالحاً أولاً')
+  }
+  const latestPrev = await queryOne(
+    'SELECT month FROM limits WHERE month < ? ORDER BY month DESC LIMIT 1',
+    [targetMonth]
+  )
+  if (!latestPrev?.month) {
+    throw new Error('لا توجد حدود في أشهر سابقة لنسخها')
+  }
+  const sourceRows = await query(
+    'SELECT category_id, amount FROM limits WHERE month = ?',
+    [latestPrev.month]
+  )
+  const existingRows = await query(
+    'SELECT category_id FROM limits WHERE month = ?',
+    [targetMonth]
+  )
+  const existingCats = new Set(existingRows.map((r) => r.category_id))
+
+  const stmts = []
+  for (const row of sourceRows) {
+    if (existingCats.has(row.category_id)) continue
+    stmts.push({
+      statement:
+        'INSERT INTO limits (id, category_id, month, amount) VALUES (?, ?, ?, ?)',
+      values: [genId('lim'), row.category_id, targetMonth, row.amount],
+    })
+  }
+  if (stmts.length === 0) {
+    throw new Error('جميع حدود الشهر السابق مضافة بالفعل لهذا الشهر')
+  }
+  await transaction(stmts)
+  return { copied: stmts.length, fromMonth: latestPrev.month }
+}
+
 // ═══════════════════════════════════════
 // Backup / Restore / Delete
 // ═══════════════════════════════════════
 export async function getBudgetBackup() {
   const cats = await query('SELECT * FROM categories')
+  const wallets = await query('SELECT * FROM wallets')
   const txns = await query('SELECT * FROM transactions')
+  const transfers = await query('SELECT * FROM wallet_transfers')
+  const recurring = await query('SELECT * FROM recurring_transactions')
   const lims = await query('SELECT * FROM limits')
 
   return {
-    version: '1.0',
+    version: '2.0',
     exported_at: nowMs(),
     categories: cats,
+    wallets,
     transactions: txns,
+    wallet_transfers: transfers,
+    recurring_transactions: recurring,
     limits: lims,
   }
 }
 
 export async function restoreBudgetBackup(data) {
+  const hasWallets = Array.isArray(data.wallets) && data.wallets.length > 0
   const statements = [
     { statement: 'DELETE FROM limits', values: [] },
+    { statement: 'DELETE FROM recurring_transactions', values: [] },
+    { statement: 'DELETE FROM wallet_transfers', values: [] },
     { statement: 'DELETE FROM transactions', values: [] },
     { statement: 'DELETE FROM categories', values: [] },
   ]
+  if (hasWallets) {
+    statements.push({ statement: 'DELETE FROM wallets', values: [] })
+  }
 
   const catIds = new Set()
+  const walletIds = new Set()
+
+  if (hasWallets) {
+    for (const w of data.wallets) {
+      walletIds.add(w.id)
+      statements.push({
+        statement: `INSERT INTO wallets
+          (id, name, icon, color, initial_balance, sort_order, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        values: [
+          w.id,
+          w.name,
+          w.icon ?? '💳',
+          w.color ?? '#2D6A4F',
+          w.initial_balance ?? 0,
+          w.sort_order ?? 0,
+          w.created_at ?? nowMs(),
+        ],
+      })
+    }
+  } else {
+    const curWallets = await query('SELECT id FROM wallets')
+    curWallets.forEach((w) => walletIds.add(w.id))
+  }
 
   for (const c of data.categories || []) {
     catIds.add(c.id)
@@ -295,17 +759,66 @@ export async function restoreBudgetBackup(data) {
 
   let txnCount = 0
   for (const t of data.transactions || []) {
-    if (!catIds.has(t.category_id)) continue
+    if (t.category_id && !catIds.has(t.category_id)) continue
+    const wId = t.wallet_id && walletIds.has(t.wallet_id) ? t.wallet_id : null
     statements.push({
       statement: `INSERT INTO transactions
-        (id, amount, type, category_id, date, details, description, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        (id, amount, type, category_id, wallet_id, date, details, description, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       values: [
-        t.id || genId('txn'), t.amount, t.type, t.category_id, t.date,
-        t.details ?? null, t.description ?? null, t.created_at ?? nowMs(),
+        t.id || genId('txn'),
+        t.amount,
+        t.type,
+        t.category_id || null,
+        wId,
+        t.date,
+        t.details ?? null,
+        t.description ?? null,
+        t.created_at ?? nowMs(),
       ],
     })
     txnCount++
+  }
+
+  for (const tr of data.wallet_transfers || []) {
+    if (!walletIds.has(tr.from_wallet_id) || !walletIds.has(tr.to_wallet_id)) continue
+    statements.push({
+      statement: `INSERT INTO wallet_transfers
+        (id, from_wallet_id, to_wallet_id, amount, date, note, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      values: [
+        tr.id || genId('trf'),
+        tr.from_wallet_id,
+        tr.to_wallet_id,
+        tr.amount,
+        tr.date,
+        tr.note ?? null,
+        tr.created_at ?? nowMs(),
+      ],
+    })
+  }
+
+  for (const r of data.recurring_transactions || []) {
+    statements.push({
+      statement: `INSERT INTO recurring_transactions
+        (id, title, amount, type, category_id, wallet_id, frequency, next_due_date, auto_apply, active, details, last_applied_date, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      values: [
+        r.id || genId('rec'),
+        r.title,
+        r.amount,
+        r.type,
+        r.category_id && catIds.has(r.category_id) ? r.category_id : null,
+        r.wallet_id && walletIds.has(r.wallet_id) ? r.wallet_id : null,
+        r.frequency || 'monthly',
+        r.next_due_date || localTodayIso(),
+        r.auto_apply ?? 1,
+        r.active ?? 1,
+        r.details ?? null,
+        r.last_applied_date ?? null,
+        r.created_at ?? nowMs(),
+      ],
+    })
   }
 
   for (const l of data.limits || []) {
@@ -323,7 +836,10 @@ export async function restoreBudgetBackup(data) {
 export async function deleteAllBudgetData(keepCategories = false) {
   const statements = [
     { statement: 'DELETE FROM transactions', values: [] },
+    { statement: 'DELETE FROM wallet_transfers', values: [] },
+    { statement: 'DELETE FROM recurring_transactions', values: [] },
     { statement: 'DELETE FROM limits', values: [] },
+    { statement: 'UPDATE wallets SET initial_balance = 0', values: [] },
   ]
   if (!keepCategories) {
     statements.push({ statement: 'DELETE FROM categories', values: [] })
@@ -333,27 +849,34 @@ export async function deleteAllBudgetData(keepCategories = false) {
 }
 
 // ═══════════════════════════════════════
-// CSV & Excel (.xlsx) Export / Import
+// CSV & Excel (.xlsx) Export / Import (شهر محدد أو كل الفترات)
 // ═══════════════════════════════════════
-async function fetchExportRows() {
-  return query(`
-    SELECT t.date, t.type, t.amount,
-           c.name AS category, c.icon AS category_icon, c.color AS category_color,
-           t.details, t.description
-    FROM transactions t
-    LEFT JOIN categories c ON t.category_id = c.id
-    ORDER BY t.date DESC, t.created_at DESC
-  `)
+async function fetchExportRows(month = null) {
+  const hasMonth = typeof month === 'string' && /^\d{4}-\d{2}$/.test(month)
+  return query(
+    `SELECT t.date, t.type, t.amount,
+            c.name AS category, c.icon AS category_icon, c.color AS category_color,
+            w.name AS wallet_name,
+            t.details, t.description
+     FROM transactions t
+     LEFT JOIN categories c ON t.category_id = c.id
+     LEFT JOIN wallets w ON t.wallet_id = w.id
+     ${hasMonth ? 'WHERE t.date LIKE ?' : ''}
+     ORDER BY t.date DESC, t.created_at DESC`,
+    hasMonth ? [`${month}-%`] : []
+  )
 }
 
-export async function exportBudgetCsv() {
-  const rows = await fetchExportRows()
+export async function exportBudgetCsv(month = null) {
+  const rows = await fetchExportRows(month)
+  const sym = getCurrencySymbol()
 
   const headers = [
     'التاريخ',
     'النوع',
-    'المبلغ',
+    `المبلغ (${sym})`,
     'التصنيف',
+    'المحفظة',
     'الأيقونة',
     'اللون',
     'التفاصيل',
@@ -365,6 +888,7 @@ export async function exportBudgetCsv() {
     r.type === 'income' ? 'دخل' : 'مصروف',
     r.amount ?? 0,
     r.category || '',
+    r.wallet_name || '',
     r.category_icon || '',
     r.category_color || '',
     r.details || '',
@@ -375,14 +899,16 @@ export async function exportBudgetCsv() {
   return new Blob([bytes], { type: 'text/csv;charset=utf-16le' })
 }
 
-export async function exportBudgetXlsx() {
-  const rows = await fetchExportRows()
+export async function exportBudgetXlsx(month = null) {
+  const rows = await fetchExportRows(month)
+  const sym = getCurrencySymbol()
 
   const headers = [
     'التاريخ',
     'النوع',
-    'المبلغ (ج.م)',
+    `المبلغ (${sym})`,
     'التصنيف',
+    'المحفظة',
     'التفاصيل',
     'الملاحظات',
   ]
@@ -392,12 +918,13 @@ export async function exportBudgetXlsx() {
     r.type === 'income' ? 'دخل' : 'مصروف',
     Number(r.amount) || 0,
     r.category || 'غير محدد',
+    r.wallet_name || '—',
     r.details || '',
     r.description || '',
   ])
 
   return buildXlsxBlob({
-    sheetName: 'معاملات ميزان',
+    sheetName: month ? `معاملات ${month}` : 'معاملات ميزان',
     headers,
     rows: dataRows,
   })
@@ -406,6 +933,11 @@ export async function exportBudgetXlsx() {
 function findHeaderIndex(headers, aliases) {
   for (const alias of aliases) {
     const i = headers.indexOf(alias)
+    if (i !== -1) return i
+  }
+  // مطابقة مرنة للعناوين مثل "المبلغ (ر.س)" أو "المبلغ ($)"
+  for (const alias of aliases) {
+    const i = headers.findIndex((h) => h.startsWith(`${alias} (`))
     if (i !== -1) return i
   }
   return -1

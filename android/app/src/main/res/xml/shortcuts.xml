@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:targetApi="25">
+
+    <shortcut
+        android:shortcutId="quick_expense"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_add"
+        android:shortcutShortLabel="@string/shortcut_add_expense_short"
+        android:shortcutLongLabel="@string/shortcut_add_expense_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="app.mizan"
+            android:targetClass="app.mizan.MainActivity">
+            <extra
+                android:name="mizan_route"
+                android:value="/budget/transactions?add=1" />
+        </intent>
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="open_tasbih"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_tasbih"
+        android:shortcutShortLabel="@string/shortcut_tasbih_short"
+        android:shortcutLongLabel="@string/shortcut_tasbih_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="app.mizan"
+            android:targetClass="app.mizan.MainActivity">
+            <extra
+                android:name="mizan_route"
+                android:value="/zekr/sabh" />
+        </intent>
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="open_reports"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_reports"
+        android:shortcutShortLabel="@string/shortcut_reports_short"
+        android:shortcutLongLabel="@string/shortcut_reports_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="app.mizan"
+            android:targetClass="app.mizan.MainActivity">
+            <extra
+                android:name="mizan_route"
+                android:value="/budget/reports" />
+        </intent>
+    </shortcut>
+
+</shortcuts>

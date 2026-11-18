@@ -3,12 +3,13 @@
    useSettingsAccordion hook, and SettingsAccordionProvider component.
    Splitting would require touching 12+ import sites for negligible DX gain. */
 import { createContext, useContext, useState, useEffect } from 'react'
-import { Palette, FolderOpen, Database, Info } from 'lucide-react'
+import { Palette, Bell, FolderOpen, Database, Info } from 'lucide-react'
 import { TasbihIcon } from '@/components/ui/BrandIcons.jsx'
 
 // سجل الأقسام — مصدر واحد للحقيقة
 export const SETTINGS_SECTIONS = [
   { id: 'appearance', label: 'المظهر', icon: <Palette size={15} strokeWidth={2} /> },
+  { id: 'reminders', label: 'التذكيرات', icon: <Bell size={15} strokeWidth={2} /> },
   { id: 'groups', label: 'المجموعات', icon: <FolderOpen size={15} strokeWidth={2} /> },
   { id: 'adhkar', label: 'الأذكار', icon: <TasbihIcon size={16} /> },
   { id: 'data', label: 'البيانات', icon: <Database size={15} strokeWidth={2} /> },

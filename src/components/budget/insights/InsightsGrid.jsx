@@ -7,6 +7,7 @@ import {
   ArrowLeftRight,
 } from 'lucide-react'
 import { usePrivacyMode, maskText } from '@/hooks/usePrivacyMode.js'
+import { useCurrency } from '@/hooks/useCurrency.js'
 import styles from './InsightsGrid.module.scss'
 
 const AR_MONTHS = [
@@ -53,6 +54,7 @@ function ChangeBadge({ value, invert = false }) {
 
 function InsightsGrid({ insights, compareLabel = null }) {
   const { isPrivate } = usePrivacyMode()
+  const { symbol } = useCurrency()
   if (!insights) return null
   const money = (v) => (isPrivate ? maskText('') : formatAmount(v))
 
@@ -204,7 +206,7 @@ function InsightsGrid({ insights, compareLabel = null }) {
               {top_expense_category.category_name}
             </span>
             <span className={styles.sub}>
-              {money(top_expense_category.amount)} ج.م
+              {money(top_expense_category.amount)} {symbol}
             </span>
           </div>
         )}

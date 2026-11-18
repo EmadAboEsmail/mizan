@@ -133,6 +133,12 @@
   word-break: break-word;
 }
 
+.virtueNote {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
 .targetBadge {
   display: inline-flex;
   align-items: center;

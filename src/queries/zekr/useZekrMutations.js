@@ -12,10 +12,12 @@ import {
   deleteAllData,
   createAdhkar,
   updateAdhkar,
+  reorderAdhkar,
   deleteAdhkar,
   createGroup,
   updateGroup,
   deleteGroup,
+  installPresetGroup,
   addGroupItem,
   updateGroupItem,
   deleteGroupItem,
@@ -190,8 +192,8 @@ export function useCreateAdhkarMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ text, defaultTarget = null }) =>
-      createAdhkar(text, defaultTarget),
+    mutationFn: ({ text, defaultTarget = null, virtue = null }) =>
+      createAdhkar(text, defaultTarget, virtue),
 
     onSuccess: (newZekr) => {
       queryClient.setQueryData(zekrKeys.adhkar(), (prev = []) =>
@@ -211,20 +213,31 @@ export function useUpdateAdhkarMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, text, defaultTarget = null }) =>
-      updateAdhkar(id, text, defaultTarget),
+    mutationFn: ({ id, text, defaultTarget = null, virtue = undefined }) =>
+      updateAdhkar(id, text, defaultTarget, virtue),
 
     onSuccess: (updated, { id }) => {
       queryClient.setQueryData(zekrKeys.adhkar(), (prev = []) =>
         prev.map((z) => (z.id === id ? updated : z))
       )
-      // تحديث المجموعات والإحصائيات لأنها تعرض نص الذكر وهدفه الافتراضي
+      // تحديث المجموعات والإحصائيات لأنها تعرض نص الذكر وهدفه الافتراضي وفضله
       queryClient.invalidateQueries({ queryKey: zekrKeys.adhkar() })
       queryClient.invalidateQueries({ queryKey: zekrKeys.groups() })
       queryClient.invalidateQueries({ queryKey: zekrKeys.statsAll() })
     },
 
     onError: (err) => selfHealIfMissing(queryClient, err),
+  })
+}
+
+export function useReorderAdhkarMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (orderedIds) => reorderAdhkar(orderedIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: zekrKeys.adhkar() })
+    },
   })
 }
 
@@ -266,6 +279,22 @@ export function useCreateGroupMutation() {
       queryClient.setQueryData(zekrKeys.groups(), (prev = []) =>
         dedupeById([newGroup, ...prev])
       )
+      queryClient.invalidateQueries({ queryKey: zekrKeys.groups() })
+    },
+  })
+}
+
+export function useInstallPresetGroupMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (pack) => installPresetGroup(pack),
+    onSuccess: (newGroup) => {
+      queryClient.setQueryData(zekrKeys.groups(), (prev = []) =>
+        dedupeById([newGroup, ...prev])
+      )
+      queryClient.invalidateQueries({ queryKey: zekrKeys.adhkar() })
+      queryClient.invalidateQueries({ queryKey: zekrKeys.counts() })
       queryClient.invalidateQueries({ queryKey: zekrKeys.groups() })
     },
   })

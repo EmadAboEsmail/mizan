@@ -12,6 +12,9 @@ function BarChart({ labels = [], values = [] }) {
 
   const handleEnter = (i) => setHoveredIndex(i)
   const handleLeave = () => setHoveredIndex(null)
+  const handleTap = (i) => {
+    setHoveredIndex((prev) => (prev === i ? null : i))
+  }
 
   return (
     <div className={styles.chartCard}>
@@ -26,12 +29,20 @@ function BarChart({ labels = [], values = [] }) {
             <div
               key={`bar-${label}-${i}`}
               className={`${styles.barColumn} ${isHovered ? styles.hovered : ''}`}
+              onClick={() => handleTap(i)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  handleTap(i)
+                }
+              }}
               onMouseEnter={() => handleEnter(i)}
               onMouseLeave={handleLeave}
               onFocus={() => handleEnter(i)}
               onBlur={handleLeave}
               tabIndex={0}
               role="button"
+              aria-pressed={isHovered}
               aria-label={`${label}: ${value.toLocaleString('en')} تسبيحة`}
               style={{ animationDelay: `${i * 60}ms` }}
             >
