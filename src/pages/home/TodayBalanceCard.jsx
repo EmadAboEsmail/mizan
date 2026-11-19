@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { Flame, Plus, Target } from 'lucide-react'
+import { Flame, Target } from 'lucide-react'
 import { useZekrStreakQuery } from '@/queries/zekr'
 import { useTransactionsQuery, useLimitsQuery } from '@/queries/budget'
 import { getCurrentMonth } from '@/contexts/BudgetContext'
@@ -20,7 +20,7 @@ function todayISO() {
   )}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-export default function TodayBalanceCard() {
+export default function TodayBalanceCard({ isLocked }) {
   const thisMonth = useMemo(() => getCurrentMonth(), [])
   const today = useMemo(() => todayISO(), [])
   const { isPrivate } = usePrivacyMode()
@@ -60,19 +60,13 @@ export default function TodayBalanceCard() {
           ? 'warn'
           : 'safe'
 
-  const fmtMoney = (n) =>
-    isPrivate
-      ? maskText(symbol)
-      : `${Math.abs(n).toLocaleString('en', { maximumFractionDigits: 0 })} ${symbol}`
+  const fmtMoney = (n) => `${Math.abs(n).toLocaleString('en', { maximumFractionDigits: 2 })} ${symbol}`
 
   return (
     <section className={styles.card} aria-label="توازن اليوم">
       <div className={styles.header}>
         <span className={styles.heading}>توازن اليوم</span>
-        <Link to="/budget/transactions?add=1" className={styles.quickAddBtn}>
-          <Plus size={14} strokeWidth={2.6} aria-hidden="true" />
-          <span>مصروف سريع</span>
-        </Link>
+
       </div>
 
       <div className={styles.halves}>
@@ -132,19 +126,17 @@ export default function TodayBalanceCard() {
           </div>
 
           <strong className={styles.halfValue}>
-            {isPrivate
-              ? maskText('')
-              : todayExpense.toLocaleString('en', { maximumFractionDigits: 0 })}
-            <span className={styles.unit}>{symbol}</span>
+            {isLocked ? 'مقفلة' : isPrivate ? maskText('') : todayExpense.toLocaleString('en', { maximumFractionDigits: 2 })}
+            {!isLocked && !isPrivate && <span className={styles.unit}>{symbol}</span>}
           </strong>
 
           <span className={styles.halfMeta}>
-            {todayExpense === 0 ? 'لم يُسجّل مصروف اليوم' : 'اضغط لعرض السجل'}
+            {isLocked ? 'افتح الميزانية' : isPrivate ? 'الأرقام مخفية' : todayExpense === 0 ? 'لم يُسجّل مصروف اليوم' : 'اضغط لعرض السجل'}
           </span>
         </Link>
       </div>
 
-      {hasLimits && (
+      {!isLocked && !isPrivate && hasLimits && (
         <Link
           to="/budget/reports"
           className={`${styles.limitFooter} ${styles[`tone_${limitTone}`]}`}
