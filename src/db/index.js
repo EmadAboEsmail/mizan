@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// src/db/index.js — Schema init + migrations (v1..v4)
+// src/db/index.js — Schema init + migrations (v1..v5)
 // ═══════════════════════════════════════════════════════════════
 import { initAdapter, exec, query, queryOne, isReady } from './adapter.js'
 import { CREATE_TABLES, SCHEMA_VERSION } from './schema.js'
@@ -143,7 +143,7 @@ export async function initDB() {
   try {
     await exec(CREATE_TABLES)
 
-    if (currentVersion > 0) {
+    if (currentVersion > 0 && currentVersion < 4) {
       await migrateClicksToHourly()
       await migrateToV4()
     } else {
@@ -153,6 +153,7 @@ export async function initDB() {
       `)
     }
 
+    await ensureColumn('recurring_transactions', 'anchor_day', 'INTEGER CHECK(anchor_day BETWEEN 1 AND 31)')
     await verifySchema()
     await setSchemaVersion(SCHEMA_VERSION)
     console.log(`[DB] ✅ Migration complete → v${SCHEMA_VERSION}`)

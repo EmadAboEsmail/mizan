@@ -17,6 +17,7 @@ import {
   createWalletTransfer,
   createTransaction,
   createRecurringTransaction,
+  applyRecurringNow,
   processDueRecurringTransactions,
   createOrUpdateLimit,
   copyPreviousMonthLimits,
@@ -29,6 +30,7 @@ import {
   restoreUnifiedMizanBackup,
   performUnifiedAutoBackup,
   restoreLatestAutoBackup,
+  getLastAutoBackupMeta,
 } from './mizanBackupService.js'
 import { getCurrencySymbol, setCurrencyCode } from '@/hooks/useCurrency.js'
 import {
@@ -250,6 +252,45 @@ describe('Mizan v4 upgrades end-to-end', () => {
 
     const res = await restoreUnifiedMizanBackup(full)
     expect(res).toEqual({ ok: true, restoredZekr: true, restoredBudget: true })
+  })
+
+  it('rejects an incomplete backup without replacing either section', async () => {
+    const original = await getUnifiedMizanBackup()
+    await expect(restoreUnifiedMizanBackup({ ...original, budget: {} })).rejects.toThrow()
+    const after = await getUnifiedMizanBackup()
+    expect(after.budget.categories).toEqual(original.budget.categories)
+    expect(after.zekr.adhkar).toEqual(original.zekr.adhkar)
+  })
+
+  it('rolls back changes to both sections if a SQL statement fails', async () => {
+    const original = await getUnifiedMizanBackup()
+    const corrupt = structuredClone(original)
+    corrupt.zekr.adhkar[0].text = 'changed'
+    corrupt.budget.categories.push(corrupt.budget.categories[0])
+    await expect(restoreUnifiedMizanBackup(corrupt)).rejects.toThrow()
+    const after = await getUnifiedMizanBackup()
+    expect(after.budget.categories).toEqual(original.budget.categories)
+    expect(after.zekr.adhkar).toEqual(original.zekr.adhkar)
+  })
+
+  it('does not mark a failed web backup as successful', async () => {
+    const writer = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+      throw new Error('Quota exceeded')
+    })
+    try {
+      await expect(performUnifiedAutoBackup()).rejects.toThrow('Quota exceeded')
+      expect(getLastAutoBackupMeta()).toBeNull()
+    } finally {
+      writer.mockRestore()
+    }
+  })
+
+  it.each([['2026', '28'], ['2028', '29']])('preserves day 31 through February %s', async (year, februaryDay) => {
+    const recurring = await createRecurringTransaction({
+      title: 'Monthly bill', amount: 100, type: 'expense', next_due_date: `${year}-01-31`,
+    })
+    expect((await applyRecurringNow(recurring.id)).next_due_date).toBe(`${year}-02-${februaryDay}`)
+    expect((await applyRecurringNow(recurring.id)).next_due_date).toBe(`${year}-03-31`)
   })
 
   it('hashes, verifies, locks, and disables the 4-digit Budget PIN', async () => {

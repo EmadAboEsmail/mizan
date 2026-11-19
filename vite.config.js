@@ -109,22 +109,6 @@ export default defineConfig({
         }),
       ]),
 
-    // ═══════════════════════════════════════════════════════════
-    // Workaround: vite-plugin-pwa v2.0.0 closeBundle hang on Vite 8
-    // (الـ plugin بيسيب handles مفتوحة بعد generateSW — بنقفل الـ process يدويًا)
-    // ═══════════════════════════════════════════════════════════
-    {
-      name: "force-exit-after-build",
-      apply: "build",
-      closeBundle() {
-        if (!isAndroidBuild && !process.env.VITE_KEEP_ALIVE) {
-          setTimeout(() => {
-            console.log("[build] Force-exit (vite-plugin-pwa workaround)");
-            process.exit(0);
-          }, 500);
-        }
-      },
-    },
   ],
 
   // ═══════════════════════════════════════════════════════════

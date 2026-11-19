@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 4
+export const SCHEMA_VERSION = 5
 
 export const CREATE_TABLES = `
   CREATE TABLE IF NOT EXISTS adhkar (
@@ -134,6 +134,7 @@ export const CREATE_TABLES = `
     wallet_id TEXT,
     frequency TEXT NOT NULL CHECK(frequency IN ('daily','weekly','monthly','yearly')),
     next_due_date TEXT NOT NULL,
+    anchor_day INTEGER CHECK(anchor_day BETWEEN 1 AND 31),
     auto_apply INTEGER NOT NULL DEFAULT 1,
     active INTEGER NOT NULL DEFAULT 1,
     details TEXT,

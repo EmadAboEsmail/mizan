@@ -14,11 +14,11 @@
 ![TanStack Query](https://img.shields.io/badge/TanStack_Query-v5-FF4154?style=flat-square&logo=reactquery&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=flat-square&logo=vite&logoColor=white)
 ![Capacitor](https://img.shields.io/badge/Capacitor-8-119EFF?style=flat-square&logo=capacitor&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-v4_Local--First-003B57?style=flat-square&logo=sqlite&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-v5_Local--First-003B57?style=flat-square&logo=sqlite&logoColor=white)
 ![Android](https://img.shields.io/badge/Android-7.0%2B_(API_24)-3DDC84?style=flat-square&logo=android&logoColor=111)
 ![PWA](https://img.shields.io/badge/PWA-Offline_Ready-2D6A4F?style=flat-square&logo=pwa&logoColor=white)
 
-[نبذة](#-نبذة) · [المميزات](#-المميزات) · [تكامل أندرويد](#-تكامل-أندرويد-الأصلي) · [التشغيل والبناء](#-التشغيل-والبناء) · [المعمارية](#-المعمارية) · [قاعدة البيانات](#-قاعدة-البيانات-sqlite-v4) · [الاختبارات](#-الجودة-والاختبارات) · [English](#-english-overview)
+[نبذة](#-نبذة) · [المميزات](#-المميزات) · [تكامل أندرويد](#-تكامل-أندرويد-الأصلي) · [التشغيل والبناء](#-التشغيل-والبناء) · [المعمارية](#-المعمارية) · [قاعدة البيانات](#-قاعدة-البيانات-sqlite-v5) · [الاختبارات](#-الجودة-والاختبارات) · [English](#-english-overview)
 
 </div>
 
@@ -65,7 +65,7 @@
 - **المعاملات المتكررة (`Recurring`):** جدولة الراتب، الإيجار، الفواتير، والاشتراكات (`يومياً` · `أسبوعياً` · `شهرياً` · `سنوياً`) مع تسجيل تلقائي عند حلول الاستحقاق أو تطبيق فوري وإيقاف مؤقت.
 - **دعم 10 عملات:** `ج.م` · `ر.س` · `د.إ` · `د.ك` · `ر.ق` · `د.أ` · `د.م` · `$` · `€` · `£`.
 - **الحدود الشهرية للتصنيفات:** شريط تقدّم وتنبيهات تلقائية عند الاقتراب من الحد (80%) أو تجاوزه، مع زر **«نسخ حدود الشهر السابق»** بضغطة واحدة.
-- **قفل الميزانية (`PIN` + بصمة الإصبع):** رمز من 4 أرقام مشفّر بـ `SHA-256 + Salt` مع قفل تلقائي عند انتقال التطبيق للخلفية، وفتح سريع بالبصمة على أندرويد.
+- **قفل الميزانية (`PIN` + بصمة الإصبع):** رمز من 4 أرقام يُتحقق منه ببصمة رقمية مع قيمة عشوائية (`SHA-256 + Salt` عند توفر WebCrypto). القفل يحمي واجهة الميزانية فقط ولا يشفّر قاعدة البيانات أو ملفات JSON مع قفل تلقائي عند انتقال التطبيق للخلفية، وفتح سريع بالبصمة على أندرويد.
 - **التقارير والتحليلات:** مخطط دائري (`Donut`) لتوزيع المصروفات، اتجاه الدخل والمصروف عبر الأشهر، ومؤشرات ذكية (المتوسط اليومي، أعلى فئة إنفاق، معدل الادخار، ومقارنة شهرية).
 - **تصدير واستيراد متوافق 100% مع العربية:** تصدير **Excel (`.xlsx`)** باتجاه `RTL` أصلي وتصدير **CSV** بترميز Unicode يفتح في Microsoft Excel و Google Sheets دون أي تشويه للأحرف العربية، مع اختيار تصدير **شهر محدد** أو **كل الفترات**.
 
@@ -107,7 +107,7 @@
 ## 🚀 التشغيل والبناء
 
 ### المتطلبات
-- **Node.js** `22+` (يعمل التطوير والبناء والاختبارات أيضاً على `20.x`، بينما يتطلب `npx cap sync` الإصدار `22+`).
+- **Node.js** `22+` (استخدم `nvm use` لتحميل الإصدار المعتمد في المشروع).
 - لبناء أندرويد محلياً: **JDK 21** + **Android SDK (API 36)**.
 
 ### التشغيل المحلي (الويب / PWA)
@@ -115,7 +115,7 @@
 ```bash
 git clone https://github.com/EmadAboEsmail/mizan.git
 cd mizan
-npm install
+npm ci
 npm run dev
 ```
 
@@ -138,18 +138,27 @@ npm run dev
 
 #### 2. يدوياً على جهازك
 
+يتطلب البناء **JDK 21** و**Android SDK Platform 36**. استخدم نسخة Debug للاختبار فقط؛ تحتاج نسخة النشر إلى مفتاح توقيع الإصدار. عند التحديث فوق نسخة مثبتة، يجب أن تتطابق شهادة التوقيع. خذ نسخة احتياطية قبل إزالة أي نسخة موجودة.
+
 ```bash
 # 1) بناء الواجهة لبيئة أندرويد ومزامنة Capacitor
 npm run build:android
 npx cap sync android
 
 # 2) بناء نسخة تجريبية (Debug APK)
-cd android && ./gradlew assembleDebug
+cd android && bash gradlew :app:testDebugUnitTest :app:assembleDebug
 # الناتج: android/app/build/outputs/apk/debug/app-debug.apk
 
 # أو بناء نسخة إصدار مضغوطة ومصغّرة عبر R8 (Release APK)
-./gradlew assembleRelease
+bash gradlew assembleRelease
 ```
+
+#### 3. فحص سريع قبل توزيع الـAPK
+
+- ثبّت النسخة على جهاز أو محاكي، وافتح قسمي الذكر والميزانية في وضع الطيران.
+- اختبر التحديث فوق نسخة قديمة موقّعة بالمفتاح نفسه، وتأكد من بقاء المعاملات والأذكار بعد ترقية SQLite.
+- فعّل PIN ثم أرسل التطبيق إلى الخلفية. بعد الرجوع، تأكد من أن إعدادات الذكر لا تسمح بتصدير أو استعادة نسخة شاملة قبل فتح الميزانية.
+- على جهاز فعلي، اختبر التذكيرات والودجت وأزرار الصوت في وضع الجيب والشاشة مقفلة؛ نجاح البناء لا يختبر هذا السلوك.
 
 ---
 
@@ -175,7 +184,7 @@ cd android && ./gradlew assembleDebug
         └──────────────┬──────────────┘      │ PocketService · Widget ·    │
                        │ SQL / Transactions  │ Reminders · Biometric · UI  │
         ┌──────────────▼──────────────┐      └─────────────────────────────┘
-        │     db/* (SQLite v4)        │
+        │     db/* (SQLite v5)        │
         │ Android Native / Web WASM   │
         └─────────────────────────────┘
 ```
@@ -194,7 +203,7 @@ mizan/
 │   └── icons/                 # أيقونات مِيزان الموحّدة و PWA (maskable / apple-touch)
 └── src/
     ├── main.jsx · App.jsx     # تهيئة SQLite + ErrorBoundary + التوجيه والمزامنة العامة
-    ├── db/                    # adapter · schema (v4) · migrations (index.js) · seed
+    ├── db/                    # adapter · schema (v5) · migrations (index.js) · seed
     ├── data/                  # adhkarPresets (قوالب الأوراد الجاهزة بالتشكيل والفضل)
     ├── services/              # zekrService · statsCalculator · clickBuffer
     │                          # budgetService · budgetCalculator · mizanBackupService
@@ -216,9 +225,9 @@ mizan/
 
 ---
 
-## 🗄️ قاعدة البيانات (`SQLite v4`)
+## 🗄️ قاعدة البيانات (`SQLite v5`)
 
-تُنشأ قاعدة البيانات محلياً وتُرقّى تلقائياً عبر نظام هجرات آمن (`v1 → v4`) دون المساس ببيانات المستخدم السابقة:
+تُنشأ قاعدة البيانات محلياً وتُرقّى تلقائياً عبر نظام هجرات آمن (`v1 → v5`) دون المساس ببيانات المستخدم السابقة:
 
 | الجدول | الوظيفة | أبرز الأعمدة والقيود |
 | :--- | :--- | :--- |
@@ -280,7 +289,7 @@ npm run lint && npm test
 
 ## 🌍 English Overview
 
-**Mizan (مِيزان)** is a calm, privacy-first, **100% offline-capable** Arabic (`RTL`) application built for **Android (`APK`)** and the **Web (`PWA`)** using **React 19**, **TanStack Query v5**, **Vite 8**, **Capacitor 8**, and **SQLite v4**.
+**Mizan (مِيزان)** is a calm, privacy-first, **100% offline-capable** Arabic (`RTL`) application built for **Android (`APK`)** and the **Web (`PWA`)** using **React 19**, **TanStack Query v5**, **Vite 8**, **Capacitor 8**, and **SQLite v5**.
 
 ### Highlights
 - **Zekr (Dhikr & Tasbih):** Tactile tasbih counter with swipe navigation, bundled offline *Amiri* Naskh typography, authentic one-tap preset wird packs (Morning, Evening, After Prayer, Sleep) with virtues, custom groups, daily tasbih goals, immersive OLED Focus Mode, **screen-off Pocket Tasbih** via hardware volume buttons, streaks, activity heatmap, and RTL `.xlsx` / CSV stats export.
@@ -292,7 +301,7 @@ npm run lint && npm test
 ```bash
 git clone https://github.com/EmadAboEsmail/mizan.git
 cd mizan
-npm install
+npm ci
 npm run dev            # Start dev server
 npm test               # Run Vitest suite
 npm run build:android  # Build for Capacitor Android

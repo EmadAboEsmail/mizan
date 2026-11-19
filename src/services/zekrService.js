@@ -1,3 +1,4 @@
+import { validateBackupSection } from './backupValidation.js'
 import { query, queryOne, run, transaction } from '@/db/adapter.js'
 import {
   getStats as calcStats,
@@ -569,10 +570,10 @@ export async function getBackup() {
   }
 }
 
-export async function restoreBackup(data) {
-  await flushClicks()
-  clearBuffer()
-
+export async function prepareZekrRestore(data) {
+  const extra = ['counts', 'targets', 'clicks_hourly', 'groups', 'group_items']
+  const current = data?.version === '2.0'
+  validateBackupSection(data, ['adhkar', ...(current ? extra : [])], current ? ['clicks'] : [...extra, 'clicks'])
   const statements = []
 
   statements.push({ statement: 'DELETE FROM group_items', values: [] })
@@ -653,8 +654,15 @@ export async function restoreBackup(data) {
     })
   }
 
+  return { statements, result: { ok: true, count: data.adhkar.length } }
+}
+
+export async function restoreBackup(data) {
+  const { statements, result } = await prepareZekrRestore(data)
+  await flushClicks()
+  clearBuffer()
   await transaction(statements)
-  return { ok: true, count: (data.adhkar || []).length }
+  return result
 }
 
 // ═══════════════════════════════════════

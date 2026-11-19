@@ -1,7 +1,9 @@
+import { transaction } from '@/db/adapter.js'
+import { flush as flushClicks } from './clickBuffer.js'
 import { Capacitor } from '@capacitor/core'
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
-import { getBackup as getZekrBackup, restoreBackup as restoreZekrBackup } from './zekrService.js'
-import { getBudgetBackup, restoreBudgetBackup } from './budgetService.js'
+import { getBackup as getZekrBackup, prepareZekrRestore } from './zekrService.js'
+import { getBudgetBackup, prepareBudgetRestore } from './budgetService.js'
 import { getCurrencyCode, setCurrencyCode } from '@/hooks/useCurrency.js'
 import { getDailyZekrGoal, setDailyZekrGoal } from '@/hooks/useDailyZekrGoal.js'
 
@@ -43,28 +45,19 @@ export async function restoreUnifiedMizanBackup(data) {
     throw new Error('ملف النسخة الاحتياطية غير صالح')
   }
 
-  let restoredZekr = false
-  let restoredBudget = false
-
-  if (data.zekr && typeof data.zekr === 'object') {
-    await restoreZekrBackup(data.zekr)
-    restoredZekr = true
-  } else if (Array.isArray(data.adhkar)) {
-    await restoreZekrBackup(data)
-    restoredZekr = true
-  }
-
-  if (data.budget && typeof data.budget === 'object') {
-    await restoreBudgetBackup(data.budget)
-    restoredBudget = true
-  } else if (Array.isArray(data.categories) || Array.isArray(data.transactions)) {
-    await restoreBudgetBackup(data)
-    restoredBudget = true
-  }
-
-  if (!restoredZekr && !restoredBudget) {
+  const hasZekr = Object.hasOwn(data, 'zekr')
+  const hasBudget = Object.hasOwn(data, 'budget')
+  const unified = hasZekr || hasBudget
+  const restoredZekr = hasZekr || (!unified && Array.isArray(data.adhkar))
+  const restoredBudget = hasBudget || (!unified && (Array.isArray(data.categories) || Array.isArray(data.transactions)))
+  if ((!restoredZekr && !restoredBudget) || (unified && !(hasZekr && hasBudget))) {
     throw new Error('لا يحتوي الملف على بيانات صالحة للاستعادة')
   }
+
+  const zekr = restoredZekr ? await prepareZekrRestore(unified ? data.zekr : data) : null
+  const budget = restoredBudget ? await prepareBudgetRestore(unified ? data.budget : data) : null
+  if (zekr) await flushClicks()
+  await transaction([...(zekr?.statements ?? []), ...(budget?.statements ?? [])])
 
   if (data.preferences && typeof data.preferences === 'object') {
     if (data.preferences.currency) setCurrencyCode(data.preferences.currency)
@@ -121,13 +114,8 @@ export async function performUnifiedAutoBackup() {
       // تجاهل أخطاء التنظيف
     }
   } else {
-    try {
-      localStorage.setItem(WEB_BACKUP_KEY, content)
-      // إزالة المفتاح القديم لتوفير المساحة
-      localStorage.removeItem('auto_backup_data')
-    } catch {
-      // تجاهل امتلاء localStorage
-    }
+    localStorage.setItem(WEB_BACKUP_KEY, content)
+    localStorage.removeItem('auto_backup_data')
   }
 
   const ts = String(Date.now())

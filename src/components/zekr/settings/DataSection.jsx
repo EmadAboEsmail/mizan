@@ -1,3 +1,4 @@
+import { useBudgetLock } from '@/hooks/useBudgetLock.js'
 import { useState, useRef } from 'react'
 import {
   useDeleteAllCountsMutation,
@@ -95,6 +96,10 @@ function DataSection() {
     restoreBackupMutation.isPending ||
     importLegacyMutation.isPending
 
+  const { isLocked: budgetLocked } = useBudgetLock()
+  const requireBudgetUnlock = () => {
+    if (budgetLocked) throw new Error('افتح قفل الميزانية أولاً للوصول إلى النسخة الشاملة.')
+  }
   const exportUnifiedMutation = useExportUnifiedMizanMutation()
   const restoreUnifiedMutation = useRestoreUnifiedMizanMutation()
   const restoreAutoMutation = useRestoreLatestAutoBackupMutation()
@@ -158,6 +163,7 @@ function DataSection() {
     try {
       const parsed = JSON.parse(pendingFileContent)
       if (parsed?.app === 'mizan' || (parsed?.zekr && parsed?.budget)) {
+        requireBudgetUnlock()
         await restoreUnifiedMutation.mutateAsync(parsed)
         setImportStatus({
           type: 'success',
@@ -186,17 +192,19 @@ function DataSection() {
 
   const handleExportUnifiedClick = async () => {
     try {
+      requireBudgetUnlock()
       const data = await exportUnifiedMutation.mutateAsync()
       await exportJsonFile(`mizan-full-backup-${todayStr()}.json`, data)
       showToast('تم تصدير نسخة مِيزان الشاملة (ذِكر + الميزانية)!')
     } catch (err) {
       console.error(err)
-      showToast('فشل تصدير النسخة الشاملة')
+      showToast(err?.message || 'فشل تصدير النسخة الشاملة')
     }
   }
 
   const handleRestoreLatestAuto = async () => {
     try {
+      requireBudgetUnlock()
       await restoreAutoMutation.mutateAsync()
       showToast('تمت استعادة آخر نسخة تلقائية بنجاح')
     } catch (err) {

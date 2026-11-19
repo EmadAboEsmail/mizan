@@ -26,7 +26,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Setup Java JDK 21
@@ -44,18 +44,27 @@ jobs:
           npm run lint
           npm test
 
+      - name: Verify PWA output
+        run: |
+          npm run build
+          test -s dist/sw.js
+
       - name: Build Web App (Android mode)
         run: npm run build:android
 
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Grant Execute Permission to Gradlew
-        run: chmod +x android/gradlew
-
       - name: Build APK (Debug)
         working-directory: android
-        run: ./gradlew assembleDebug --stacktrace
+        run: bash gradlew :app:testDebugUnitTest :app:assembleDebug --stacktrace
+
+      - name: Verify packaged Android assets
+        run: |
+          apk=android/app/build/outputs/apk/debug/app-debug.apk
+          unzip -t "$apk"
+          unzip -p "$apk" assets/public/index.html > /tmp/mizan-apk-index.html
+          test -s /tmp/mizan-apk-index.html
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4

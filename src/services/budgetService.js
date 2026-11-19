@@ -1,3 +1,4 @@
+import { validateBackupSection } from './backupValidation.js'
 import { query, queryOne, run, transaction } from '@/db/adapter.js'
 import {
   computeSummary,
@@ -270,7 +271,7 @@ export async function deleteWalletTransfer(id) {
 // ═══════════════════════════════════════
 // Recurring Transactions
 // ═══════════════════════════════════════
-function advanceIsoDate(iso, frequency) {
+function advanceIsoDate(iso, frequency, anchorDay) {
   const [y, m, d] = String(iso).split('-').map(Number)
   const dt = new Date(y, (m || 1) - 1, d || 1)
   if (frequency === 'daily') {
@@ -282,7 +283,7 @@ function advanceIsoDate(iso, frequency) {
   } else {
     // شهري مع حماية نهاية الشهر (مثلاً 31 -> 28 فبراير)
     const targetMonth = dt.getMonth() + 1
-    const origDay = dt.getDate()
+    const origDay = anchorDay ?? dt.getDate()
     const nextFirst = new Date(dt.getFullYear(), targetMonth, 1)
     const maxDay = new Date(
       nextFirst.getFullYear(),
@@ -380,7 +381,7 @@ export async function updateRecurringTransaction(id, patch) {
     vals.push(String(patch.title).trim())
   }
   if (patch.next_due_date !== undefined) {
-    sets.push('next_due_date = ?')
+    sets.push('next_due_date = ?', 'anchor_day = NULL')
     vals.push(patch.next_due_date)
   }
   if (sets.length > 0) {
@@ -405,7 +406,8 @@ export async function applyRecurringNow(id) {
   )
   if (!rec) throw new Error('العنصر غير موجود')
   const useDate = rec.next_due_date || localTodayIso()
-  const nextDate = advanceIsoDate(useDate, rec.frequency)
+  const anchorDay = rec.anchor_day ?? Number(useDate.slice(-2))
+  const nextDate = advanceIsoDate(useDate, rec.frequency, anchorDay)
   const txnId = genId('txn')
   await transaction([
     {
@@ -426,8 +428,8 @@ export async function applyRecurringNow(id) {
     },
     {
       statement:
-        'UPDATE recurring_transactions SET next_due_date = ?, last_applied_date = ? WHERE id = ?',
-      values: [nextDate, useDate, rec.id],
+        'UPDATE recurring_transactions SET next_due_date = ?, last_applied_date = ?, anchor_day = ? WHERE id = ?',
+      values: [nextDate, useDate, anchorDay, rec.id],
     },
   ])
   return { applied: 1, next_due_date: nextDate }
@@ -447,6 +449,7 @@ export async function processDueRecurringTransactions() {
 
   for (const rec of due) {
     let cursor = rec.next_due_date
+    const anchorDay = rec.anchor_day ?? Number(cursor.slice(-2))
     let guard = 0
     let lastUsed = cursor
     // حد أمان 12 دورة متأخرة حتى لا يُنشئ مئات الصفوف لو فُتح بعد سنوات
@@ -468,14 +471,14 @@ export async function processDueRecurringTransactions() {
         ],
       })
       lastUsed = cursor
-      cursor = advanceIsoDate(cursor, rec.frequency)
+      cursor = advanceIsoDate(cursor, rec.frequency, anchorDay)
       applied += 1
       guard += 1
     }
     stmts.push({
       statement:
-        'UPDATE recurring_transactions SET next_due_date = ?, last_applied_date = ? WHERE id = ?',
-      values: [cursor, lastUsed, rec.id],
+        'UPDATE recurring_transactions SET next_due_date = ?, last_applied_date = ?, anchor_day = ? WHERE id = ?',
+      values: [cursor, lastUsed, anchorDay, rec.id],
     })
   }
 
@@ -710,7 +713,10 @@ export async function getBudgetBackup() {
   }
 }
 
-export async function restoreBudgetBackup(data) {
+export async function prepareBudgetRestore(data) {
+  const extra = ['wallets', 'wallet_transfers', 'recurring_transactions', 'limits']
+  const current = data?.version === '2.0'
+  validateBackupSection(data, ['categories', 'transactions', ...(current ? extra : [])], current ? [] : extra)
   const hasWallets = Array.isArray(data.wallets) && data.wallets.length > 0
   const statements = [
     { statement: 'DELETE FROM limits', values: [] },
@@ -801,8 +807,8 @@ export async function restoreBudgetBackup(data) {
   for (const r of data.recurring_transactions || []) {
     statements.push({
       statement: `INSERT INTO recurring_transactions
-        (id, title, amount, type, category_id, wallet_id, frequency, next_due_date, auto_apply, active, details, last_applied_date, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (id, title, amount, type, category_id, wallet_id, frequency, next_due_date, anchor_day, auto_apply, active, details, last_applied_date, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       values: [
         r.id || genId('rec'),
         r.title,
@@ -812,6 +818,7 @@ export async function restoreBudgetBackup(data) {
         r.wallet_id && walletIds.has(r.wallet_id) ? r.wallet_id : null,
         r.frequency || 'monthly',
         r.next_due_date || localTodayIso(),
+        r.anchor_day ?? null,
         r.auto_apply ?? 1,
         r.active ?? 1,
         r.details ?? null,
@@ -829,8 +836,13 @@ export async function restoreBudgetBackup(data) {
     })
   }
 
+  return { statements, result: { ok: true, categories: catIds.size, transactions: txnCount } }
+}
+
+export async function restoreBudgetBackup(data) {
+  const { statements, result } = await prepareBudgetRestore(data)
   await transaction(statements)
-  return { ok: true, categories: catIds.size, transactions: txnCount }
+  return result
 }
 
 export async function deleteAllBudgetData(keepCategories = false) {
