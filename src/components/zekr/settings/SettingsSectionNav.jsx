@@ -4,12 +4,12 @@ import {
 } from './SettingsAccordionContext'
 import styles from './SettingsSectionNav.module.scss'
 
-function SettingsSectionNav() {
+function SettingsSectionNav({ exclude = [] }) {
   const { openIds, scrollTo } = useSettingsAccordion()
 
   return (
     <nav className={styles.nav} aria-label="التنقل بين أقسام الإعدادات">
-      {SETTINGS_SECTIONS.map((section) => {
+      {SETTINGS_SECTIONS.filter(({ id }) => !exclude.includes(id)).map((section) => {
         const isOpen = openIds.includes(section.id)
         return (
           <button

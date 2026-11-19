@@ -50,7 +50,7 @@ const ArrowLeftIcon = () => (
   </svg>
 )
 
-function GroupsSection() {
+function GroupsSection({ standalone = false }) {
   // ─── Queries ───
   const { data: groups = EMPTY_LIST } = useGroupsQuery()
   const { data: allAdhkar = EMPTY_LIST } = useAdhkarQuery()
@@ -147,7 +147,7 @@ function GroupsSection() {
   }
 
   return (
-    <SettingsSection id="groups" title={`المجموعات (${groups.length})`}>
+    <SettingsSection standalone={standalone} id="groups" title={`المجموعات (${groups.length})`}>
       <div className={styles.container}>
         <div className={styles.topBar}>
           <p className={styles.hint}>

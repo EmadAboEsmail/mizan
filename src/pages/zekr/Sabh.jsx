@@ -454,7 +454,7 @@ function ZekrSabh() {
           <button
             type="button"
             className={styles.addFirstBtn}
-            onClick={() => navigate('/zekr/settings')}
+            onClick={() => navigate('/zekr/manage')}
           >
             أضف ذكرك الأول
           </button>

@@ -23,9 +23,12 @@ function SettingsSection({
   action,
   children,
   className = '',
+  standalone = false,
 }) {
   const { openIds, toggle } = useSettingsAccordion()
   const isOpen = openIds.includes(id)
+
+  if (standalone) return <section className={`${styles.section} ${className}`} aria-label={title}>{children}</section>
 
   return (
     <section

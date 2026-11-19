@@ -188,3 +188,12 @@
     transform: translateY(0);
   }
 }
+
+.overlay.drawer { justify-content: flex-start; padding: 0; }
+.modal.drawer {
+  width: min(86vw, 340px);
+  height: 100dvh;
+  max-height: 100dvh;
+  border-radius: 0;
+  padding: calc(16px + var(--safe-top)) max(16px, var(--safe-right)) calc(16px + var(--safe-bottom)) 16px;
+}

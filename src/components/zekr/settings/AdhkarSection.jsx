@@ -31,7 +31,7 @@ const DeleteIcon = () => (
   </svg>
 )
 
-function AdhkarSection() {
+function AdhkarSection({ standalone = false }) {
   // ─── Query ───
   const { data: allAdhkar = EMPTY_LIST } = useAdhkarQuery()
 
@@ -92,7 +92,7 @@ function AdhkarSection() {
   }
 
   return (
-    <SettingsSection id="adhkar" title={`الأذكار (${allAdhkar.length})`}>
+    <SettingsSection standalone={standalone} id="adhkar" title={`الأذكار (${allAdhkar.length})`}>
       <div className={styles.sectionContainer}>
         {/* شريط الإجراءات العلوي: زر الإضافة وشريط البحث */}
         <div className={styles.topBar}>
@@ -122,7 +122,12 @@ function AdhkarSection() {
             {filteredAdhkar.map((z, idx) => (
               <li key={z.id} className={styles.item}>
                 <div className={styles.info}>
-                  <span className={styles.text}>{z.text}</span>
+                  {z.text.length > 160 ? (
+                    <details className={styles.longText}>
+                      <summary>{z.text.slice(0, 110)}… عرض النص الكامل</summary>
+                      <p className={styles.text}>{z.text}</p>
+                    </details>
+                  ) : <span className={styles.text}>{z.text}</span>}
                   {z.virtue && (
                     <span className={styles.virtueNote}>{z.virtue}</span>
                   )}

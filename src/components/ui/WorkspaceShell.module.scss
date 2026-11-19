@@ -35,3 +35,9 @@
 }
 
 .shell h1, .shell h2 { font-family: var(--font-display); }
+
+.drawerShell .drawerContent { padding-bottom: calc(var(--safe-bottom) + 24px); }
+.menuButton { min-width: 44px; min-height: 44px; display: grid; place-items: center; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-default); border-radius: 8px; }
+.drawerLinks { display: grid; gap: 4px; }
+.drawerLinks a { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px; color: var(--text-primary); text-decoration: none; border-block-end: 1px solid var(--border-default); }
+.drawerLinks a[aria-current='page'] { background: var(--zekr-soft); font-weight: 800; }

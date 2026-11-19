@@ -2,8 +2,7 @@ import { SettingsAccordionProvider } from './SettingsAccordionContext'
 import SettingsSectionNav from './SettingsSectionNav'
 import SettingsSection from './SettingsSection'
 import AppearanceSection from './AppearanceSection'
-import GroupsSection from './GroupsSection'
-import AdhkarSection from './AdhkarSection'
+import { Link } from 'react-router-dom'
 import DataSection from './DataSection'
 import AboutSection from './AboutSection'
 import RemindersCard from '@/components/common/RemindersCard.jsx'
@@ -13,15 +12,14 @@ function SettingsTab() {
   return (
     <SettingsAccordionProvider>
       <div className={styles.settingsContainer}>
-        <SettingsSectionNav />
+        <SettingsSectionNav exclude={['groups', 'adhkar']} />
 
         <div className={styles.sectionsList}>
           <AppearanceSection />
           <SettingsSection id="reminders" title="التذكيرات اليومية">
             <RemindersCard />
           </SettingsSection>
-          <GroupsSection />
-          <AdhkarSection />
+          <Link to="/zekr/manage">إدارة الأذكار والمجموعات</Link>
           <DataSection />
           <AboutSection />
         </div>

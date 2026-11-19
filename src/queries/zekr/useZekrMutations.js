@@ -19,6 +19,7 @@ import {
   deleteGroup,
   installPresetGroup,
   addGroupItem,
+  addHisnEntryToGroup,
   updateGroupItem,
   deleteGroupItem,
   getBackup,
@@ -493,5 +494,13 @@ export function useImportLegacyZekrMutation() {
       inFlightClicks.clear()
       return queryClient.invalidateQueries({ queryKey: zekrKeys.all })
     },
+  })
+}
+
+export function useAddHisnEntryMutation() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: addHisnEntryToGroup,
+    onSuccess: () => client.invalidateQueries({ queryKey: zekrKeys.all }),
   })
 }

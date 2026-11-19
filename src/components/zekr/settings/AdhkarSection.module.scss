@@ -255,3 +255,8 @@
   line-height: 1.6;
   max-width: 300px;
 }
+
+.info { min-width: 0; }
+.longText { max-width: 100%; overflow-wrap: anywhere; }
+.longText summary { cursor: pointer; line-height: 1.7; }
+.longText .text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.9; }

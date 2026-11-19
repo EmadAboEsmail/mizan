@@ -1,5 +1,6 @@
+import Modal from '@/components/ui/Modal.jsx'
 import { Link } from 'react-router-dom'
-import { useGroupsQuery, useInstallPresetGroupMutation } from '@/queries/zekr'
+import { useAddHisnEntryMutation, useGroupsQuery, useInstallPresetGroupMutation } from '@/queries/zekr'
 import { countableWirds } from '@/data/hisn/countableWirds.js'
 import { useMemo, useState } from 'react'
 import chapters from '@/data/hisn/chapters.json'
@@ -13,6 +14,7 @@ const index = chapters.map((chapter) => ({
 
 export default function HisnLibrary() {
   const [query, setQuery] = useState('')
+  const [selection, setSelection] = useState(null)
   const results = useMemo(() => index.filter(({ search }) => search.includes(normalize(query))), [query])
   const hasQuery = Boolean(normalize(query))
 
@@ -27,21 +29,61 @@ export default function HisnLibrary() {
       {results.map(({ id, title, entries }) => entries.length === 1 ? (
         <article key={id} className={styles.chapter}>
           <h3>{title} <small>ذكر مستقل</small></h3>
-          <Entry entry={entries[0]} />
+          <Entry entry={entries[0]} onAdd={setSelection} />
         </article>
       ) : (
         <details key={`${hasQuery}-${id}`} className={styles.chapter} open={hasQuery || undefined}>
           <summary>{title} <small>مجموعة · {entries.length.toLocaleString('ar-EG')} مدخل</small></summary>
           {countableWirds[title] && <WirdInstall pack={countableWirds[title]} />}
-          <ol>{entries.map((entry, count) => <li key={count}><Entry entry={entry} /></li>)}</ol>
+          <ol>{entries.map((entry, count) => <li key={count}><Entry entry={entry} onAdd={setSelection} /></li>)}</ol>
         </details>
       ))}
+      {selection && <AddToGroup entry={selection} onClose={() => setSelection(null)} />}
     </section>
   )
 }
 
-function Entry({ entry }) {
-  return <div className={styles.entry}><p>{entry.text}</p><small>المرجع: {entry.reference}</small></div>
+function Entry({ entry, onAdd }) {
+  return (
+    <div className={styles.entry}>
+      {entry.text.length > 200 ? <details><summary>{entry.text.slice(0, 105)}… اقرأ النص كاملًا</summary><p>{entry.text}</p></details> : <p>{entry.text}</p>}
+      <small>المرجع: {entry.reference}</small>
+      <button type="button" className={styles.entryAction} onClick={() => onAdd(entry)}>أضف إلى مجموعة</button>
+    </div>
+  )
+}
+
+function AddToGroup({ entry, onClose }) {
+  const { data: groups = [], isPending } = useGroupsQuery()
+  const [groupId, setGroupId] = useState('')
+  const [target, setTarget] = useState('')
+  const [saved, setSaved] = useState(null)
+  const { mutateAsync, isPending: saving, error } = useAddHisnEntryMutation()
+  const save = async (event) => {
+    event.preventDefault()
+    if (!groupId || saving || saved) return
+    try {
+      setSaved(await mutateAsync({ groupId, text: entry.text, reference: entry.reference, target: target ? Number(target) : null }))
+    } catch { /* error is displayed below */ }
+  }
+  return (
+    <Modal isOpen onClose={() => { if (!saving) onClose() }} title="أضف ذكرًا إلى مجموعة">
+      <form className={styles.addForm} onSubmit={save}>
+        <details><summary>عرض النص الذي سيتم حفظه</summary><p className={styles.fullText}>{entry.text}</p></details>
+        <p className={styles.note}>سيُحفظ نص المدخل كما هو، وقد يتضمن شرحًا أو صيغة بديلة. اترك العدد فارغًا لو مش عايز هدفًا للعدّ.</p>
+        <label htmlFor="hisn-group">المجموعة</label>
+        <select id="hisn-group" required value={groupId} onChange={(event) => setGroupId(event.target.value)} disabled={saving || Boolean(saved)}>
+          <option value="">{isPending ? 'جاري التحميل…' : 'اختر مجموعة'}</option>
+          {groups.map(({ id, name }) => <option key={id} value={id}>{name}</option>)}
+        </select>
+        {!isPending && !groups.length && <Link to="/zekr/manage?tab=groups">أنشئ مجموعة أولًا</Link>}
+        <label htmlFor="hisn-target">هدف عدّ اختياري</label>
+        <input id="hisn-target" type="number" min="1" step="1" inputMode="numeric" value={target} onChange={(event) => setTarget(event.target.value)} disabled={saving || Boolean(saved)} />
+        {error && <p role="alert">{error.message}</p>}
+        {saved ? <p role="status">تمت الإضافة. <Link to={`/zekr/sabh?${new URLSearchParams({ mode: 'group', group: saved.groupId })}`}>افتح المجموعة</Link></p> : <button type="submit" className={styles.entryAction} disabled={!groupId || saving}>{saving ? 'جاري الإضافة…' : 'أضف الذكر'}</button>}
+      </form>
+    </Modal>
+  )
 }
 
 function WirdInstall({ pack }) {

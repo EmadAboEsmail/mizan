@@ -5,6 +5,9 @@ import { seedIfEmpty } from '@/db/seed.js'
 import { ADHKAR_PRESET_PACKS } from '@/data/adhkarPresets.js'
 import {
   getAdhkar,
+  addHisnEntryToGroup,
+  createGroup,
+  getGroups,
   createAdhkar,
   reorderAdhkar,
   installPresetGroup,
@@ -108,6 +111,18 @@ describe('Mizan v4 upgrades end-to-end', () => {
     sqlDb?.close()
     sqlDb = null
     disableBudgetPin()
+  })
+
+  it('adds a Hisn entry only to the selected group and rejects duplicates', async () => {
+    const chosen = await createGroup('Chosen group')
+    const other = await createGroup('Other group')
+    const input = { groupId: chosen.id, text: 'نص تجريبي طويل من الحصن', reference: 'مرجع تجريبي', target: null }
+    await addHisnEntryToGroup(input)
+    await expect(addHisnEntryToGroup(input)).rejects.toThrow('موجود بالفعل')
+    await expect(addHisnEntryToGroup({ ...input, target: -1 })).rejects.toThrow()
+    const groups = await getGroups()
+    expect(groups.find(({ id }) => id === chosen.id).items).toMatchObject([{ text: input.text, target: null }])
+    expect(groups.find(({ id }) => id === other.id).items).toHaveLength(0)
   })
 
   it('seeds virtues, supports reordering adhkar & installing preset wird packs', async () => {

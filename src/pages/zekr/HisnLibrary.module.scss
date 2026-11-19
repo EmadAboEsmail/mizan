@@ -15,3 +15,10 @@
 .install p { margin: 5px 0; }
 .install small { display: block; }
 .install button, .install a { min-height: 44px; display: inline-flex; align-items: center; padding-inline: 12px; font: inherit; color: var(--text-primary); background: var(--zekr-soft); border: 1px solid var(--border-default); border-radius: 8px; }
+
+.entry { padding-block: 8px; }
+.entry details { border: 0; overflow-wrap: anywhere; }
+.entryAction { min-height: 44px; padding-inline: 12px; font: inherit; border: 1px solid var(--border-default); border-radius: 8px; color: var(--text-primary); background: var(--zekr-soft); }
+.addForm { display: grid; gap: 8px; }
+.addForm select, .addForm input { min-height: 44px; max-width: 100%; font: inherit; color: var(--text-primary); background: var(--bg-card); border: 1px solid var(--border-default); padding-inline: 8px; border-radius: 8px; }
+.fullText { max-height: min(35dvh, 280px); overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.9; }
