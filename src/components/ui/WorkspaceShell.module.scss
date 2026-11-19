@@ -1,0 +1,37 @@
+.shell {
+  --workspace-paper: #f5f0e6;
+  --workspace-raised: #fbf7ee;
+  --workspace-ink: #222923;
+  --workspace-quiet: #514f45;
+  --workspace-rule: #c8bdab;
+  --bg-base: var(--workspace-paper);
+  --bg-card: var(--workspace-raised);
+  --bg-nav: var(--workspace-paper);
+  --text-primary: var(--workspace-ink);
+  --text-secondary: var(--workspace-quiet);
+  --border-default: var(--workspace-rule);
+  --card-highlight: inset 0 0 0 transparent;
+}
+
+:global(body.dark) .shell {
+  --workspace-paper: #1a1814;
+  --workspace-raised: #222019;
+  --workspace-ink: #f1eadb;
+  --workspace-quiet: #c5bba8;
+  --workspace-rule: #534b40;
+}
+
+:global(body.amoled) .shell {
+  --workspace-paper: #000;
+  --workspace-raised: #0b0a09;
+  --workspace-ink: #f1eadb;
+  --workspace-quiet: #c5bba8;
+  --workspace-rule: #534b40;
+}
+
+.shell > header, .shell > nav {
+  background: var(--workspace-paper);
+  box-shadow: none;
+}
+
+.shell h1, .shell h2 { font-family: var(--font-display); }

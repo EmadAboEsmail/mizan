@@ -251,3 +251,12 @@
     transform: scale(1);
   }
 }
+
+// Quiet reading area: keep focus mode independent from the workspace surface.
+.displayCard:not(.focusDisplay) {
+  background: var(--workspace-raised, var(--bg-card));
+  border: 0;
+  border-block: 1px solid var(--workspace-rule, var(--border-default));
+  border-radius: 0;
+  box-shadow: none;
+}

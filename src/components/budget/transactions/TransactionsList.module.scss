@@ -77,3 +77,13 @@
     transform: scale(0.98);
   }
 }
+
+.dayHeader {
+  padding-block-end: 6px;
+  border-block-end: 1px solid var(--workspace-rule, var(--border-default));
+}
+
+.dayCard {
+  border-radius: 8px;
+  box-shadow: none;
+}

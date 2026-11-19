@@ -2,6 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { House } from 'lucide-react'
 import TopAppBar from './TopAppBar/TopAppBar.jsx'
 import BottomNav from './BottomNav/BottomNav.jsx'
+import editorial from './WorkspaceShell.module.scss'
 
 const todayTab = { to: '/', end: true, label: 'اليوم', icon: <House size={20} /> }
 
@@ -9,7 +10,7 @@ const todayTab = { to: '/', end: true, label: 'اليوم', icon: <House size={2
 export default function WorkspaceShell({ accent, meta, tabs, actions, className, styles }) {
   const { pathname } = useLocation()
   return (
-    <div className={className}>
+    <div className={`${className} ${editorial.shell}`}>
       <TopAppBar {...meta} accent={accent} backLabel="اليوم" actions={actions} />
       <div className={styles.container}>
         <main key={pathname} className={`${styles.content} mizan-page-enter`}>

@@ -189,3 +189,11 @@
   background: var(--danger-soft);
   color: var(--danger);
 }
+
+.heroCard {
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.accentBar { display: none; }
+.netNumber { font-variant-numeric: tabular-nums; }
