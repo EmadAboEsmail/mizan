@@ -10,3 +10,8 @@
 .chapter ol { padding-inline-start: 20px; }
 .entry p { margin: 6px 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.9; }
 .entry small { margin: 0 0 8px; }
+
+.install { padding: 12px; border: 1px solid var(--border-default); border-radius: 8px; background: var(--bg-card); }
+.install p { margin: 5px 0; }
+.install small { display: block; }
+.install button, .install a { min-height: 44px; display: inline-flex; align-items: center; padding-inline: 12px; font: inherit; color: var(--text-primary); background: var(--zekr-soft); border: 1px solid var(--border-default); border-radius: 8px; }

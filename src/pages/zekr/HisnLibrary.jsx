@@ -1,3 +1,6 @@
+import { Link } from 'react-router-dom'
+import { useGroupsQuery, useInstallPresetGroupMutation } from '@/queries/zekr'
+import { countableWirds } from '@/data/hisn/countableWirds.js'
 import { useMemo, useState } from 'react'
 import chapters from '@/data/hisn/chapters.json'
 import styles from './HisnLibrary.module.scss'
@@ -29,6 +32,7 @@ export default function HisnLibrary() {
       ) : (
         <details key={`${hasQuery}-${id}`} className={styles.chapter} open={hasQuery || undefined}>
           <summary>{title} <small>مجموعة · {entries.length.toLocaleString('ar-EG')} مدخل</small></summary>
+          {countableWirds[title] && <WirdInstall pack={countableWirds[title]} />}
           <ol>{entries.map((entry, count) => <li key={count}><Entry entry={entry} /></li>)}</ol>
         </details>
       ))}
@@ -38,4 +42,27 @@ export default function HisnLibrary() {
 
 function Entry({ entry }) {
   return <div className={styles.entry}><p>{entry.text}</p><small>المرجع: {entry.reference}</small></div>
+}
+
+function WirdInstall({ pack }) {
+  const { data: groups = [], isPending } = useGroupsQuery()
+  const installed = groups.find(({ name }) => name === pack.name)
+  const { mutate, isPending: installing, error } = useInstallPresetGroupMutation()
+  return (
+    <section className={styles.install} aria-label={pack.name}>
+      <strong>مختارات قابلة للعدّ</strong>
+      <p>{pack.description}</p>
+      <ul>{pack.items.map(({ text, target, virtue }) => (
+        <li key={text}>{text} · {target.toLocaleString('ar-EG')} مرة <small>{virtue}</small></li>
+      ))}</ul>
+      {installed ? (
+        <Link to={`/zekr/sabh?${new URLSearchParams({ mode: 'group', group: installed.id })}`}>افتح الورد في السبحة</Link>
+      ) : (
+        <button type="button" disabled={installing || isPending} onClick={() => mutate(pack)}>
+          {installing ? 'جاري الإضافة…' : 'أضف المختارات إلى أورادي'}
+        </button>
+      )}
+      {error && !installed && <p role="alert">{error.message || 'تعذّرت إضافة الورد'}</p>}
+    </section>
+  )
 }
