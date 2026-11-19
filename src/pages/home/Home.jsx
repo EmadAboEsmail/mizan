@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { readLastWird } from '@/utils/lastWird.js'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, LockKeyhole, Plus } from 'lucide-react'
 import { useAdhkarQuery, useCountsQuery } from '@/queries/zekr'
@@ -13,14 +15,30 @@ import styles from './Home.module.scss'
 const EMPTY = []
 const dateFormatter = new Intl.DateTimeFormat('ar-EG-u-ca-islamic', { weekday: 'long', day: 'numeric', month: 'long' })
 
+const PIN_KEY = 'mizan_pinned_spaces_v1'
+function loadPins() {
+  try {
+    const ids = JSON.parse(localStorage.getItem(PIN_KEY) ?? '["zekr","budget"]')
+    if (Array.isArray(ids)) return [...new Set(ids)].filter((id) => workspaces.some((space) => space.id === id)).slice(0, 2)
+  } catch { /* use defaults */ }
+  return ['zekr', 'budget']
+}
+
 export default function Home() {
+  const [pins, setPins] = useState(loadPins)
+  const lastWird = readLastWird()
+  const togglePin = (id) => {
+    const next = pins.includes(id) ? pins.filter((pin) => pin !== id) : [...pins, id].slice(-2)
+    setPins(next)
+    try { localStorage.setItem(PIN_KEY, JSON.stringify(next)) } catch { /* optional */ }
+  }
   const { isLocked } = useBudgetLock()
   const { data: adhkar = EMPTY } = useAdhkarQuery()
   const { data: counts } = useCountsQuery()
   const [currentId] = useCurrentZekrId(adhkar)
   const current = adhkar.find((item) => String(item.id) === String(currentId))
   const hasProgress = current && (counts?.[current.id] ?? 0) > 0
-  const zekrPath = current ? `/zekr/sabh?${new URLSearchParams({ zekr: current.id })}` : '/zekr/sabh'
+  const zekrPath = lastWird ? `/zekr/sabh?${new URLSearchParams({ mode: 'group', group: lastWird })}` : current ? `/zekr/sabh?${new URLSearchParams({ zekr: current.id })}` : '/zekr/sabh'
 
   return (
     <div className={styles.page} dir="rtl">
@@ -40,8 +58,8 @@ export default function Home() {
           <div className={styles.actions}>
             <Link className={styles.zekrAction} to={zekrPath}>
               <TasbihIcon size={22} />
-              <strong>{hasProgress ? 'تابع ذِكرك' : 'ابدأ الذِكر'}</strong>
-              <small>{current?.text || 'افتح السبحة'}</small>
+              <strong>{lastWird ? 'تابع وردك' : hasProgress ? 'تابع ذِكرك' : 'ابدأ الذِكر'}</strong>
+              <small>{lastWird ? 'من آخر موضع' : current?.text || 'افتح السبحة'}</small>
             </Link>
             <Link className={styles.budgetAction} to="/budget/transactions?add=1">
               {isLocked ? <LockKeyhole size={22} aria-hidden="true" /> : <Plus size={22} aria-hidden="true" />}
@@ -53,17 +71,23 @@ export default function Home() {
 
         <section aria-labelledby="spaces-heading">
           <h2 id="spaces-heading" className={styles.sectionTitle}>مساحات مِيزان</h2>
-          <ul className={styles.catalog}>
-            {workspaces.map(({ id, path, Icon, name, description }) => (
-              <li key={id}>
-                <Link to={path} className={styles.space} data-space={id}>
-                  <span className={styles.spaceIcon} aria-hidden="true"><Icon size={22} /></span>
-                  <span className={styles.spaceText}><strong>{name}</strong><small>{description}</small></span>
-                  <ArrowLeft size={18} aria-hidden="true" />
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {[[pins.map((id) => workspaces.find((space) => space.id === id)), 'المفضّلة'], [workspaces.filter(({ id }) => !pins.includes(id)), 'باقي المساحات']].map(([items, label]) => items.length > 0 && (
+            <div key={label}>
+              <h3 className={styles.catalogLabel}>{label}</h3>
+              <ul className={styles.catalog} aria-label={label}>
+                {items.map(({ id, path, Icon, name, description }) => (
+                  <li key={id} className={styles.pinRow}>
+                    <Link to={path} className={styles.space} data-space={id}>
+                      <span className={styles.spaceIcon} aria-hidden="true"><Icon size={22} /></span>
+                      <span className={styles.spaceText}><strong>{name}</strong><small>{description}</small></span>
+                      <ArrowLeft size={18} aria-hidden="true" />
+                    </Link>
+                    <button type="button" className={styles.pinButton} aria-pressed={pins.includes(id)} aria-label={`تثبيت ${name} في المفضّلة`} onClick={() => togglePin(id)}>{pins.includes(id) ? '★' : '☆'}</button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </section>
 
         <TodayBalanceCard isLocked={isLocked} />

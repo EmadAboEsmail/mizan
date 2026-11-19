@@ -80,3 +80,9 @@
 .space { min-height: 58px; padding: 7px 2px; border: 0; border-bottom: 1px solid var(--rule); border-radius: 0; color: var(--ink); }
 .spaceIcon, .space[data-space='budget'] .spaceIcon { background: none; color: var(--ink); }
 .spaceText small, .footer { color: var(--quiet); }
+
+.catalogLabel { margin: 10px 0 0; color: var(--quiet); font-size: .82rem; }
+.pinRow { display: grid; grid-template-columns: minmax(0, 1fr) 44px; align-items: center; border-bottom: 1px solid var(--rule); }
+.pinRow .space { border-bottom: 0; }
+.pinButton { min-height: 44px; border: 0; background: transparent; color: var(--ink); font-size: 1.2rem; cursor: pointer; }
+.pinButton:focus-visible { outline: 2px solid var(--border-focus); }

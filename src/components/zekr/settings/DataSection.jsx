@@ -1,3 +1,4 @@
+import { describeBackup } from '@/utils/backupPreview.js'
 import { useBudgetLock } from '@/hooks/useBudgetLock.js'
 import { useState, useRef } from 'react'
 import {
@@ -475,7 +476,7 @@ function DataSection() {
         onClose={() => setPendingFileContent(null)}
         onConfirm={handleConfirmImport}
         title="استيراد النسخة الاحتياطية؟"
-        message="سيتم إضافة الأذكار والمجموعات الموجودة بالملف إلى تطبيقك. هل تريد المتابعة؟"
+        message={describeBackup(pendingFileContent)}
         confirmLabel={
           restoreBackupMutation.isPending
             ? 'جاري الاستيراد...'

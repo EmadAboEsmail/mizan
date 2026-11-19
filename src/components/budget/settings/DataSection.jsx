@@ -1,3 +1,4 @@
+import { describeBackup } from '@/utils/backupPreview.js'
 import { useState, useRef } from 'react'
 import {
   useExportBudgetJsonMutation,
@@ -638,7 +639,7 @@ function DataSection() {
           confirmType === 'restore' ? handleConfirmRestore : handleConfirmDelete
         }
         title={confirmMessages[confirmType]?.title ?? ''}
-        message={confirmMessages[confirmType]?.message ?? ''}
+        message={confirmType === 'restore' ? describeBackup(pendingRestore) : (confirmMessages[confirmType]?.message ?? '')}
         confirmLabel={loading ? 'جاري التنفيذ...' : 'نعم، متابعة'}
         cancelLabel="إلغاء"
         danger={confirmType !== 'restore'}

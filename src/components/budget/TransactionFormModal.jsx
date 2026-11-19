@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import {
   ArrowUpRight,
   ArrowDownLeft,
@@ -94,6 +94,10 @@ function evaluateAmountExpression(raw) {
   }
 }
 
+function readLastWallet() {
+  try { return localStorage.getItem('mizan_last_wallet_v1') || '' } catch { return '' }
+}
+
 function buildFormState(initial) {
   if (initial) {
     return {
@@ -111,7 +115,7 @@ function buildFormState(initial) {
     type: 'expense',
     amount: '',
     categoryId: readLastCategory('expense'),
-    walletId: localStorage.getItem('mizan_last_wallet_v1') || '',
+    walletId: readLastWallet(),
     date: todayISO(),
     details: '',
     description: '',
@@ -148,6 +152,7 @@ function TransactionFormModal({
 
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const submitting = useRef(false)
   const [showDatePicker, setShowDatePicker] = useState(false)
 
   const sessionKey = isOpen ? (initial?.id ?? 'new') : 'closed'
@@ -221,13 +226,14 @@ function TransactionFormModal({
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (submitting.current) return
     const numAmount = evaluated.value
 
     if (numAmount === null) {
       setError('الرجاء إدخال المبلغ')
       return
     }
-    if (!Number.isFinite(numAmount) || numAmount <= 0) {
+    if (!Number.isFinite(numAmount) || Math.round(numAmount * 100) <= 0) {
       setError('المبلغ يجب أن يكون رقماً موجباً (يمكنك كتابة مثل 50+35)')
       return
     }
@@ -244,29 +250,33 @@ function TransactionFormModal({
       amount: Math.round(numAmount * 100) / 100,
       type,
       category_id: effectiveCategoryId,
-      wallet_id: walletId || null,
+      wallet_id: effectiveWalletId || null,
       date,
       details: details.trim() || null,
       description: description.trim() || null,
     }
 
     try {
+      submitting.current = true
       setIsSubmitting(true)
+      await onConfirm(payload)
       saveLastCategory(type, effectiveCategoryId)
       try {
-        localStorage.setItem('mizan_last_wallet_v1', walletId || '')
+        if (!initial) localStorage.setItem('mizan_last_wallet_v1', effectiveWalletId || '')
       } catch {
         // تجاهل
       }
       triggerHapticFeedback('success')
-      await onConfirm(payload)
     } catch (err) {
       setError(err?.message || 'حدث خطأ أثناء الحفظ')
     } finally {
+      submitting.current = false
       setIsSubmitting(false)
     }
   }
 
+  const effectiveWalletId = wallets.find((wallet) => String(wallet.id) === String(walletId))?.id ?? ''
+  const walletName = wallets.find((wallet) => wallet.id === effectiveWalletId)?.name || 'عام'
   const isToday = date === todayISO()
   const isYesterday = date === yesterdayISO()
 
@@ -413,6 +423,27 @@ function TransactionFormModal({
             )}
           </div>
 
+          {/* ─── 5. Extras (Collapsible) ─── */}
+          <div className={styles.extras}>
+            <button
+              type="button"
+              className={styles.extrasToggle}
+              onClick={() => setShowExtras(!showExtras)}
+              aria-expanded={showExtras}
+            >
+              <ChevronDown
+                size={16}
+                strokeWidth={2.2}
+                className={`${styles.extrasChevron} ${
+                  showExtras ? styles.extrasChevronOpen : ''
+                }`}
+                aria-hidden="true"
+              />
+              <span>تفاصيل إضافية · {formatDateLabel(date)} · {walletName}</span>
+            </button>
+
+            {showExtras && (
+              <div className={styles.extrasContent}>
           {/* ─── 4. Date Quick Actions + Custom Sheet ─── */}
           <div className={styles.section}>
             <div className={styles.sectionHeader}>
@@ -465,7 +496,7 @@ function TransactionFormModal({
                 <button
                   type="button"
                   className={`${styles.dateChip} ${
-                    !walletId ? styles.dateChipActive : ''
+                    !effectiveWalletId ? styles.dateChipActive : ''
                   }`}
                   onClick={() => setWalletId('')}
                 >
@@ -476,7 +507,7 @@ function TransactionFormModal({
                     key={w.id}
                     type="button"
                     className={`${styles.dateChip} ${
-                      walletId === w.id ? styles.dateChipActive : ''
+                      effectiveWalletId === w.id ? styles.dateChipActive : ''
                     }`}
                     onClick={() => {
                       triggerHapticFeedback('light')
@@ -489,28 +520,6 @@ function TransactionFormModal({
               </div>
             </div>
           )}
-
-          {/* ─── 5. Extras (Collapsible) ─── */}
-          <div className={styles.extras}>
-            <button
-              type="button"
-              className={styles.extrasToggle}
-              onClick={() => setShowExtras(!showExtras)}
-              aria-expanded={showExtras}
-            >
-              <ChevronDown
-                size={16}
-                strokeWidth={2.2}
-                className={`${styles.extrasChevron} ${
-                  showExtras ? styles.extrasChevronOpen : ''
-                }`}
-                aria-hidden="true"
-              />
-              <span>ملاحظات وتفاصيل (اختياري)</span>
-            </button>
-
-            {showExtras && (
-              <div className={styles.extrasContent}>
                 <div className={styles.fieldGroup}>
                   <label htmlFor="txn-details" className={styles.fieldLabel}>
                     تفاصيل قصيرة

@@ -1,3 +1,4 @@
+import { saveLastWird } from '@/utils/lastWird.js'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Moon, Lock } from 'lucide-react'
@@ -247,6 +248,11 @@ function ZekrSabh() {
       { replace: true }
     )
   }, [sabhMode, groups, urlGroupId, setSearchParams])
+
+  useEffect(() => {
+    if (sabhMode !== 'group') saveLastWird('')
+    else if (groups.some((group) => String(group.id) === urlGroupId)) saveLastWird(urlGroupId)
+  }, [sabhMode, groups, urlGroupId])
 
   const handleGroupChange = useCallback(
     (newGroupId) => {
@@ -500,6 +506,12 @@ function ZekrSabh() {
           isComplete={isComplete}
           isFocusMode={isFocusMode}
         />
+
+        {!isFocusMode && isComplete && canSwipeNext && (
+          <button type="button" className={styles.focusBtn} onClick={() => handleZekrChange(allAdhkar[currentIdx + 1].id)}>
+            الذِكر التالي
+          </button>
+        )}
 
         <div className={isFocusMode ? undefined : styles.thumbZone}>
           <ActionButtons
