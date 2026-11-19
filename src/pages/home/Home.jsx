@@ -26,8 +26,8 @@ export default function Home() {
     <div className={styles.page} dir="rtl">
       <header className={styles.header}>
         <div className={styles.brand}>
-          <span className={styles.mark} aria-hidden="true"><MizanMark size={23} accentColor="#E7BF7C" /></span>
-          <span>مِيزان<small>مساحات يومك</small></span>
+          <span className={styles.mark} aria-hidden="true"><MizanMark size={23} accentColor="#D4B88C" /></span>
+          <span>مِيزان<small>دفتر يومك</small></span>
         </div>
         <div className={styles.controls}><PrivacyToggle /><ThemeToggle /></div>
       </header>
@@ -36,7 +36,7 @@ export default function Home() {
         <section className={styles.hero} aria-labelledby="today-heading">
           <p className={styles.date}>{dateFormatter.format(new Date())}</p>
           <h1 id="today-heading">اليوم</h1>
-          <p className={styles.lead}>ابدأ بما يهمّك الآن.</p>
+          <p className={styles.lead}>وردك ومصروفك، في صفحة واحدة.</p>
           <div className={styles.actions}>
             <Link className={styles.zekrAction} to={zekrPath}>
               <TasbihIcon size={22} />

@@ -45,3 +45,38 @@
 .spaceText small, .footer { color: var(--text-secondary); }
 .actions a:focus-visible, .space:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 3px; }
 .footer { margin-top: auto; padding-block: 20px; text-align: center; font-size: .78rem; }
+
+// Editorial Home: paper, ink and rules rather than a grid of colored cards.
+.page {
+  --paper: #f5f0e6;
+  --ink: #222923;
+  --quiet: #514f45;
+  --rule: #c8bdab;
+  --paper-raised: #fbf7ee;
+  background: var(--paper);
+  color: var(--ink);
+}
+:global(body.dark) .page {
+  --paper: var(--bg-base);
+  --ink: #f1eadb;
+  --quiet: #c5bba8;
+  --rule: #534b40;
+  --paper-raised: var(--bg-card);
+}
+.header { padding-block: 14px; border-bottom: 1px solid var(--rule); }
+.brand { gap: 10px; font-family: var(--font-display); }
+.brand small { color: var(--quiet); font-family: var(--font-body); }
+.mark { background: #29352e; color: #f5eddb; border-radius: 10px; }
+.main { gap: 24px; }
+.hero { padding: 20px 0 0; border: 0; border-radius: 0; background: none; }
+.hero h1 { margin: 0; font-family: var(--font-display); font-size: clamp(2.35rem, 9vw, 4rem); letter-spacing: -.02em; }
+.date, .lead { color: var(--quiet); }
+.actions a { border-radius: 8px; }
+.zekrAction { background: #29352e; }
+.budgetAction { background: var(--paper-raised); border: 1px solid var(--rule); color: var(--ink); }
+.budgetAction small { color: var(--quiet); }
+.sectionTitle { padding-block-end: 8px; margin: 0; border-bottom: 1px solid var(--rule); font-family: var(--font-display); }
+.catalog { grid-template-columns: 1fr; gap: 0; }
+.space { min-height: 58px; padding: 7px 2px; border: 0; border-bottom: 1px solid var(--rule); border-radius: 0; color: var(--ink); }
+.spaceIcon, .space[data-space='budget'] .spaceIcon { background: none; color: var(--ink); }
+.spaceText small, .footer { color: var(--quiet); }

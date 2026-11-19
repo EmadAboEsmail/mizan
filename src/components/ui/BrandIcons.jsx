@@ -33,8 +33,8 @@ export function MizanMark({ size = 22, accentColor, ...props }) {
       aria-hidden="true"
       {...props}
     >
-      <path d="M11,6 H8 A3,3 0,0 0,5 9 V12 H8 A3,3 0,0 0,11 9 Z" fill="currentColor" />
-      <path d="M13,12 H16 A3,3 0,0 1,19 15 V18 H16 A3,3 0,0 1,13 15 Z" fill={jewel} />
+      <path d="M4,7 H8 Q10,7 11,9 V17 Q10,15 8,15 H4 Z" fill="currentColor" />
+      <path d="M20,7 H16 Q14,7 13,9 V17 Q14,15 16,15 H20 Z" fill={jewel} />
     </svg>
   )
 }
