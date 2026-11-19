@@ -88,7 +88,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="صرف اليوم"
-                android:textColor="#E2BC84"
+                android:textColor="#ADD0E8"
                 android:textSize="11sp" />
 
             <TextView

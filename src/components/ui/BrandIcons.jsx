@@ -33,62 +33,8 @@ export function MizanMark({ size = 22, accentColor, ...props }) {
       aria-hidden="true"
       {...props}
     >
-      {/* رأس الميزان */}
-      <path
-        d="M12 2.4C12.35 3.55 12.85 4.05 13.85 4.4C12.85 4.75 12.35 5.25 12 6.4C11.65 5.25 11.15 4.75 10.15 4.4C11.15 4.05 11.65 3.55 12 2.4Z"
-        fill={jewel}
-      />
-
-      {/* ذراع الميزان المتوازن */}
-      <path
-        d="M4.5 8.5Q8.25 7.6 12 8.25Q15.75 7.6 19.5 8.5"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-      />
-
-      {/* العمود الأوسط */}
-      <path
-        d="M12 9.6V19.2"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-
-      {/* خيوط وكفّة اليسار */}
-      <path
-        d="M4.6 8.8L2.5 14M4.6 8.8L6.7 14"
-        stroke="currentColor"
-        strokeWidth="1.25"
-        strokeLinecap="round"
-      />
-      <path
-        d="M2 13.8H7.2C7.05 15.65 5.95 16.85 4.6 16.85C3.25 16.85 2.15 15.65 2 13.8Z"
-        fill="currentColor"
-      />
-
-      {/* خيوط وكفّة اليمين */}
-      <path
-        d="M19.4 8.8L17.3 14M19.4 8.8L21.5 14"
-        stroke="currentColor"
-        strokeWidth="1.25"
-        strokeLinecap="round"
-      />
-      <path
-        d="M16.8 13.8H22C21.85 15.65 20.75 16.85 19.4 16.85C18.05 16.85 16.95 15.65 16.8 13.8Z"
-        fill="currentColor"
-      />
-
-      {/* حلقة الارتكاز */}
-      <circle cx="12" cy="8.35" r="1.45" fill={jewel} />
-
-      {/* القاعدة المتدرجة */}
-      <path
-        d="M9.2 19.2H14.8M7.6 21H16.4"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-      />
+      <path d="M11,6 H8 A3,3 0,0 0,5 9 V12 H8 A3,3 0,0 0,11 9 Z" fill="currentColor" />
+      <path d="M13,12 H16 A3,3 0,0 1,19 15 V18 H16 A3,3 0,0 1,13 15 Z" fill={jewel} />
     </svg>
   )
 }
