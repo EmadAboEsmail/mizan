@@ -1,8 +1,7 @@
-import { Outlet, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { BarChart3, Settings, AlertTriangle, RotateCcw } from 'lucide-react'
 import { useZekrBootstrap } from '@/queries/zekr'
-import TopAppBar from '@/components/ui/TopAppBar/TopAppBar.jsx'
-import BottomNav from '@/components/ui/BottomNav/BottomNav.jsx'
+import WorkspaceShell from '@/components/ui/WorkspaceShell.jsx'
 import PageSkeleton from '@/components/ui/PageSkeleton.jsx'
 import { TasbihIcon } from '@/components/ui/BrandIcons.jsx'
 import styles from './Layout.module.scss'
@@ -69,20 +68,13 @@ function ZekrLayout() {
   }
 
   return (
-    <div className={styles.zekr}>
-      <TopAppBar title={meta.title} icon={meta.icon} accent="zekr" />
-
-      <div className={styles.container}>
-        <main
-          key={pathname}
-          className={`${styles.content} mizan-page-enter`}
-        >
-          <Outlet />
-        </main>
-      </div>
-
-      <BottomNav items={NAV_ITEMS} accent="zekr" />
-    </div>
+    <WorkspaceShell
+      accent="zekr"
+      meta={meta}
+      tabs={NAV_ITEMS}
+      className={styles.zekr}
+      styles={styles}
+    />
   )
 }
 

@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { triggerHapticFeedback } from '@/utils/haptics.js'
 import styles from './BottomNav.module.scss'
 
-export default function BottomNav({ items, accent = 'zekr' }) {
+export default function BottomNav({ items, accent = 'zekr', label = 'التنقل الأساسي' }) {
   const { pathname } = useLocation()
   const activeIndex = items.findIndex((item) =>
     item.end
@@ -20,7 +20,7 @@ export default function BottomNav({ items, accent = 'zekr' }) {
         '--nav-count': items.length,
         '--nav-index': Math.max(0, activeIndex),
       }}
-      aria-label="التنقل الأساسي"
+      aria-label={label}
     >
       <div className={styles.inner}>
         {activeIndex >= 0 && (

@@ -1,4 +1,4 @@
-import { Outlet, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import {
   ReceiptText,
   PieChart,
@@ -8,8 +8,7 @@ import {
 } from 'lucide-react'
 import { useBudgetUI } from '@/contexts/BudgetContext'
 import { useBudgetBootstrap } from '@/queries/budget'
-import TopAppBar from '@/components/ui/TopAppBar/TopAppBar.jsx'
-import BottomNav from '@/components/ui/BottomNav/BottomNav.jsx'
+import WorkspaceShell from '@/components/ui/WorkspaceShell.jsx'
 import PageSkeleton from '@/components/ui/PageSkeleton.jsx'
 import PrivacyToggle from '@/components/ui/PrivacyToggle.jsx'
 import BudgetLockGate from '@/components/budget/BudgetLockGate.jsx'
@@ -84,25 +83,14 @@ function BudgetLayout() {
 
   return (
     <BudgetLockGate>
-      <div className={styles.budget}>
-        <TopAppBar
-          title={meta.title}
-          icon={meta.icon}
-          accent="budget"
-          actions={<PrivacyToggle />}
-        />
-
-        <div className={styles.container}>
-          <main
-            key={pathname}
-            className={`${styles.content} mizan-page-enter`}
-          >
-            <Outlet />
-          </main>
-        </div>
-
-        <BottomNav items={NAV_ITEMS} accent="budget" />
-      </div>
+      <WorkspaceShell
+        accent="budget"
+        meta={meta}
+        tabs={NAV_ITEMS}
+        className={styles.budget}
+        styles={styles}
+        actions={<PrivacyToggle />}
+      />
     </BudgetLockGate>
   )
 }

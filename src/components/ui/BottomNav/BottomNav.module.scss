@@ -50,7 +50,7 @@
 }
 
 .sliderPill {
-  width: 60px;
+  width: min(60px, 100%);
   height: 31px;
   border-radius: var(--radius-full);
   background: var(--nav-accent-soft);
@@ -108,7 +108,7 @@
 }
 
 .pill {
-  width: 60px;
+  width: min(60px, 100%);
   height: 31px;
   border-radius: var(--radius-full);
   display: inline-flex;
