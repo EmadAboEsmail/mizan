@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom'
-import { BarChart3, Settings, AlertTriangle, RotateCcw } from 'lucide-react'
+import { BarChart3, BookOpen, Settings, AlertTriangle, RotateCcw } from 'lucide-react'
 import { useZekrBootstrap } from '@/queries/zekr'
 import WorkspaceShell from '@/components/ui/WorkspaceShell.jsx'
 import PageSkeleton from '@/components/ui/PageSkeleton.jsx'
@@ -7,6 +7,7 @@ import { TasbihIcon } from '@/components/ui/BrandIcons.jsx'
 import styles from './Layout.module.scss'
 
 const NAV_ITEMS = [
+  { to: '/zekr/hisn', label: 'الحصن', icon: <BookOpen size={20} /> },
   { to: '/zekr/sabh', label: 'السبحة', icon: <TasbihIcon size={20} /> },
   {
     to: '/zekr/stats',
@@ -21,6 +22,7 @@ const NAV_ITEMS = [
 ]
 
 const PAGE_META = {
+  '/zekr/hisn': { title: 'مكتبة الذِكر', icon: <BookOpen size={16} /> },
   '/zekr/stats': {
     title: 'إحصائيات الذكر',
     icon: <BarChart3 size={15} strokeWidth={2.2} />,

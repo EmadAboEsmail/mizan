@@ -1,0 +1,12 @@
+.library { width: 100%; display: grid; gap: 10px; }
+.library h2, .chapter h3, .note { margin: 0; }
+.library label { font-weight: 700; }
+.library input { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-default); padding: 10px; min-height: 44px; border-radius: 8px; width: 100%; font: inherit; }
+.note, .library small { color: var(--text-secondary); }
+.chapter { border-block-end: 1px solid var(--border-default); padding-block: 8px; }
+.chapter summary { cursor: pointer; padding-block: 8px; font-weight: 700; }
+.chapter h3 { font-size: 1rem; }
+.chapter small { display: inline-block; margin-inline-start: 6px; }
+.chapter ol { padding-inline-start: 20px; }
+.entry p { margin: 6px 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.9; }
+.entry small { margin: 0 0 8px; }

@@ -16,6 +16,7 @@ import PageSkeleton from './components/ui/PageSkeleton.jsx'
 // ═══════════════════════════════════════
 const ZekrLayout = lazy(() => import('./pages/zekr/Layout.jsx'))
 const ZekrSabh = lazy(() => import('./pages/zekr/Sabh.jsx'))
+const ZekrHisn = lazy(() => import('./pages/zekr/HisnLibrary.jsx'))
 const ZekrStats = lazy(() => import('./pages/zekr/Stats.jsx'))
 const ZekrSettings = lazy(() => import('./pages/zekr/Settings.jsx'))
 
@@ -69,6 +70,7 @@ function App() {
           <Route path="/zekr" element={<ZekrLayout />}>
             <Route index element={<Navigate to="/zekr/sabh" replace />} />
             <Route path="sabh" element={<ZekrSabh />} />
+            <Route path="hisn" element={<ZekrHisn />} />
             <Route path="stats" element={<ZekrStats />} />
             <Route path="settings" element={<ZekrSettings />} />
             <Route path="*" element={<Navigate to="/zekr/sabh" replace />} />
