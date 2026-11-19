@@ -41,3 +41,8 @@
 .drawerLinks { display: grid; gap: 4px; }
 .drawerLinks a { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px; color: var(--text-primary); text-decoration: none; border-block-end: 1px solid var(--border-default); }
 .drawerLinks a[aria-current='page'] { background: var(--zekr-soft); font-weight: 800; }
+
+.drawerShell { --bottom-nav-height: 0px; min-width: 0; }
+.drawerShell[data-workspace='budget'] .drawerContent { padding-bottom: calc(var(--safe-bottom) + 84px); }
+.drawerLinks a { overflow-wrap: anywhere; }
+.drawerLinks svg { flex: 0 0 auto; }

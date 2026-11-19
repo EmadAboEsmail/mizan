@@ -22,3 +22,13 @@
 .addForm { display: grid; gap: 8px; }
 .addForm select, .addForm input { min-height: 44px; max-width: 100%; font: inherit; color: var(--text-primary); background: var(--bg-card); border: 1px solid var(--border-default); padding-inline: 8px; border-radius: 8px; }
 .fullText { max-height: min(35dvh, 280px); overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.9; }
+
+.library, .chapter, .entry, .addForm { min-width: 0; overflow-wrap: anywhere; }
+.chapter ol { padding-inline-start: clamp(12px, 5vw, 20px); }
+.addForm { grid-template-columns: minmax(0, 1fr); }
+.addForm select, .addForm input { width: 100%; min-width: 0; }
+@media (max-width: 380px) {
+  .install { padding: 8px; }
+  .install ul { padding-inline-start: 16px; }
+  .entryAction { max-width: 100%; white-space: normal; }
+}

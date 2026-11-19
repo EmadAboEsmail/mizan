@@ -11,10 +11,11 @@ export default function TopAppBar({
   backTo = '/',
   backLabel = 'الرئيسية',
   actions,
+  compact = false,
 }) {
   return (
     <header
-      className={styles.header}
+      className={`${styles.header} ${compact ? styles.compact : ''}`}
       style={{
         '--bar-accent': `var(--${accent})`,
         '--bar-accent-soft': `var(--${accent}-soft)`,

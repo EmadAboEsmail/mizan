@@ -128,3 +128,13 @@
   gap: var(--space-2);
   flex-shrink: 0;
 }
+
+@media (max-width: 420px) {
+  .compact {
+    .inner { gap: 6px; padding-inline: 8px; padding-block: 6px; }
+    .start, .end { gap: 4px; }
+    // The drawer already contains a direct link to Today.
+    .backBtn, .badge { display: none; }
+    .title { white-space: normal; overflow-wrap: anywhere; font-size: .94rem; }
+  }
+}

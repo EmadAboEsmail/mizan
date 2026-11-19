@@ -260,3 +260,11 @@
 .longText { max-width: 100%; overflow-wrap: anywhere; }
 .longText summary { cursor: pointer; line-height: 1.7; }
 .longText .text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.9; }
+
+@media (max-width: 480px) {
+  .item { display: grid; grid-template-columns: minmax(0, 1fr); padding: 10px; gap: 8px; }
+  .actions { flex-wrap: wrap; gap: 4px; }
+  .actionBtn { width: 44px; height: 44px; }
+  .topBar { flex-wrap: wrap; }
+  .searchInput { max-width: 100%; min-width: 0; }
+}

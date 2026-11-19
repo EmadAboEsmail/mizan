@@ -85,6 +85,8 @@ function BudgetLayout() {
     <BudgetLockGate>
       <WorkspaceShell
         accent="budget"
+        navigation="drawer"
+        menuLabel="قائمة الميزانية"
         meta={meta}
         tabs={NAV_ITEMS}
         className={styles.budget}

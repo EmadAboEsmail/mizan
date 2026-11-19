@@ -197,3 +197,11 @@
   border-radius: 0;
   padding: calc(16px + var(--safe-top)) max(16px, var(--safe-right)) calc(16px + var(--safe-bottom)) 16px;
 }
+
+.modal.drawer { max-width: 100%; min-width: 0; }
+.modal.drawer > .body { min-width: 0; }
+@media (max-width: 420px) {
+  .overlay.center { padding-inline: max(8px, var(--safe-left)) max(8px, var(--safe-right)); }
+  .modal.center { min-width: 0; padding: 12px; max-height: min(85dvh, 100%); }
+  .modal.center > .body { min-width: 0; }
+}

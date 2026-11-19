@@ -9,7 +9,7 @@ import editorial from './WorkspaceShell.module.scss'
 const todayTab = { to: '/', end: true, label: 'اليوم', icon: <House size={20} /> }
 
 // Workspace tabs stay local; new workspaces do not crowd the bottom bar.
-export default function WorkspaceShell({ accent, meta, tabs, actions, className, styles, navigation = 'bottom' }) {
+export default function WorkspaceShell({ accent, meta, tabs, actions, className, styles, navigation = 'bottom', menuLabel = 'قائمة الذِكر' }) {
   const { pathname } = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuButton = useRef(null)
@@ -19,16 +19,16 @@ export default function WorkspaceShell({ accent, meta, tabs, actions, className,
     menuButton.current?.focus()
   }
   return (
-    <div className={`${className} ${editorial.shell} ${isDrawer ? editorial.drawerShell : ''}`}>
-      <TopAppBar {...meta} accent={accent} backLabel="اليوم" actions={<>{actions}{isDrawer && <button ref={menuButton} type="button" className={editorial.menuButton} aria-label="قائمة الذِكر" aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><Menu size={20} aria-hidden="true" /></button>}</>} />
+    <div data-workspace={accent} className={`${className} ${editorial.shell} ${isDrawer ? editorial.drawerShell : ''}`}>
+      <TopAppBar {...meta} accent={accent} backLabel="اليوم" compact={isDrawer} actions={<>{actions}{isDrawer && <button ref={menuButton} type="button" className={editorial.menuButton} aria-label={menuLabel} aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><Menu size={20} aria-hidden="true" /></button>}</>} />
       <div className={`${styles.container} ${isDrawer ? editorial.drawerContent : ''}`}>
         <main key={pathname} className={`${styles.content} mizan-page-enter`}>
           <Outlet />
         </main>
       </div>
       {isDrawer ? (
-        <Modal isOpen={menuOpen} onClose={closeMenu} title="قائمة الذِكر" variant="drawer">
-          <nav className={editorial.drawerLinks} aria-label="تنقّل الذِكر">
+        <Modal isOpen={menuOpen} onClose={closeMenu} title={menuLabel} variant="drawer">
+          <nav className={editorial.drawerLinks} aria-label={menuLabel}>
             {[todayTab, ...tabs].map(({ to, end, label, icon }) => (
               <NavLink key={to} to={to} end={end} onClick={closeMenu}>{icon}<span>{label}</span></NavLink>
             ))}

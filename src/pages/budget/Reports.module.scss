@@ -272,3 +272,8 @@
     opacity: 1;
   }
 }
+
+@media (max-width: 480px) {
+  .comparePills { flex: 1 0 100%; flex-wrap: wrap; }
+  .comparePill { flex: 1 1 75px; min-width: 0; padding-inline: 6px; white-space: normal; }
+}
