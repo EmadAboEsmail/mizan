@@ -1,9 +1,9 @@
 import { getReadingDetails } from '@/data/hisn/readingDetails.js'
 import Modal from '@/components/ui/Modal.jsx'
-import { Link } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useAddHisnEntryMutation, useGroupsQuery, useInstallPresetGroupMutation } from '@/queries/zekr'
 import { countableWirds } from '@/data/hisn/countableWirds.js'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import chapters from '@/data/hisn/chapters.json'
 import styles from './HisnLibrary.module.scss'
 
@@ -13,47 +13,83 @@ const index = chapters.map((chapter) => ({
   search: normalize([chapter.title, ...chapter.entries.flatMap(({ text, reference }) => [text, reference])].join(' ')),
 }))
 
+const libraryPath = '/zekr/hisn'
+const chapterPath = (id) => `${libraryPath}/${id}`
+const preview = (text) => text.length > 115 ? `${text.slice(0, 112)}…` : text
+
 export default function HisnLibrary() {
-  const [query, setQuery] = useState('')
+  const { chapterId, entryId } = useParams()
+  const [params, setParams] = useSearchParams()
   const [selection, setSelection] = useState(null)
-  const results = useMemo(() => index.filter(({ search }) => search.includes(normalize(query))), [query])
-  const hasQuery = Boolean(normalize(query))
+  const query = params.get('q') ?? ''
+  const needle = normalize(query)
+  const chapter = chapterId === undefined ? null : index.find(({ id }) => String(id) === chapterId)
+  const position = entryId === undefined ? null : Number(entryId) - 1
+  const entry = position === null ? null : chapter?.entries[position]
+  const results = chapterId === undefined ? index.filter(({ search }) => search.includes(needle)) : []
+  const searchSuffix = query ? `?${new URLSearchParams({ q: query })}` : ''
+  const rootLink = `${libraryPath}${searchSuffix}`
+  const chapterLink = chapter ? `${chapterPath(chapter.id)}${searchSuffix}` : rootLink
+
+  if ((chapterId !== undefined && !chapter) || (entryId !== undefined && !entry)) {
+    return <section className={styles.library}><h2>الصفحة غير موجودة</h2><Link to={rootLink}>فهرس الحصن</Link></section>
+  }
+
+  if (entry) {
+    const curated = getReadingDetails(chapter.title, entry)
+    const reading = curated ?? { ...entry, target: null }
+    return (
+      <section className={styles.library} aria-labelledby="hisn-entry-title">
+        <Link className={styles.backLink} to={chapterLink}>↩ {chapter.title}</Link>
+        <h2 id="hisn-entry-title">الذكر {String(position + 1).toLocaleString('ar-EG')}</h2>
+        <p className={styles.reading}>{reading.text}</p>
+        {!curated && <p className={styles.note}>النص من النسخة الرقمية وقد يتضمن شرحًا أو صيغة بديلة.</p>}
+        <div className={styles.reference}><h3>المرجع</h3><p>{reading.reference}</p>
+          {curated && <details><summary>النقل في الحصن وطريقة القراءة</summary><p>{entry.reference}</p>
+            <p>{curated.target ? `${curated.target.toLocaleString('ar-EG')} مرة` : 'دون هدف محدد في التطبيق'}</p></details>}
+        </div>
+        <div className={styles.readingActions}>
+          <button type="button" className={styles.entryAction} onClick={() => setSelection({ ...reading, curated: Boolean(curated) })}>أضف إلى مجموعة</button>
+          {position + 1 < chapter.entries.length && <Link className={styles.backLink} to={`${chapterPath(chapter.id)}/${position + 2}${searchSuffix}`}>الذكر التالي ←</Link>}
+        </div>
+        {selection && <AddToGroup entry={selection} onClose={() => setSelection(null)} />}
+      </section>
+    )
+  }
+
+  if (chapter) return (
+    <section className={styles.library} aria-labelledby="hisn-chapter-title">
+      <Link className={styles.backLink} to={rootLink}>↩ فهرس الحصن</Link>
+      <h2 id="hisn-chapter-title">{chapter.title}</h2>
+      <p className={styles.note}>{chapter.entries.length.toLocaleString('ar-EG')} مدخل</p>
+      <ol className={styles.flatList}>
+        {chapter.entries.map(({ text, reference }, i) => (
+          <li key={i}><Link className={styles.listRow} to={`${chapterPath(chapter.id)}/${i + 1}${searchSuffix}`}>
+            <span><strong>{preview(text)}</strong><small>{preview(reference)}</small></span><span aria-hidden="true">‹</span>
+          </Link></li>
+        ))}
+      </ol>
+      {countableWirds[chapter.title] && <WirdInstall pack={countableWirds[chapter.title]} />}
+    </section>
+  )
 
   return (
     <section className={styles.library} aria-labelledby="hisn-title">
       <h2 id="hisn-title">حصن المسلم</h2>
-      <p className={styles.note}>مكتبة للقراءة دون إنترنت. النص والمراجع من النسخة الرقمية، وقد يتضمن المدخل شرحًا أو صيغة بديلة.</p>
+      <p className={styles.note}>مكتبة للقراءة دون إنترنت.</p>
       <label htmlFor="hisn-search">ابحث في الأبواب والنصوص والمراجع</label>
-      <input id="hisn-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="مثال: الصباح أو النوم" />
+      <input id="hisn-search" type="search" value={query} onChange={(event) => setParams(event.target.value ? { q: event.target.value } : {}, { replace: true })} placeholder="مثال: الصباح أو النوم" />
       <p role="status" className={styles.note}>{results.length.toLocaleString('ar-EG')} باب</p>
       {!results.length && <p>لا توجد نتائج. جرّب كلمة أقصر.</p>}
-      {results.map(({ id, title, entries }) => entries.length === 1 ? (
-        <article key={id} className={styles.chapter}>
-          <h3>{title} <small>ذكر مستقل</small></h3>
-          <Entry entry={entries[0]} chapter={title} onAdd={setSelection} />
-        </article>
-      ) : (
-        <details key={`${hasQuery}-${id}`} className={styles.chapter} open={hasQuery || undefined}>
-          <summary>{title} <small>مجموعة · {entries.length.toLocaleString('ar-EG')} مدخل</small></summary>
-          {countableWirds[title] && <WirdInstall pack={countableWirds[title]} />}
-          <ol>{entries.map((entry, count) => <li key={count}><Entry entry={entry} chapter={title} onAdd={setSelection} /></li>)}</ol>
-        </details>
-      ))}
-      {selection && <AddToGroup entry={selection} onClose={() => setSelection(null)} />}
+      <ul className={styles.flatList}>
+        {results.map(({ id, title, entries }) => {
+          const match = needle && !normalize(title).includes(needle) ? entries.findIndex(({ text, reference }) => normalize(`${text} ${reference}`).includes(needle)) : -1
+          return <li key={id}><Link className={styles.listRow} to={`${chapterPath(id)}${match >= 0 ? `/${match + 1}` : ''}${searchSuffix}`}>
+            <span><strong>{title}</strong><small>{match >= 0 ? preview(entries[match].text) : `${entries.length.toLocaleString('ar-EG')} مدخل`}</small></span><span aria-hidden="true">‹</span>
+          </Link></li>
+        })}
+      </ul>
     </section>
-  )
-}
-
-function Entry({ entry, chapter, onAdd }) {
-  const curated = getReadingDetails(chapter, entry)
-  const reading = curated ?? { ...entry, target: null }
-  const { text, reference } = reading
-  return (
-    <div className={styles.entry}>
-      {text.length > 200 ? <details><summary>{text.slice(0, 105)}… اقرأ النص كاملًا</summary><p>{text}</p></details> : <p>{text}</p>}
-      {curated ? <details><summary>المرجع وطريقة القراءة</summary><small>{reference}{curated.target ? ` · ${curated.target.toLocaleString('ar-EG')} مرة` : ' · دون هدف محدد في التطبيق'}</small><small>نقل الحصن: {entry.reference}</small></details> : <small>المرجع: {reference}</small>}
-      <button type="button" className={styles.entryAction} onClick={() => onAdd({ ...reading, curated: Boolean(curated) })}>أضف إلى مجموعة</button>
-    </div>
   )
 }
 

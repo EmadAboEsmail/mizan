@@ -43,7 +43,7 @@ function ZekrLayout() {
   const { pathname } = useLocation()
   const { isPending, error, refetchAll } = useZekrBootstrap()
 
-  const meta = PAGE_META[pathname] || PAGE_META.default
+  const meta = PAGE_META[pathname] || (pathname.startsWith('/zekr/hisn/') ? PAGE_META['/zekr/hisn'] : PAGE_META.default)
 
   if (isPending && !error) {
     return <PageSkeleton variant="zekr" />

@@ -12,6 +12,7 @@ export default function TopAppBar({
   backLabel = 'الرئيسية',
   actions,
   compact = false,
+  showTheme = true,
 }) {
   return (
     <header
@@ -48,7 +49,7 @@ export default function TopAppBar({
 
         <div className={styles.end}>
           {actions}
-          <ThemeToggle />
+          {showTheme && <ThemeToggle />}
         </div>
       </div>
     </header>

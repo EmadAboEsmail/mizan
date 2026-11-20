@@ -279,3 +279,8 @@
     }
   }
 }
+
+.row { padding-inline: 4px; min-height: 52px; gap: 8px; background: var(--bg-base); }
+.end { margin-inline-start: auto; max-inline-size: 54%; min-inline-size: 0; }
+.amount { overflow-wrap: anywhere; white-space: normal; text-align: left; }
+.chevron { flex: 0 0 auto; }

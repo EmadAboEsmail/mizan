@@ -46,3 +46,8 @@
 .drawerShell[data-workspace='budget'] .drawerContent { padding-bottom: calc(var(--safe-bottom) + 84px); }
 .drawerLinks a { overflow-wrap: anywhere; }
 .drawerLinks svg { flex: 0 0 auto; }
+
+@media (max-width: 640px) {
+  .shell .wideList { padding-inline-start: max(10px, var(--safe-right)); padding-inline-end: max(10px, var(--safe-left)); }
+}
+.themeRow { display: flex; align-items: center; justify-content: space-between; min-height: 48px; gap: 8px; padding-inline: 8px; }

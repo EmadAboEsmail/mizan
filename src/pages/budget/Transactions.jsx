@@ -232,13 +232,13 @@ function BudgetTransactions() {
         onAdd={handleOpenAdd}
       />
 
-      <TransactionsSummary
-        summary={summary}
-        insights={insights}
-        isAllMonths={currentMonth === null}
-      />
-
-      <LimitsOverview />
+      <details className={styles.periodDetails}>
+        <summary>ملخص الفترة وحدود الإنفاق</summary>
+        <div className={styles.periodBody}>
+          <TransactionsSummary summary={summary} insights={insights} isAllMonths={currentMonth === null} />
+          <LimitsOverview />
+        </div>
+      </details>
 
       <TransactionsFilters
         filterType={filterType}

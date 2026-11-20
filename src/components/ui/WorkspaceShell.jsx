@@ -1,8 +1,9 @@
-import { useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { House, Menu } from 'lucide-react'
 import TopAppBar from './TopAppBar/TopAppBar.jsx'
 import BottomNav from './BottomNav/BottomNav.jsx'
+import ThemeToggle from './ThemeToggle.jsx'
 import Modal from './Modal.jsx'
 import editorial from './WorkspaceShell.module.scss'
 
@@ -13,15 +14,19 @@ export default function WorkspaceShell({ accent, meta, tabs, actions, className,
   const { pathname } = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuButton = useRef(null)
+  const isWideList = pathname === '/budget/transactions' || pathname === '/zekr/hisn' || pathname.startsWith('/zekr/hisn/')
   const isDrawer = navigation === 'drawer'
+  useLayoutEffect(() => {
+    if (isWideList) window.scrollTo(0, 0)
+  }, [pathname, isWideList])
   const closeMenu = () => {
     setMenuOpen(false)
     menuButton.current?.focus()
   }
   return (
     <div data-workspace={accent} className={`${className} ${editorial.shell} ${isDrawer ? editorial.drawerShell : ''}`}>
-      <TopAppBar {...meta} accent={accent} backLabel="اليوم" compact={isDrawer} actions={<>{actions}{isDrawer && <button ref={menuButton} type="button" className={editorial.menuButton} aria-label={menuLabel} aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><Menu size={20} aria-hidden="true" /></button>}</>} />
-      <div className={`${styles.container} ${isDrawer ? editorial.drawerContent : ''}`}>
+      <TopAppBar {...meta} accent={accent} backLabel="اليوم" compact={isDrawer} showTheme={!isWideList || !isDrawer} actions={<>{actions}{isDrawer && <button ref={menuButton} type="button" className={editorial.menuButton} aria-label={menuLabel} aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><Menu size={20} aria-hidden="true" /></button>}</>} />
+      <div className={`${styles.container} ${isDrawer ? editorial.drawerContent : ''} ${isWideList ? editorial.wideList : ''}`}>
         <main key={pathname} className={`${styles.content} mizan-page-enter`}>
           <Outlet />
         </main>
@@ -33,6 +38,7 @@ export default function WorkspaceShell({ accent, meta, tabs, actions, className,
               <NavLink key={to} to={to} end={end} onClick={closeMenu}>{icon}<span>{label}</span></NavLink>
             ))}
           </nav>
+          {isWideList && <div className={editorial.themeRow}><span>المظهر</span><ThemeToggle /></div>}
         </Modal>
       ) : <BottomNav items={[todayTab, ...tabs]} accent={accent} label="اليوم وتبويبات المساحة" />}
     </div>

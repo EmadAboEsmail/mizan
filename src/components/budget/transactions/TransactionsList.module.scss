@@ -87,3 +87,7 @@
   border-radius: 8px;
   box-shadow: none;
 }
+
+.dayCard { border: 0; border-radius: 0; background: transparent; }
+.dayHeader { min-width: 0; padding-inline: 4px; }
+.dayTotal { overflow-wrap: anywhere; min-width: 0; }

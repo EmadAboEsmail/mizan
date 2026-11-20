@@ -32,3 +32,15 @@
   .install ul { padding-inline-start: 16px; }
   .entryAction { max-width: 100%; white-space: normal; }
 }
+
+.flatList { list-style: none; padding: 0; margin: 0; border-block-start: 1px solid var(--border-default); }
+.flatList li { border-block-end: 1px solid var(--border-default); }
+.listRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 52px; padding: 8px 4px; color: var(--text-primary); text-decoration: none; }
+.listRow small { display: block; margin-top: 2px; line-height: 1.45; }
+.listRow:hover { background: var(--bg-hover); }
+.listRow:focus-visible, .backLink:focus-visible { outline: 2px solid var(--zekr); outline-offset: -2px; }
+.backLink { display: inline-flex; align-items: center; min-height: 44px; color: var(--zekr-text); width: fit-content; }
+.reading { max-inline-size: 68ch; font-family: var(--font-zekr); font-size: clamp(1.4rem, 4vw, 1.9rem); line-height: 1.9; white-space: pre-wrap; margin: 4px 0 10px; }
+.reference { border-block-start: 1px solid var(--border-default); padding-block: 10px; color: var(--text-secondary); }
+.reference h3, .reference p { margin: 0 0 5px; }
+.readingActions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }

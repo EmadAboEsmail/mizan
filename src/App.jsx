@@ -72,7 +72,7 @@ function App() {
             <Route index element={<Navigate to="/zekr/sabh" replace />} />
             <Route path="sabh" element={<ZekrSabh />} />
             <Route path="manage" element={<ZekrManage />} />
-            <Route path="hisn" element={<ZekrHisn />} />
+            <Route path="hisn/:chapterId?/:entryId?" element={<ZekrHisn />} />
             <Route path="stats" element={<ZekrStats />} />
             <Route path="settings" element={<ZekrSettings />} />
             <Route path="*" element={<Navigate to="/zekr/sabh" replace />} />
