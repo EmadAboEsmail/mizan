@@ -250,8 +250,8 @@ function ZekrSabh() {
   }, [sabhMode, groups, urlGroupId, setSearchParams])
 
   useEffect(() => {
-    if (sabhMode !== 'group') saveLastWird('')
-    else if (groups.some((group) => String(group.id) === urlGroupId)) saveLastWird(urlGroupId)
+    if (sabhMode === 'group' && groups.some((group) => String(group.id) === urlGroupId && group.items?.length)) saveLastWird(urlGroupId)
+    // Normal tasbih must not discard the last group.
   }, [sabhMode, groups, urlGroupId])
 
   const handleGroupChange = useCallback(

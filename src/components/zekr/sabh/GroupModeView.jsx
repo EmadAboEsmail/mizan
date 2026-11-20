@@ -8,54 +8,10 @@ import { TasbihIcon } from '@/components/ui/BrandIcons.jsx'
 import { useVibrationEnabled } from '@/hooks/useVibrationEnabled.js'
 import { useVolumeButton } from '@/hooks/useVolumeButton.js'
 import { triggerHapticFeedback } from '@/utils/haptics.js'
+import { readWirdProgress, writeWirdProgress } from '@/utils/wirdProgress.js'
 import styles from './GroupModeView.module.scss'
 
-const PROGRESS_STORAGE_KEY = 'mizan_group_progress_v1'
-
-function todayKey() {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
-    2,
-    '0'
-  )}-${String(d.getDate()).padStart(2, '0')}`
-}
-
-function readGroupProgress(groupId, maxItems) {
-  if (!groupId) return { index: 0, count: 0 }
-  try {
-    const raw = localStorage.getItem(PROGRESS_STORAGE_KEY)
-    if (!raw) return { index: 0, count: 0 }
-    const all = JSON.parse(raw)
-    const entry = all?.[String(groupId)]
-    if (!entry || entry.date !== todayKey()) return { index: 0, count: 0 }
-    const idx = Math.max(0, Number(entry.index) || 0)
-    const cnt = Math.max(0, Number(entry.count) || 0)
-    if (maxItems > 0 && idx >= maxItems) return { index: 0, count: 0 }
-    return { index: idx, count: cnt }
-  } catch {
-    return { index: 0, count: 0 }
-  }
-}
-
-function writeGroupProgress(groupId, index, count) {
-  if (!groupId) return
-  try {
-    const raw = localStorage.getItem(PROGRESS_STORAGE_KEY)
-    const all = raw ? JSON.parse(raw) : {}
-    if (index <= 0 && count <= 0) {
-      delete all[String(groupId)]
-    } else {
-      all[String(groupId)] = {
-        index,
-        count,
-        date: todayKey(),
-      }
-    }
-    localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(all))
-  } catch {
-    // تجاهل امتلاء التخزين
-  }
-}
+const EMPTY_ITEMS = []
 
 const ArrowRightIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -92,14 +48,14 @@ function GroupModeView({
   const selectedGroup = groups.find(
     (g) => String(g.id) === String(selectedGroupId)
   )
-  const items = selectedGroup?.items ?? []
+  const items = selectedGroup?.items ?? EMPTY_ITEMS
   const effectiveGroupId = selectedGroup?.id ?? selectedGroupId
 
   const [currentIndex, setCurrentIndex] = useState(
-    () => readGroupProgress(effectiveGroupId, items.length).index
+    () => readWirdProgress(effectiveGroupId, items)?.index ?? 0
   )
   const [localCount, setLocalCount] = useState(
-    () => readGroupProgress(effectiveGroupId, items.length).count
+    () => readWirdProgress(effectiveGroupId, items)?.count ?? 0
   )
   const [showTransition, setShowTransition] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
@@ -108,37 +64,30 @@ function GroupModeView({
 
   // استعادة التقدم تلقائياً عند تغيير المجموعة أو تحميل عناصرها
   const [trackedGroupId, setTrackedGroupId] = useState(effectiveGroupId)
-  const [prevItemsLength, setPrevItemsLength] = useState(items.length)
-  if (effectiveGroupId !== trackedGroupId) {
+  const [trackedItems, setTrackedItems] = useState(items)
+  if (effectiveGroupId !== trackedGroupId || items !== trackedItems) {
     setTrackedGroupId(effectiveGroupId)
-    setPrevItemsLength(items.length)
-    const saved = readGroupProgress(effectiveGroupId, items.length)
-    setCurrentIndex(saved.index)
-    setLocalCount(saved.count)
+    setTrackedItems(items)
+    const saved = readWirdProgress(effectiveGroupId, items)
+    setCurrentIndex(saved?.index ?? 0)
+    setLocalCount(saved?.count ?? 0)
     setShowTransition(false)
     setIsComplete(false)
-  } else if (items.length !== prevItemsLength) {
-    setPrevItemsLength(items.length)
-    if (items.length > 0 && currentIndex >= items.length) {
-      setCurrentIndex(0)
-      setLocalCount(0)
-      setShowTransition(false)
-    }
   }
 
   // حفظ التقدم تلقائياً عند أي خطوة
   useEffect(() => {
     if (!effectiveGroupId) return
     if (isComplete) {
-      writeGroupProgress(effectiveGroupId, 0, 0)
+      writeWirdProgress(effectiveGroupId, items, 0, 0)
       return
     }
     const saveIdx = showTransition
       ? Math.min(currentIndex + 1, Math.max(0, items.length - 1))
       : currentIndex
     const saveCnt = showTransition ? 0 : localCount
-    writeGroupProgress(effectiveGroupId, saveIdx, saveCnt)
-  }, [effectiveGroupId, currentIndex, localCount, showTransition, isComplete, items.length])
+    writeWirdProgress(effectiveGroupId, items, saveIdx, saveCnt)
+  }, [effectiveGroupId, currentIndex, localCount, showTransition, isComplete, items])
 
   const currentItem = items[currentIndex] ?? items[0] ?? null
   const completedCount = showTransition ? currentIndex + 1 : currentIndex
@@ -189,7 +138,7 @@ function GroupModeView({
   }
 
   const restartGroup = () => {
-    writeGroupProgress(effectiveGroupId, 0, 0)
+    writeWirdProgress(effectiveGroupId, items, 0, 0)
     setIsComplete(false)
     setCurrentIndex(0)
     setLocalCount(0)

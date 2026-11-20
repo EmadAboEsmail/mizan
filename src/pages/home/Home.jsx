@@ -1,8 +1,9 @@
 import { useState } from 'react'
+import { readWirdProgress } from '@/utils/wirdProgress.js'
 import { readLastWird } from '@/utils/lastWird.js'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, LockKeyhole, Plus } from 'lucide-react'
-import { useAdhkarQuery, useCountsQuery } from '@/queries/zekr'
+import { useAdhkarQuery, useCountsQuery, useGroupsQuery } from '@/queries/zekr'
 import { useCurrentZekrId } from '@/contexts/ZekrDataContext'
 import { useBudgetLock } from '@/hooks/useBudgetLock.js'
 import ThemeToggle from '@/components/ui/ThemeToggle.jsx'
@@ -26,7 +27,10 @@ function loadPins() {
 
 export default function Home() {
   const [pins, setPins] = useState(loadPins)
-  const lastWird = readLastWird()
+  const lastWirdId = readLastWird()
+  const { data: groups = EMPTY } = useGroupsQuery()
+  const lastWird = groups.find((group) => String(group.id) === lastWirdId && group.items?.length)
+  const wirdProgress = lastWird && readWirdProgress(lastWird.id, lastWird.items)
   const togglePin = (id) => {
     const next = pins.includes(id) ? pins.filter((pin) => pin !== id) : [...pins, id].slice(-2)
     setPins(next)
@@ -38,7 +42,7 @@ export default function Home() {
   const [currentId] = useCurrentZekrId(adhkar)
   const current = adhkar.find((item) => String(item.id) === String(currentId))
   const hasProgress = current && (counts?.[current.id] ?? 0) > 0
-  const zekrPath = lastWird ? `/zekr/sabh?${new URLSearchParams({ mode: 'group', group: lastWird })}` : current ? `/zekr/sabh?${new URLSearchParams({ zekr: current.id })}` : '/zekr/sabh'
+  const zekrPath = lastWird ? `/zekr/sabh?${new URLSearchParams({ mode: 'group', group: String(lastWird.id) })}` : current ? `/zekr/sabh?${new URLSearchParams({ zekr: current.id })}` : '/zekr/sabh'
 
   return (
     <div className={styles.page} dir="rtl">
@@ -58,8 +62,8 @@ export default function Home() {
           <div className={styles.actions}>
             <Link className={styles.zekrAction} to={zekrPath}>
               <TasbihIcon size={22} />
-              <strong>{lastWird ? 'تابع وردك' : hasProgress ? 'تابع ذِكرك' : 'ابدأ الذِكر'}</strong>
-              <small>{lastWird ? 'من آخر موضع' : current?.text || 'افتح السبحة'}</small>
+              <strong>{lastWird ? (wirdProgress ? 'أكمل وردك' : 'ابدأ وردك') : hasProgress ? 'تابع ذِكرك' : 'ابدأ الذِكر'}</strong>
+              <small>{lastWird ? lastWird.name : current?.text || 'افتح السبحة'}</small>
             </Link>
             <Link className={styles.budgetAction} to="/budget/transactions?add=1">
               {isLocked ? <LockKeyhole size={22} aria-hidden="true" /> : <Plus size={22} aria-hidden="true" />}
