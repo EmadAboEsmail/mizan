@@ -113,6 +113,15 @@ describe('Mizan v4 upgrades end-to-end', () => {
     disableBudgetPin()
   })
 
+  it('creates a group and adds a Hisn entry in one operation', async () => {
+    const input = { groupName: 'مجموعة جديدة', text: 'نص للقراءة', reference: 'مرجع', target: 3 }
+    await expect(addHisnEntryToGroup({ ...input, target: -1 })).rejects.toThrow()
+    expect((await getGroups()).find(({ name }) => name === input.groupName)).toBeUndefined()
+    const { groupId } = await addHisnEntryToGroup(input)
+    expect((await getGroups()).find(({ id }) => id === groupId)).toMatchObject({ name: input.groupName, items: [{ text: input.text, target: 3 }] })
+    await expect(addHisnEntryToGroup(input)).rejects.toThrow('موجود بالفعل')
+  })
+
   it('adds a Hisn entry only to the selected group and rejects duplicates', async () => {
     const chosen = await createGroup('Chosen group')
     const other = await createGroup('Other group')

@@ -553,3 +553,6 @@
     transform: translateY(-8px);
   }
 }
+
+// Keep navigation outside the text scroller and close to the counter.
+.longReading .navBar { order: 1; }

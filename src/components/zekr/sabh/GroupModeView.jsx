@@ -361,7 +361,7 @@ function GroupModeView({
     const canSwipeNext = currentIndex < items.length - 1
 
     return (
-      <div className={styles.content}>
+      <div className={`${styles.content} ${currentItem.text.length > 180 ? styles.longReading : ''}`}>
         <div className={styles.headerRow}>
           <span className={styles.completionCounter}>
             <span className={styles.counterDone}>{completedCount}</span>
@@ -444,7 +444,7 @@ function GroupModeView({
               disabled={currentIndex === items.length - 1 && !!currentTarget}
               title="تخطي للذكر التالي"
             >
-              <span>تخطي</span>
+              <span>{currentIndex === items.length - 1 ? 'إنهاء' : 'التالي'}</span>
               <ArrowLeftIcon />
             </button>
           </div>

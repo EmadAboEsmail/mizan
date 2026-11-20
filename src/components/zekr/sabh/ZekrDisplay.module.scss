@@ -260,3 +260,17 @@
   border-radius: 0;
   box-shadow: none;
 }
+
+.readingRegion {
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-block-size: clamp(112px, 32dvh, 350px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding-inline: 4px;
+  border-block: 1px solid var(--border-default);
+}
+.readingRegion .text { white-space: pre-wrap; overflow-wrap: anywhere; text-align: start; padding-block: 8px; }
+.readingRegion:focus-visible { outline: 2px solid var(--border-focus); }
+.focusDisplay .readingRegion { max-block-size: 52dvh; }

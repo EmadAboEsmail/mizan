@@ -855,15 +855,22 @@ export async function importLegacy(legacy) {
   }
 }
 
-export async function addHisnEntryToGroup({ groupId, text, reference, target = null }) {
+export async function addHisnEntryToGroup({ groupId, groupName, text, reference, target = null }) {
   const cleanText = String(text ?? '').trim()
   if (!cleanText) throw new Error('نص الذكر مطلوب')
   if (target !== null && (!Number.isSafeInteger(target) || target <= 0)) throw new Error('العدد يجب أن يكون عددًا صحيحًا موجبًا')
-  const group = await queryOne('SELECT id FROM groups WHERE id = ?', [groupId])
-  if (!group) throw new Error('اختر مجموعة موجودة')
+  const name = String(groupName ?? '').trim()
+  if (name.length > 80) throw new Error('اسم المجموعة طويل جدًا')
+  const creating = !groupId && Boolean(name)
+  const selectedId = creating ? genId('grp') : groupId
+  if (creating) {
+    if (await queryOne('SELECT id FROM groups WHERE name = ?', [name])) throw new Error('اسم المجموعة موجود بالفعل')
+  } else if (!groupId || !(await queryOne('SELECT id FROM groups WHERE id = ?', [groupId]))) {
+    throw new Error('اختر مجموعة موجودة أو اكتب اسم مجموعة جديدة')
+  }
   const duplicate = await queryOne(
     'SELECT gi.id FROM group_items gi JOIN adhkar a ON a.id = gi.zekr_id WHERE gi.group_id = ? AND a.text = ?',
-    [groupId, cleanText],
+    [selectedId, cleanText],
   )
   if (duplicate) throw new Error('هذا الذكر موجود بالفعل في هذه المجموعة')
   const existing = await queryOne('SELECT id FROM adhkar WHERE text = ? AND (default_target IS NULL OR ? IS NOT NULL) LIMIT 1', [cleanText, target])
@@ -872,10 +879,14 @@ export async function addHisnEntryToGroup({ groupId, text, reference, target = n
     { statement: 'INSERT INTO adhkar (id, text, virtue, sort_order) VALUES (?, ?, ?, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM adhkar))', values: [zekrId, cleanText, reference || null] },
     { statement: 'INSERT INTO counts (zekr_id, count) VALUES (?, 0)', values: [zekrId] },
   ]
+  if (creating) statements.unshift({
+    statement: 'INSERT INTO groups (id, name, created_at) VALUES (?, ?, ?)',
+    values: [selectedId, name, nowMs()],
+  })
   statements.push({
     statement: 'INSERT INTO group_items (id, group_id, zekr_id, target, position) VALUES (?, ?, ?, ?, (SELECT COALESCE(MAX(position), 0) + 1 FROM group_items WHERE group_id = ?))',
-    values: [genId('gi'), groupId, zekrId, target, groupId],
+    values: [genId('gi'), selectedId, zekrId, target, selectedId],
   })
   await transaction(statements)
-  return { groupId, zekrId }
+  return { groupId: selectedId, zekrId }
 }

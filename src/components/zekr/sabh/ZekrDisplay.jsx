@@ -73,6 +73,7 @@ function ZekrDisplay({
   isComplete,
   isFocusMode = false,
 }) {
+  const longReading = (zekrText?.length ?? 0) > 180
   const safeCount = count ?? 0
   const [copied, setCopied] = useState(false)
   const [ticking, setTicking] = useState(false)
@@ -84,7 +85,7 @@ function ZekrDisplay({
   const { scale, fontStyle } = useZekrFontPrefs()
 
   const swipeEnabled =
-    !isFocusMode && Boolean(onSwipeNext || onSwipePrev) && (canSwipeNext || canSwipePrev)
+    !longReading && !isFocusMode && Boolean(onSwipeNext || onSwipePrev) && (canSwipeNext || canSwipePrev)
 
   useEffect(() => {
     const prev = prevCountRef.current
@@ -209,12 +210,19 @@ function ZekrDisplay({
           </span>
         )}
 
-        <h2
+        <div
+          className={longReading ? styles.readingRegion : undefined}
+          role={longReading ? 'region' : undefined}
+          aria-label={longReading ? 'نص الذكر — قابل للتمرير' : undefined}
+          tabIndex={longReading ? 0 : undefined}
+        >
+          <h2
           className={cx(styles.text, isNaskh && styles.naskhText)}
           style={{ fontSize: computedFontSize }}
         >
           {zekrText}
         </h2>
+        </div>
 
         {!isFocusMode && virtue && (
           <p className={styles.virtue} title={virtue}>
