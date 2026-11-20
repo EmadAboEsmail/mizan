@@ -158,3 +158,8 @@
     transform: translateY(0);
   }
 }
+
+@media (max-width: 640px) {
+  .section, .section:hover { background: transparent; border: 0; border-block-start: 1px solid var(--border-default); border-radius: 0; box-shadow: none; padding: 12px 0; min-width: 0; }
+  .headerToggle { min-height: 44px; margin-inline: 0; }
+}

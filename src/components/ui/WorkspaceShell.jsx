@@ -14,7 +14,7 @@ export default function WorkspaceShell({ accent, meta, tabs, actions, className,
   const { pathname } = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuButton = useRef(null)
-  const isWideList = pathname === '/budget/transactions' || pathname === '/zekr/hisn' || pathname.startsWith('/zekr/hisn/')
+  const isWideList = /^\/(?:budget\/(?:transactions|reports|settings)|zekr\/(?:manage|stats|settings|hisn(?:\/[^/]+){0,2}))\/?$/.test(pathname)
   const isDrawer = navigation === 'drawer'
   useLayoutEffect(() => {
     if (isWideList) window.scrollTo(0, 0)

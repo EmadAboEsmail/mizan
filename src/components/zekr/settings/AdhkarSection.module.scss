@@ -268,3 +268,11 @@
   .topBar { flex-wrap: wrap; }
   .searchInput { max-width: 100%; min-width: 0; }
 }
+
+@media (max-width: 640px) {
+  .list { gap: 0; }
+  .item, .item:hover { border: 0; border-block-end: 1px solid var(--border-default); background: transparent; border-radius: 0; box-shadow: none; padding-inline: 0; }
+  .searchInput { flex-basis: 100%; min-width: 0; min-height: 44px; }
+  .addBtn, .actionBtn { min-height: 44px; }
+  .actionBtn { min-width: 44px; }
+}

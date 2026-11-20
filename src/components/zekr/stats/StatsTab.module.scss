@@ -385,3 +385,12 @@
   background: linear-gradient(90deg, var(--zekr), #52a880);
   transition: width 320ms var(--ease-out);
 }
+
+@media (max-width: 640px) {
+  .metricsGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .metricCard { box-shadow: none; min-width: 0; }
+  .metricValue, .metricLabel { overflow-wrap: anywhere; }
+  .breakdownList { gap: 0; }
+  .breakdownItem { border-radius: 0; border-block-end: 1px solid var(--border-default); }
+  .exportBtn { min-height: 44px; }
+}

@@ -5,3 +5,9 @@
 
 .page > section, .tabs a { min-width: 0; overflow-wrap: anywhere; }
 .tabs a { padding: 6px; text-align: center; }
+
+@media (max-width: 640px) {
+  .tabs { gap: 0; border-block-end: 1px solid var(--border-default); }
+  .tabs a { border: 0; border-block-end: 2px solid transparent; border-radius: 0; }
+  .tabs a[aria-current='page'] { border-block-end-color: var(--zekr); }
+}

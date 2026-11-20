@@ -171,3 +171,9 @@
   text-align: center;
   direction: ltr;
 }
+
+@media (max-width: 640px) {
+  .appearanceCard, .blockCard { background: transparent; border: 0; border-block-start: 1px solid var(--border-default); border-radius: 0; box-shadow: none; padding: 14px 0; min-width: 0; }
+  .themePills { flex-wrap: wrap; max-width: 100%; }
+  .themePill, .currencySelect, .primarySmallBtn, .smallBtn { min-height: 44px; }
+}

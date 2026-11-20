@@ -277,3 +277,10 @@
   .comparePills { flex: 1 0 100%; flex-wrap: wrap; }
   .comparePill { flex: 1 1 75px; min-width: 0; padding-inline: 6px; white-space: normal; }
 }
+
+@media (max-width: 640px) {
+  .section, .compareBar { background: transparent; border: 0; border-block-start: 1px solid var(--border-default); border-radius: 0; box-shadow: none; padding: 12px 0; min-width: 0; }
+  .compareLabel { flex-basis: 100%; }
+  .comparePill, .customMonthBtn, .trendTab { min-height: 44px; }
+  .comparePill { white-space: normal; padding-inline: 6px; }
+}
